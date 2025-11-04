@@ -1,0 +1,50 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: tripjoy-api
+
+  profiles:
+    active: dev
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tripjoy
+    username: postgres
+    password: 2210794
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create        # none | create | update | create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        enable_lazy_load_no_trans: true
+        format_sql: true
+        # jdbc.time_zone: Asia/Ho_Chi_Minh
+    show-sql: true
+
+jwt:
+  signerKey: "422b7f2dcbef5c2fa230240c71282aa37cb35b4d08886e63bfeaca6470b08ed2"
+
+api:
+  swagger:
+    info:
+      title: Tripjoy API Service Documentation
+      version: v1.0.0
+      description: This API exposes optimart endpoints.
+      license:
+        name: API License
+        url: https://springdoc.org
+      contact:
+        name: Nguyen Dinh Duc
+        email: dinhduc0794.work@gmail.com
+        url: https://www.linkedin.com/in/dinhduc0794
+    servers:
+      dev:
+        url: http://localhost:${server.port}
+        description: Server URL in Development environment
+      prod:
+        url: https://api.tripjoy.com
+        description: Server URL in Production environment

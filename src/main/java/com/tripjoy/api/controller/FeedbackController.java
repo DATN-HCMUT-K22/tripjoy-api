@@ -1,0 +1,53 @@
+package com.tripjoy.api.controller;
+
+import com.tripjoy.api.constant.Endpoint;
+import com.tripjoy.api.dto.request.FeedbackRequest;
+import com.tripjoy.api.dto.response.ApiResponse;
+import com.tripjoy.api.dto.response.FeedbackResponse;
+import com.tripjoy.api.service.FeedbackService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping(Endpoint.Feedback.BASE)
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Tag(name = "Feedback", description = "Endpoints for submitting and managing feedback")
+public class FeedbackController {
+
+    FeedbackService feedbackService;
+
+    @Operation(summary = "Submit new feedback")
+    @PostMapping
+    public ApiResponse<FeedbackResponse> submitFeedback(@Valid @RequestBody FeedbackRequest request) {
+        return ApiResponse.<FeedbackResponse>builder()
+//                .data(feedbackService.submitFeedback(request))
+                .build();
+    }
+
+    @Operation(summary = "Get all feedback (Admin, paginated)")
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<Page<FeedbackResponse>> getAllFeedback(Pageable pageable) {
+        return ApiResponse.<Page<FeedbackResponse>>builder()
+//                .data(feedbackService.getAllFeedback(pageable))
+                .build();
+    }
+
+    @Operation(summary = "Get feedback details by id (Admin)")
+    @GetMapping(Endpoint.Feedback.ID)
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<FeedbackResponse> getFeedbackById(@PathVariable String feedbackId) {
+        return ApiResponse.<FeedbackResponse>builder()
+//                .data(feedbackService.getFeedbackById(feedbackId))
+                .build();
+    }
+}

@@ -1,0 +1,65 @@
+package com.tripjoy.api.controller;
+
+import com.tripjoy.api.constant.Endpoint;
+import com.tripjoy.api.dto.request.LocationRequest;
+import com.tripjoy.api.dto.response.ApiResponse;
+import com.tripjoy.api.dto.response.LocationResponse;
+import com.tripjoy.api.service.LocationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping(Endpoint.Location.BASE)
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Tag(name = "Location", description = "Endpoints for managing locations")
+public class LocationController {
+
+    LocationService locationService;
+
+    @Operation(summary = "Create a new location")
+    @PostMapping
+    public ApiResponse<LocationResponse> createLocation(@Valid @RequestBody LocationRequest request) {
+        return ApiResponse.<LocationResponse>builder()
+//                .data(locationService.createLocation(request))
+                .build();
+    }
+
+    @Operation(summary = "Get all locations (paginated)")
+    @GetMapping
+    public ApiResponse<Page<LocationResponse>> getAllLocations(Pageable pageable) {
+        return ApiResponse.<Page<LocationResponse>>builder()
+//                .data(locationService.getAllLocations(pageable))
+                .build();
+    }
+
+    @Operation(summary = "Get a single location by ID")
+    @GetMapping(Endpoint.Location.ID)
+    public ApiResponse<LocationResponse> getLocationById(@PathVariable String locationId) {
+        return ApiResponse.<LocationResponse>builder()
+//                .data(locationService.getLocationById(locationId))
+                .build();
+    }
+
+    @Operation(summary = "Update a location")
+    @PutMapping(Endpoint.Location.ID)
+    public ApiResponse<LocationResponse> updateLocation(@PathVariable String locationId, @Valid @RequestBody LocationRequest request) {
+        return ApiResponse.<LocationResponse>builder()
+//                .data(locationService.updateLocation(locationId, request))
+                .build();
+    }
+
+    @Operation(summary = "Delete a location")
+    @DeleteMapping(Endpoint.Location.ID)
+    public ApiResponse<Void> deleteLocation(@PathVariable String locationId) {
+//        locationService.deleteLocation(locationId);
+        return ApiResponse.<Void>builder().message("Location deleted successfully").build();
+    }
+}
