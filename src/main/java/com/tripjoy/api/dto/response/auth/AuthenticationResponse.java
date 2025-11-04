@@ -1,4 +1,4 @@
-package com.tripjoy.api.dto.response;
+package com.tripjoy.api.dto.response.auth;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;

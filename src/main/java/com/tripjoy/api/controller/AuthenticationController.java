@@ -2,13 +2,14 @@ package com.tripjoy.api.controller;
 
 import com.nimbusds.jose.JOSEException;
 import com.tripjoy.api.constant.Endpoint;
-import com.tripjoy.api.dto.request.AuthenticationRequest;
-import com.tripjoy.api.dto.request.IntrospectRequest;
-import com.tripjoy.api.dto.request.LogoutRequest;
+import com.tripjoy.api.dto.request.auth.AuthenticationRequest;
+import com.tripjoy.api.dto.request.auth.IntrospectRequest;
+import com.tripjoy.api.dto.request.auth.LogoutRequest;
 import com.tripjoy.api.dto.request.UserCreationRequest;
+import com.tripjoy.api.dto.request.auth.RefreshRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
-import com.tripjoy.api.dto.response.AuthenticationResponse;
-import com.tripjoy.api.dto.response.IntrospectResponse;
+import com.tripjoy.api.dto.response.auth.AuthenticationResponse;
+import com.tripjoy.api.dto.response.auth.IntrospectResponse;
 import com.tripjoy.api.dto.response.UserResponse;
 import com.tripjoy.api.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,7 +39,8 @@ public class AuthenticationController {
                 .build();
     }
 
-    @PostMapping("/introspect")
+    @Operation(summary = "Introspect authentication token")
+    @PostMapping(Endpoint.Auth.INTROSPECT)
     public ApiResponse<IntrospectResponse> introspectToken(@RequestBody IntrospectRequest request)
             throws ParseException, JOSEException {
         var result = authenticationService.introspectToken(request);
@@ -47,10 +49,20 @@ public class AuthenticationController {
                 .build();
     }
 
+    @Operation(summary = "Refresh authentication token")
+    @PostMapping(Endpoint.Auth.REFRESH)
+    public ApiResponse<AuthenticationResponse> refreshToken(@RequestBody RefreshRequest request)
+            throws ParseException, JOSEException {
+        var result = authenticationService.refreshToken(request);
+        return ApiResponse.<AuthenticationResponse>builder()
+                .data(result)
+                .build();
+    }
+
     @Operation(summary = "Log out from the system")
     @PostMapping(Endpoint.Auth.LOGOUT)
     public ApiResponse<Void> logout(@RequestBody LogoutRequest request)
-            throws ParseException, JOSEException{
+            throws ParseException, JOSEException {
         authenticationService.logout(request);
         return ApiResponse.<Void>builder()
                 .build();

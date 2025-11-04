@@ -1,5 +1,4 @@
-package com.tripjoy.api.dto.response;
-
+package com.tripjoy.api.dto.request.auth;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -9,6 +8,6 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class IntrospectResponse {
-    boolean isValid;
+public class RefreshRequest {
+    String token;
 }

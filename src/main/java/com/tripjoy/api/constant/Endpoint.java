@@ -9,6 +9,7 @@ public class Endpoint {
         public static final String LOGIN = "/login";
         public static final String REGISTER = "/register";
 //        public static final String EMAIL_VERIFICATION_TOKEN = "/email-verification/{token}";
+        public static final String INTROSPECT = "/introspect";
         public static final String REFRESH = "/refresh";
         public static final String RESET_PASSWORD = "/reset-password";
 //        public static final String RESET_PASSWORD_OTP = "/reset-password/{otp}";

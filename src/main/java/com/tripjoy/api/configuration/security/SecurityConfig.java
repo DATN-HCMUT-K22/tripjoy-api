@@ -27,9 +27,10 @@ import javax.crypto.spec.SecretKeySpec;
 public class SecurityConfig {
     private static final String[] PUBLIC_ENDPOINTS = {
             Endpoint.API_PREFIX + "/users",
-            Endpoint.API_PREFIX + "/auth/login",
-            Endpoint.API_PREFIX + "/auth/introspect",
-            Endpoint.API_PREFIX + "/auth/logout"
+            Endpoint.Auth.LOGIN,
+            Endpoint.Auth.INTROSPECT,
+            Endpoint.Auth.LOGOUT,
+            Endpoint.Auth.REFRESH
     };
 
     private static final String[] SWAGGER_WHITELIST = {
