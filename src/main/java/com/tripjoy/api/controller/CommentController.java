@@ -48,14 +48,14 @@ public class CommentController {
     }
 
     @Operation(summary = "Like a comment")
-    @PostMapping(Endpoint.Comment.LIKE)
+    @PostMapping(Endpoint.Comment.LIKES)
     public ApiResponse<Void> likeComment(@PathVariable String commentId) {
 //        commentService.likeComment(commentId);
         return ApiResponse.<Void>builder().message("Comment liked").build();
     }
 
     @Operation(summary = "Unlike a comment")
-    @DeleteMapping(Endpoint.Comment.LIKE)
+    @DeleteMapping(Endpoint.Comment.LIKES)
     public ApiResponse<Void> unlikeComment(@PathVariable String commentId) {
 //        commentService.unlikeComment(commentId);
         return ApiResponse.<Void>builder().message("Comment unliked").build();
