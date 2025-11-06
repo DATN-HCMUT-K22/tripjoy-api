@@ -99,8 +99,8 @@ public class Endpoint {
     public static final class Post {
         public static final String BASE = API_PREFIX + "/posts";
         public static final String ID = "/{postId}";
-        public static final String LIKE = ID + "/like";
-        public static final String SAVE = ID + "/save";
+        public static final String LIKES = ID + "/likes";
+        public static final String SAVES = ID + "/saves";
         public static final String COMMENTS = ID + "/comments";
     }
 
@@ -109,7 +109,7 @@ public class Endpoint {
         public static final String ID = "/{commentId}";
 
         // Like/unlike comment
-        public static final String LIKE = ID + "/like";
+        public static final String LIKES = ID + "/likes";
         public static final String REPLIES = ID + "/replies";
     }
 

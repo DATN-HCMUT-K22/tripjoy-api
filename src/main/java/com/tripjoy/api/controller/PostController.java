@@ -72,14 +72,14 @@ public class PostController {
     // --- Like Actions ---
 
     @Operation(summary = "Like a post")
-    @PostMapping(Endpoint.Post.LIKE)
+    @PostMapping(Endpoint.Post.LIKES)
     public ApiResponse<Void> likePost(@PathVariable String postId) {
 //        postService.likePost(postId);
         return ApiResponse.<Void>builder().message("Post liked").build();
     }
 
-    @Operation(summary = "Unlike a post")
-    @DeleteMapping(Endpoint.Post.LIKE)
+@Operation(summary = "Unlike a post")
+    @DeleteMapping(Endpoint.Post.LIKES)
     public ApiResponse<Void> unlikePost(@PathVariable String postId) {
 //        postService.unlikePost(postId);
         return ApiResponse.<Void>builder().message("Post unliked").build();
@@ -87,15 +87,23 @@ public class PostController {
 
     // --- Save Actions ---
 
+    @Operation(summary = "Get saved posts for the current user")
+    @GetMapping(Endpoint.Post.SAVES)
+    public ApiResponse<PostResponse> getSavedPosts() {
+        return ApiResponse.<PostResponse>builder()
+//                .data(postService.getSavedPosts())
+                .build();
+    }
+
     @Operation(summary = "Save a post")
-    @PostMapping(Endpoint.Post.SAVE)
+    @PostMapping(Endpoint.Post.SAVES)
     public ApiResponse<Void> savePost(@PathVariable String postId) {
 //        postService.savePost(postId);
         return ApiResponse.<Void>builder().message("Post saved").build();
     }
 
     @Operation(summary = "Unsave a post")
-    @DeleteMapping(Endpoint.Post.SAVE)
+    @DeleteMapping(Endpoint.Post.SAVES)
     public ApiResponse<Void> unsavePost(@PathVariable String postId) {
 //        postService.unsavePost(postId);
         return ApiResponse.<Void>builder().message("Post unsaved").build();
