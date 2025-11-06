@@ -1,9 +1,11 @@
 package com.tripjoy.api.controller;
 
 import com.tripjoy.api.constant.Endpoint;
-import com.tripjoy.api.dto.request.ReportRequest;
+import com.tripjoy.api.dto.request.report.HandleReportRequest;
+import com.tripjoy.api.dto.request.report.ReportRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
-import com.tripjoy.api.dto.response.ReportResponse;
+import com.tripjoy.api.dto.response.report.HandleReportResponse;
+import com.tripjoy.api.dto.response.report.ReportResponse;
 import com.tripjoy.api.service.ReportService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -51,5 +53,20 @@ public class ReportController {
         return ApiResponse.<ReportResponse>builder()
 //                .data(reportService.getReportById(reportId))
                 .build();
+    }
+
+    // --- BỔ SUNG: Admin Handling ---
+
+    @Operation(summary = "Admin handles a report (e.g., approve, reject)")
+    @PostMapping(Endpoint.Report.ID + "/handle")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<HandleReportResponse> handleReport(
+            @PathVariable String reportId, // ID from Report_to
+            @Valid @RequestBody HandleReportRequest request) {
+
+        // return ApiResponse.<HandleReportResponse>builder()
+        //        .data(reportService.handleReport(reportId, request))
+        //        .build();
+        return null; // Placeholder
     }
 }

@@ -1,11 +1,13 @@
 package com.tripjoy.api.controller;
 
 import com.tripjoy.api.constant.Endpoint;
+import com.tripjoy.api.dto.request.SuggestLocationRequest;
 import com.tripjoy.api.dto.request.member.AddMemberRequest;
 import com.tripjoy.api.dto.request.GroupRequest;
 import com.tripjoy.api.dto.request.member.UpdateMemberRoleRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.GroupResponse;
+import com.tripjoy.api.dto.response.SuggestLocationResponse;
 import com.tripjoy.api.dto.response.simple.GroupMemberResponse;
 import com.tripjoy.api.service.GroupService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -88,6 +90,26 @@ public class GroupController {
     public ApiResponse<GroupMemberResponse> updateMemberRole(@PathVariable String groupId, @PathVariable String memberId, @Valid @RequestBody UpdateMemberRoleRequest request) {
         return ApiResponse.<GroupMemberResponse>builder()
 //                .data(groupService.updateMemberRole(groupId, memberId, request))
+                .build();
+    }
+    @Operation(summary = "Suggest a new location for the group")
+    @PostMapping(Endpoint.Group.SUGGEST_LOCATIONS)
+    public ApiResponse<SuggestLocationResponse> suggestLocation(
+            @PathVariable String groupId,
+            @Valid @RequestBody SuggestLocationRequest request) {
+
+         return ApiResponse.<SuggestLocationResponse>builder()
+        //        .data(groupService.suggestLocation(groupId, request))
+                .build();
+    }
+
+    @Operation(summary = "Get all suggested locations for the group")
+    @GetMapping(Endpoint.Group.SUGGEST_LOCATIONS)
+    public ApiResponse<List<SuggestLocationResponse>> getSuggestedLocations(
+            @PathVariable String groupId) {
+
+         return ApiResponse.<List<SuggestLocationResponse>>builder()
+//                .data(groupService.getSuggestedLocations(groupId))
                 .build();
     }
 }

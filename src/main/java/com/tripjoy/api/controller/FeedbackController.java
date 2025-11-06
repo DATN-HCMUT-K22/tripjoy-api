@@ -1,9 +1,11 @@
 package com.tripjoy.api.controller;
 
 import com.tripjoy.api.constant.Endpoint;
-import com.tripjoy.api.dto.request.FeedbackRequest;
+import com.tripjoy.api.dto.request.feedback.FeedbackRequest;
+import com.tripjoy.api.dto.request.feedback.FeedbackResponseRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
-import com.tripjoy.api.dto.response.FeedbackResponse;
+import com.tripjoy.api.dto.response.feedback.FeedbackResponse;
+import com.tripjoy.api.dto.response.feedback.FeedbackResponseResponse;
 import com.tripjoy.api.service.FeedbackService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -49,5 +51,20 @@ public class FeedbackController {
         return ApiResponse.<FeedbackResponse>builder()
 //                .data(feedbackService.getFeedbackById(feedbackId))
                 .build();
+    }
+
+    // --- Admin Response ---
+
+    @Operation(summary = "Admin responds to a user's feedback")
+    @PostMapping(Endpoint.Feedback.ID + "/respond")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<FeedbackResponseResponse> respondToFeedback(
+            @PathVariable String feedbackId,
+            @Valid @RequestBody FeedbackResponseRequest request) {
+
+        // return ApiResponse.<FeedbackResponseResponse>builder()
+        //        .data(feedbackService.respondToFeedback(feedbackId, request))
+        //        .build();
+        return null; // Placeholder
     }
 }

@@ -1,23 +1,20 @@
 package com.tripjoy.api.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.tripjoy.api.dto.response.simple.ItinerarySimpleResponse;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.time.LocalDateTime;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class LocationResponse {
+public class TravelNotebookResponse {
     String id;
     String name;
-    Double lat;
-    Double lng;
-    String hotline;
-    String category;
-
-    Boolean isOpen;
-
-    String content;
+    String description;
+    LocalDateTime createAt;
+    ItinerarySimpleResponse itinerary;
 }

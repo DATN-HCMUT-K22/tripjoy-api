@@ -1,9 +1,11 @@
 package com.tripjoy.api.controller;
 
 import com.tripjoy.api.constant.Endpoint;
-import com.tripjoy.api.dto.request.LocationRequest;
+import com.tripjoy.api.dto.request.location.LocationInfoRequest;
+import com.tripjoy.api.dto.request.location.LocationRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
-import com.tripjoy.api.dto.response.LocationResponse;
+import com.tripjoy.api.dto.response.location.LocationInfoResponse;
+import com.tripjoy.api.dto.response.location.LocationResponse;
 import com.tripjoy.api.service.LocationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -61,5 +63,31 @@ public class LocationController {
     public ApiResponse<Void> deleteLocation(@PathVariable String locationId) {
 //        locationService.deleteLocation(locationId);
         return ApiResponse.<Void>builder().message("Location deleted successfully").build();
+    }
+
+
+    // --- Location Info (Content) ---
+
+    @Operation(summary = "Get detailed info (content) for a location")
+    @GetMapping(Endpoint.Location.ID + "/info")
+    public ApiResponse<LocationInfoResponse> getLocationInfo(
+            @PathVariable String locationId) {
+
+        // return ApiResponse.<LocationInfoResponse>builder()
+        //        .data(locationService.getLocationInfo(locationId))
+        //        .build();
+        return null; // Placeholder
+    }
+
+    @Operation(summary = "Update detailed info (content) for a location")
+    @PutMapping(Endpoint.Location.ID + "/info")
+    public ApiResponse<LocationInfoResponse> updateLocationInfo(
+            @PathVariable String locationId,
+            @Valid @RequestBody LocationInfoRequest request) {
+
+        // return ApiResponse.<LocationInfoResponse>builder()
+        //        .data(locationService.updateLocationInfo(locationId, request))
+        //        .build();
+        return null; // Placeholder
     }
 }

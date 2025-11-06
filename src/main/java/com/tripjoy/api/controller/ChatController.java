@@ -16,46 +16,74 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping(Endpoint.Chat.BASE) // -> /api/v1/chat
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Tag(name = "Chat", description = "Endpoints for loading chat history")
+@Tag(name = "Chat", description = "Endpoints for ALL chat functionalities (Group & Direct)")
 public class ChatController {
 
     ChatService chatService;
 
-    // --- 1. Group chat history ---
+    // --- 1. Lấy lịch sử tin nhắn Group ---
     @Operation(summary = "Get group message history (paginated)")
-    @GetMapping(Endpoint.API_PREFIX + Endpoint.Group.MESSAGES_BASE)
+    @GetMapping(Endpoint.Chat.GROUP_MESSAGES) // -> /groups/{groupId}/messages
     public ApiResponse<Page<ChatMessageResponse>> getGroupMessages(
             @PathVariable String groupId, Pageable pageable) {
 
-        // Service will return Page<ChatMessageResponse> including 'repliedToMessage'
         return ApiResponse.<Page<ChatMessageResponse>>builder()
 //                .data(chatService.getGroupMessages(groupId, pageable))
                 .build();
     }
 
-    // --- 2. Direct (1-1) chat history ---
+    // --- 2. Gửi tin nhắn Group (Fallback) ---
+    @Operation(summary = "Send a group message (fallback)")
+    @PostMapping(Endpoint.Chat.GROUP_MESSAGES) // -> /groups/{groupId}/messages
+    public ApiResponse<ChatMessageResponse> sendGroupMessage(
+            @PathVariable String groupId, @Valid @RequestBody ChatMessageRequest request) {
+
+        return ApiResponse.<ChatMessageResponse>builder()
+//                .data(chatService.sendGroupMessage(groupId, request))
+                .build();
+    }
+
+    // --- 3. Lấy lịch sử tin nhắn 1-1 (Direct) ---
     @Operation(summary = "Get direct message history (1-1, paginated)")
-    @GetMapping(Endpoint.Chat.BASE + Endpoint.Chat.DIRECT_MESSAGES)
+    @GetMapping(Endpoint.Chat.DIRECT_MESSAGES) // -> /direct/{userId}/messages
     public ApiResponse<Page<ChatMessageResponse>> getDirectMessages(
             @PathVariable String userId, Pageable pageable) {
 
-        // Service will return Page<ChatMessageResponse> including 'repliedToMessage'
         return ApiResponse.<Page<ChatMessageResponse>>builder()
 //                .data(chatService.getDirectMessages(userId, pageable))
                 .build();
     }
 
-    // --- 3. (Fallback) Send message via REST ---
-    @Operation(summary = "Send a message (fallback when WebSocket fails)")
-    @PostMapping(Endpoint.API_PREFIX + Endpoint.Group.MESSAGES_BASE)
-    public ApiResponse<ChatMessageResponse> sendGroupMessage(
-            @PathVariable String groupId, @Valid @RequestBody ChatMessageRequest request) {
+    // --- 4. Gửi tin nhắn 1-1 (Fallback) ---
+    @Operation(summary = "Send a direct message (fallback)")
+    @PostMapping(Endpoint.Chat.DIRECT_MESSAGES) // -> /direct/{userId}/messages
+    public ApiResponse<ChatMessageResponse> sendDirectMessage(
+            @PathVariable String userId, @Valid @RequestBody ChatMessageRequest request) {
 
-        // Service will return ChatMessageResponse including 'repliedToMessage'
         return ApiResponse.<ChatMessageResponse>builder()
-//                .data(chatService.sendGroupMessage(groupId, request))
+//                .data(chatService.sendDirectMessage(userId, request))
                 .build();
+    }
+
+    // --- 5. Tương tác (Like/Unlike) tin nhắn ---
+    // (Áp dụng cho cả tin nhắn group và direct)
+
+    @Operation(summary = "Like a chat message (Create a 'like' resource)")
+    @PostMapping(Endpoint.Chat.MESSAGE_LIKES) // -> /messages/{messageId}/likes
+    public ApiResponse<Void> likeChatMessage(@PathVariable String messageId) {
+
+        // chatService.likeMessage(messageId);
+        return ApiResponse.<Void>builder().message("Message liked").build();
+    }
+
+    @Operation(summary = "Unlike a chat message (Delete a 'like' resource)")
+    @DeleteMapping(Endpoint.Chat.MESSAGE_LIKES) // -> /messages/{messageId}/likes
+    public ApiResponse<Void> unlikeChatMessage(@PathVariable String messageId) {
+
+        // chatService.unlikeMessage(messageId);
+        return ApiResponse.<Void>builder().message("Message unliked").build();
     }
 }

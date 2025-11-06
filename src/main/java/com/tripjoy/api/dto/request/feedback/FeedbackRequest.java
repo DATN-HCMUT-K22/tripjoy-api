@@ -1,13 +1,9 @@
-package com.tripjoy.api.dto.request;
+package com.tripjoy.api.dto.request.feedback;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDateTime;
 
 @Data
 @Builder

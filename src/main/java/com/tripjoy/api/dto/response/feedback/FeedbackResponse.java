@@ -1,4 +1,4 @@
-package com.tripjoy.api.dto.response;
+package com.tripjoy.api.dto.response.feedback;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;

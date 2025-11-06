@@ -38,6 +38,7 @@ public class Endpoint {
     public static final class Location {
         public static final String BASE = API_PREFIX + "/locations";
         public static final String ID = "/{locationId}";
+
     }
 
     public static final class Group {
@@ -50,12 +51,26 @@ public class Endpoint {
 
         // Chat trong group
         public static final String MESSAGES_BASE = ID + "/messages";
+
+        // Đề xuất địa điểm trong group
+        public static final String SUGGEST_LOCATIONS = ID + "/suggest-locations";
     }
 
     public static final class Chat {
-        public static final String BASE = API_PREFIX + "/chat";
-        // Lấy tin nhắn trực tiếp với 1 user khác
-        public static final String DIRECT_MESSAGES = "/direct/{userId}";
+        public static final String BASE = API_PREFIX + "/chat"; // -> /api/v1/chat
+
+        // --- Endpoints cho Tin nhắn (Message) ---
+        public static final String MESSAGES = "/messages";
+        public static final String MESSAGE_ID = MESSAGES + "/{messageId}"; // -> /api/v1/chat/messages/{messageId}
+        public static final String MESSAGE_LIKES = MESSAGE_ID + "/likes"; // -> .../{messageId}/likes
+
+        // --- Endpoints cho Chat 1-1 (Direct) ---
+        public static final String DIRECT_BASE = "/direct/{userId}"; // -> /api/v1/chat/direct/{userId}
+        public static final String DIRECT_MESSAGES = DIRECT_BASE + "/messages"; // -> .../direct/{userId}/messages
+
+        // --- Endpoints cho Chat Nhóm (Group) ---
+        public static final String GROUP_BASE = "/groups/{groupId}"; // -> /api/v1/chat/groups/{groupId}
+        public static final String GROUP_MESSAGES = GROUP_BASE + "/messages"; // -> .../groups/{groupId}/messages
     }
 
     public static final class Itinerary {
@@ -72,6 +87,13 @@ public class Endpoint {
 
         // Thêm/bỏ yêu thích
         public static final String FAVORITE = ID + "/favorite";
+
+        public static final String NOTEBOOKS_BASE = ID + "/notebooks";
+    }
+
+    public static final class TravelNotebook {
+        public static final String BASE = API_PREFIX + "/notebooks";
+        public static final String ID = "/{notebookId}";
     }
 
     public static final class Post {
@@ -99,5 +121,9 @@ public class Endpoint {
     public static final class Report {
         public static final String BASE = API_PREFIX + "/reports";
         public static final String ID = "/{reportId}";
+    }
+
+    public static final class Admin {
+        public static final String BASE = API_PREFIX + "/admin";
     }
 }

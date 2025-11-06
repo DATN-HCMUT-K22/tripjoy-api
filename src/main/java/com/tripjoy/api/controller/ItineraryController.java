@@ -1,11 +1,10 @@
 package com.tripjoy.api.controller;
 
 import com.tripjoy.api.constant.Endpoint;
+import com.tripjoy.api.dto.request.ExpenseRequest;
 import com.tripjoy.api.dto.request.ItineraryRequest;
 import com.tripjoy.api.dto.request.TripItemRequest;
-import com.tripjoy.api.dto.response.ApiResponse;
-import com.tripjoy.api.dto.response.ItineraryResponse;
-import com.tripjoy.api.dto.response.TripItemResponse;
+import com.tripjoy.api.dto.response.*;
 import com.tripjoy.api.service.ItineraryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -73,7 +72,7 @@ public class ItineraryController {
         return ApiResponse.<Void>builder().message("Itinerary unfavorited").build();
     }
 
-    // --- Nested Trip Items ---
+    // --- Trip Items ---
 
     @Operation(summary = "Add a trip item to an itinerary")
     @PostMapping(Endpoint.Itinerary.ITEMS_BASE)
@@ -104,5 +103,67 @@ public class ItineraryController {
     public ApiResponse<Void> removeTripItem(@PathVariable String itineraryId, @PathVariable String tripItemId) {
 //        itineraryService.removeTripItem(itineraryId, tripItemId);
         return ApiResponse.<Void>builder().message("Trip item removed").build();
+    }
+
+    // --- Itinerary Expenses ---
+
+    @Operation(summary = "Add an expense to the itinerary")
+    @PostMapping(Endpoint.Itinerary.EXPENSES_BASE)
+    public ApiResponse<ExpenseResponse> addExpense(
+            @PathVariable String itineraryId,
+            @Valid @RequestBody ExpenseRequest request) {
+
+        // return ApiResponse.<ItineraryExpenseResponse>builder()
+        //        .data(itineraryService.addExpense(itineraryId, request))
+        //        .build();
+        return null; // Placeholder
+    }
+
+    @Operation(summary = "Get all expenses for the itinerary")
+    @GetMapping(Endpoint.Itinerary.EXPENSES_BASE)
+    public ApiResponse<List<ExpenseResponse>> getExpenses(
+            @PathVariable String itineraryId) {
+
+        // return ApiResponse.<List<ItineraryExpenseResponse>>builder()
+        //        .data(itineraryService.getExpenses(itineraryId))
+        //        .build();
+        return null; // Placeholder
+    }
+
+    @Operation(summary = "Update a specific expense entry")
+    @PutMapping(Endpoint.Itinerary.EXPENSES_ID)
+    public ApiResponse<ExpenseResponse> updateExpense(
+            @PathVariable String itineraryId,
+            @PathVariable String expenseId, // This is the ID from 'Add_expense' table
+            @Valid @RequestBody ExpenseRequest request) {
+
+        // return ApiResponse.<ItineraryExpenseResponse>builder()
+        //        .data(itineraryService.updateExpense(itineraryId, expenseId, request))
+        //        .build();
+        return null; // Placeholder
+    }
+
+    @Operation(summary = "Remove an expense entry")
+    @DeleteMapping(Endpoint.Itinerary.EXPENSES_ID)
+    public ApiResponse<Void> removeExpense(
+            @PathVariable String itineraryId,
+            @PathVariable String expenseId) { // This is the ID from 'Add_expense' table
+
+        // itineraryService.removeExpense(itineraryId, expenseId);
+        // return ApiResponse.<Void>builder().message("Expense removed").build();
+        return null; // Placeholder
+    }
+
+    // --- Itinerary Notebooks (List) ---
+
+    @Operation(summary = "Get all travel notebooks for this itinerary")
+    @GetMapping(Endpoint.Itinerary.NOTEBOOKS_BASE)
+    public ApiResponse<List<TravelNotebookResponse>> getNotebooksForItinerary(
+            @PathVariable String itineraryId) {
+
+        // return ApiResponse.<List<TravelNotebookResponse>>builder()
+        //        .data(travelNotebookService.getNotebooksByItinerary(itineraryId))
+        //        .build();
+        return null; // Placeholder
     }
 }
