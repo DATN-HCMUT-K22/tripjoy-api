@@ -35,16 +35,16 @@ public class TripItemRequest {
             example = "120"
     )
     Integer duration;
-
-    @NotNull
-    @Schema(
-            name = "day_order",
-            description = "The day number of the trip this item belongs to (e.g., 1, 2, 3)",
-            type = "Integer",
-            requiredMode = Schema.RequiredMode.REQUIRED,
-            example = "1"
-    )
-    Integer dayOrder;
+//
+//    @NotNull
+//    @Schema(
+//            name = "day_order",
+//            description = "The day number of the trip this item belongs to (e.g., 1, 2, 3)",
+//            type = "Integer",
+//            requiredMode = Schema.RequiredMode.REQUIRED,
+//            example = "1"
+//    )
+//    Integer dayOrder;
 
     @Schema(
             name = "note",

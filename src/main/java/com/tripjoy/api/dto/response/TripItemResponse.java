@@ -21,8 +21,8 @@ public class TripItemResponse {
 
     Integer duration; // (in minutes)
 
-    @JsonProperty("day_order")
-    Integer dayOrder;
+//    @JsonProperty("day_order")
+//    Integer dayOrder;
 
     String note;
 
