@@ -21,7 +21,7 @@ import java.util.List;
 @RequestMapping(Endpoint.User.BASE)
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Tag(name = "User", description = "Endpoints for managing user accounts")
+@Tag(name = "Users", description = "Endpoints for managing users accounts")
 public class UserController {
     UserService userService;
 
@@ -37,14 +37,14 @@ public class UserController {
     }
 
     @GetMapping(Endpoint.User.ME)
-    @Operation(summary = "Get current user's info", description = "Retrieves the profile information of the currently authenticated user.")
+    @Operation(summary = "Get current users's info", description = "Retrieves the profile information of the currently authenticated users.")
     public ApiResponse<UserResponse> getMyInfo() {
         return ApiResponse.<UserResponse>builder()
                 .data(userService.getMyInfo())
                 .build();
     }
 
-    @Operation(summary = "Create a new user", description = "Creates a new user account based on the provided request.")
+    @Operation(summary = "Create a new users", description = "Creates a new users account based on the provided request.")
     @PostMapping
     public ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
         return ApiResponse.<UserResponse>builder()
@@ -52,7 +52,7 @@ public class UserController {
                 .build();
     }
 
-    @Operation(summary = "Update user by ID", description = "Updates an existing user's information by their unique ID.")
+    @Operation(summary = "Update users by ID", description = "Updates an existing users's information by their unique ID.")
     @PutMapping(Endpoint.User.ID)
     ApiResponse<UserResponse> updateUser(@PathVariable String userId, @RequestBody UserUpdateRequest request) {
         return ApiResponse.<UserResponse>builder()
@@ -60,12 +60,12 @@ public class UserController {
                 .build();
     }
 
-    @Operation(summary = "Delete user by ID", description = "Deletes a user account from the system by their unique ID.")
+    @Operation(summary = "Delete users by ID", description = "Deletes a users account from the system by their unique ID.")
     @DeleteMapping(Endpoint.User.ID)
     ApiResponse<Void> deleteUser(@PathVariable String userId) {
         userService.deleteUser(userId);
         return ApiResponse.<Void>builder()
-                .message("User has been deleted")
+                .message("Users has been deleted")
                 .build();
     }
 }

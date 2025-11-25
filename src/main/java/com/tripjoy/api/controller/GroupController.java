@@ -24,7 +24,7 @@ import java.util.List;
 @RequestMapping(Endpoint.Group.BASE)
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Tag(name = "Group", description = "Endpoints for managing groups and members")
+@Tag(name = "Groups", description = "Endpoints for managing groups and members")
 public class GroupController {
 
     GroupService groupService;
@@ -57,10 +57,10 @@ public class GroupController {
     @DeleteMapping(Endpoint.Group.ID)
     public ApiResponse<Void> deleteGroup(@PathVariable String groupId) {
 //        groupService.deleteGroup(groupId);
-        return ApiResponse.<Void>builder().message("Group deleted successfully").build();
+        return ApiResponse.<Void>builder().message("Groups deleted successfully").build();
     }
 
-    // --- Nested Group Members ---
+    // --- Nested Groups Members ---
 
     @Operation(summary = "Add a member to a group")
     @PostMapping(Endpoint.Group.MEMBERS_BASE)

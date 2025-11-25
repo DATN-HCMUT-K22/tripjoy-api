@@ -87,7 +87,7 @@ public class PostController {
 
     // --- Save Actions ---
 
-    @Operation(summary = "Get saved posts for the current user")
+    @Operation(summary = "Get saved posts for the current users")
     @GetMapping(Endpoint.Post.SAVES)
     public ApiResponse<PostResponse> getSavedPosts() {
         return ApiResponse.<PostResponse>builder()

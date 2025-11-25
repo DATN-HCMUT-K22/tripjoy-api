@@ -29,7 +29,7 @@ public class HandleReportRequest {
             description = "Admin's private notes on why this action was taken",
             type = "String",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "User has been warned. Report closed."
+            example = "Users has been warned. Report closed."
     )
     String description;
 }

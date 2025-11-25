@@ -40,7 +40,7 @@ public class CommentResponse {
     Long likeCount;
 
     @JsonProperty("is_liked")
-    @Schema(description = "User hiện tại đã thích comment này chưa")
+    @Schema(description = "Users hiện tại đã thích comment này chưa")
     Boolean isLiked;
 
     // --- Xử lý Nested ---

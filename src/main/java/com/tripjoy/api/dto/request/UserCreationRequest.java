@@ -53,7 +53,7 @@ public class UserCreationRequest {
 
     @Schema(
             name = "fullName",
-            description = "User's full name",
+            description = "Users's full name",
             type = "String",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
             example = "John Doe"

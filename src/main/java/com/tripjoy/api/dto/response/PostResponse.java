@@ -52,8 +52,8 @@ public class PostResponse {
     Long commentCount;
 
     @JsonProperty("is_liked")
-    Boolean isLiked; // User này đã like post chưa?
+    Boolean isLiked; // Users này đã like post chưa?
 
     @JsonProperty("is_saved")
-    Boolean isSaved; // User này đã save post chưa?
+    Boolean isSaved; // Users này đã save post chưa?
 }

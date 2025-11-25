@@ -27,7 +27,7 @@ public class ReportController {
 
     ReportService reportService;
 
-    @Operation(summary = "User submits a new report")
+    @Operation(summary = "Users submits a new report")
     @PostMapping
     public ApiResponse<ReportResponse> submitReport(@Valid @RequestBody ReportRequest request) {
         // Service will handle complex logic (create Report_content, then create Report_to)
