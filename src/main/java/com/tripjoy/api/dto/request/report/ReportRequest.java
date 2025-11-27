@@ -15,7 +15,7 @@ public class ReportRequest {
 
     @NotBlank(message = "{not_blank}")
     @JsonProperty("content_id")
-    @Schema(description = "ID of the reported content (Post ID, Comment ID, User ID, etc.)",
+    @Schema(description = "ID of the reported content (Post ID, Comment ID, Users ID, etc.)",
             example = "a1b2c3d4-...", requiredMode = Schema.RequiredMode.REQUIRED)
     String contentId;
 

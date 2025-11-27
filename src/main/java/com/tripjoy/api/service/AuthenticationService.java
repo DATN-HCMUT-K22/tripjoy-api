@@ -12,7 +12,7 @@ import com.tripjoy.api.dto.request.auth.RefreshRequest;
 import com.tripjoy.api.dto.response.auth.AuthenticationResponse;
 import com.tripjoy.api.dto.response.auth.IntrospectResponse;
 import com.tripjoy.api.entity.InvalidatedToken;
-import com.tripjoy.api.entity.User;
+import com.tripjoy.api.entity.Users;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
 import com.tripjoy.api.repository.InvalidatedTokenRepository;
@@ -133,18 +133,18 @@ public class AuthenticationService {
                 .build();
     }
 
-    private String generateToken(User user) {
+    private String generateToken(Users users) {
         // build the token
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(user.getUsername())
+                .subject(users.getUsername())
                 .issuer("tripjoy")
                 .issueTime(new Date())
                 .expirationTime(new Date(
                         Instant.now().plus(EXPIRATION, ChronoUnit.SECONDS).toEpochMilli()
                 ))
                 .jwtID(UUID.randomUUID().toString())
-                .claim("scope", buildScope(user))
+                .claim("scope", buildScope(users))
                 .build();
 
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
@@ -183,11 +183,11 @@ public class AuthenticationService {
         return signedJWT;
     }
 
-    private String buildScope(User user) {
+    private String buildScope(Users users) {
         StringJoiner stringJoiner = new StringJoiner(" ");
 
-        if (!CollectionUtils.isEmpty(user.getRoles())) {
-            user.getRoles().forEach(role -> {
+        if (!CollectionUtils.isEmpty(users.getRoles())) {
+            users.getRoles().forEach(role -> {
                 stringJoiner.add("ROLE_" + role.getName());
                 if (!CollectionUtils.isEmpty(role.getPermissions())) {
                     role.getPermissions().forEach(permission -> {

@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class GroupMemberResponse {
 
-    // Lồng thông tin user
+    // Lồng thông tin users
     UserSimpleResponse user;
 
     @JsonProperty("is_leader")

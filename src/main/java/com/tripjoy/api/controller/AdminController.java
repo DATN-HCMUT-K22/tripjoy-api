@@ -27,8 +27,8 @@ public class AdminController {
 
     AdminService adminService;
 
-    @Operation(summary = "Perform a moderation action on a user (e.g., BAN, WARN)")
-    @PostMapping("/moderate-user")
+    @Operation(summary = "Perform a moderation action on a users (e.g., BAN, WARN)")
+    @PostMapping("/moderate-users")
     public ApiResponse<ModerationActionResponse> moderateUser(
             @Valid @RequestBody ModerationActionRequest request) {
 

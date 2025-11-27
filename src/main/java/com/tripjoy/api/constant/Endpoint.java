@@ -68,7 +68,7 @@ public class Endpoint {
         public static final String DIRECT_BASE = "/direct/{userId}"; // -> /api/v1/chat/direct/{userId}
         public static final String DIRECT_MESSAGES = DIRECT_BASE + "/messages"; // -> .../direct/{userId}/messages
 
-        // --- Endpoints cho Chat Nhóm (Group) ---
+        // --- Endpoints cho Chat Nhóm (Groups) ---
         public static final String GROUP_BASE = "/groups/{groupId}"; // -> /api/v1/chat/groups/{groupId}
         public static final String GROUP_MESSAGES = GROUP_BASE + "/messages"; // -> .../groups/{groupId}/messages
     }

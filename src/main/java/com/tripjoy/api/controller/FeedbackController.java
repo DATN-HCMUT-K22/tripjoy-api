@@ -55,7 +55,7 @@ public class FeedbackController {
 
     // --- Admin Response ---
 
-    @Operation(summary = "Admin responds to a user's feedback")
+    @Operation(summary = "Admin responds to a users's feedback")
     @PostMapping(Endpoint.Feedback.ID + "/respond")
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<FeedbackResponseResponse> respondToFeedback(

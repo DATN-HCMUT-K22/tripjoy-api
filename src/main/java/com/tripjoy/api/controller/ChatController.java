@@ -19,12 +19,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(Endpoint.Chat.BASE) // -> /api/v1/chat
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Tag(name = "Chat", description = "Endpoints for ALL chat functionalities (Group & Direct)")
+@Tag(name = "Chat", description = "Endpoints for ALL chat functionalities (Groups & Direct)")
 public class ChatController {
 
     ChatService chatService;
 
-    // --- 1. Lấy lịch sử tin nhắn Group ---
+    // --- 1. Lấy lịch sử tin nhắn Groups ---
     @Operation(summary = "Get group message history (paginated)")
     @GetMapping(Endpoint.Chat.GROUP_MESSAGES) // -> /groups/{groupId}/messages
     public ApiResponse<Page<ChatMessageResponse>> getGroupMessages(
@@ -35,7 +35,7 @@ public class ChatController {
                 .build();
     }
 
-    // --- 2. Gửi tin nhắn Group (Fallback) ---
+    // --- 2. Gửi tin nhắn Groups (Fallback) ---
     @Operation(summary = "Send a group message (fallback)")
     @PostMapping(Endpoint.Chat.GROUP_MESSAGES) // -> /groups/{groupId}/messages
     public ApiResponse<ChatMessageResponse> sendGroupMessage(

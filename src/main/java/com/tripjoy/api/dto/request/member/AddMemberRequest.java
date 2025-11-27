@@ -17,7 +17,7 @@ public class AddMemberRequest {
     @JsonProperty("member_id")
     @Schema(
             name = "member_id",
-            description = "UUID of the user to be added to the group",
+            description = "UUID of the users to be added to the group",
             type = "String",
             requiredMode = Schema.RequiredMode.REQUIRED,
             example = "a1b2c3d4-e5f6-7890-1234-567890abcdef"

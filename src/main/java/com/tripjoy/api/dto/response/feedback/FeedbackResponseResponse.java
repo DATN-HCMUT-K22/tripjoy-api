@@ -23,7 +23,7 @@ public class FeedbackResponseResponse {
     UserSimpleResponse respondedBy; // Admin/BA
 
     @JsonProperty("response_for")
-    UserSimpleResponse responseFor; // User who sent feedback
+    UserSimpleResponse responseFor; // Users who sent feedback
 
     @JsonProperty("created_at")
     LocalDateTime createdAt;

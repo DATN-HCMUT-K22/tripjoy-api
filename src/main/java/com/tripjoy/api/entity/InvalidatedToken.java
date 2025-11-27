@@ -14,6 +14,7 @@ import java.util.Date;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 public class InvalidatedToken {
+
     @Id
     String id;
     Date expiresAt;

@@ -26,7 +26,7 @@ import java.text.ParseException;
 @RequestMapping(Endpoint.Auth.BASE)
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Tag(name = "Authentication", description = "Endpoints for user authentication")
+@Tag(name = "Authentication", description = "Endpoints for users authentication")
 public class AuthenticationController {
     AuthenticationService authenticationService;
 
@@ -69,7 +69,7 @@ public class AuthenticationController {
     }
 
     //// --------
-    @Operation(summary = "Register a new user account")
+    @Operation(summary = "Register a new users account")
     @PostMapping(Endpoint.Auth.REGISTER)
     public ApiResponse<UserResponse> register(@Valid @RequestBody UserCreationRequest request) {
         return ApiResponse.<UserResponse>builder()

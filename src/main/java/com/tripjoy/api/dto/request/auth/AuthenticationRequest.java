@@ -25,7 +25,7 @@ public class AuthenticationRequest {
     @NotBlank(message = "{not_blank}")
     @Schema(
             name = "password",
-            description = "User's password",
+            description = "Users's password",
             type = "String",
             requiredMode = Schema.RequiredMode.REQUIRED,
             example = "P@sswd123."

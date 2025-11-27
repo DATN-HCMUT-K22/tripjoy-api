@@ -17,7 +17,7 @@ public class ModerationActionRequest {
     @NotBlank
     @Schema(
             name = "userId",
-            description = "The unique ID of the user receiving the action",
+            description = "The unique ID of the users receiving the action",
             type = "String",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
@@ -38,7 +38,7 @@ public class ModerationActionRequest {
             description = "Admin's justification or notes for this action",
             type = "String",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "User violated community guidelines multiple times."
+            example = "Users violated community guidelines multiple times."
     )
     String note;
 }

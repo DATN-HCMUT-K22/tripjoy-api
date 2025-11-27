@@ -64,5 +64,5 @@ public class ExpenseRequest {
     )
     String method;
 
-    // get user auth info from token (not from request body) -> this is user added expense
+    // get users auth info from token (not from request body) -> this is users added expense
 }

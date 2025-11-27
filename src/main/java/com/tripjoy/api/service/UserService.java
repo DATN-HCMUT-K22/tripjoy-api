@@ -4,7 +4,7 @@ import com.tripjoy.api.dto.request.UserCreationRequest;
 import com.tripjoy.api.dto.request.UserUpdateRequest;
 import com.tripjoy.api.dto.response.UserResponse;
 import com.tripjoy.api.entity.Role;
-import com.tripjoy.api.entity.User;
+import com.tripjoy.api.entity.Users;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
 import com.tripjoy.api.mapper.UserMapper;
@@ -35,7 +35,7 @@ public class UserService {
     public List<UserResponse> getUsers() {
 
         return userRepository.findAll().stream()
-                .map(userMapper::toUserResponse)    //.map(user -> userMapper.toUserResponse(user))
+                .map(userMapper::toUserResponse)    //.map(users -> userMapper.toUserResponse(users))
                 .toList();
     }
 
@@ -49,37 +49,37 @@ public class UserService {
         var context = SecurityContextHolder.getContext();
         String name = context.getAuthentication().getName();
 
-        User user = userRepository.findByUsername(name)
+        Users users = userRepository.findByUsername(name)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        return userMapper.toUserResponse(user);
+        return userMapper.toUserResponse(users);
     }
 
     public UserResponse createUser(UserCreationRequest request) {
         if (userRepository.existsByUsername(request.getUsername()))
             throw new AppException(ErrorCode.USER_EXISTED);
 
-        User user = userMapper.toUser(request);
+        Users users = userMapper.toUser(request);
 
 //        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-//        User.setRole()
+        users.setPassword(passwordEncoder.encode(users.getPassword()));
+//        Users.setRole()
 
-        return userMapper.toUserResponse(userRepository.save(user));
+        return userMapper.toUserResponse(userRepository.save(users));
     }
 
     @PostAuthorize("returnObject.username == authentication.name")
     public UserResponse updateUser(String userId, UserUpdateRequest request) {
-        User user = userRepository.findById(userId)
+        Users users = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        userMapper.updateUser(user, request);
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        userMapper.updateUser(users, request);
+        users.setPassword(passwordEncoder.encode(request.getPassword()));
 
         List<Role> roles = roleRepository.findAllById(request.getRoles());
-        user.setRoles(new HashSet<>(roles));
+        users.setRoles(new HashSet<>(roles));
 
-        return userMapper.toUserResponse(userRepository.save(user));
+        return userMapper.toUserResponse(userRepository.save(users));
     }
 
     @PreAuthorize("hasRole('ADMIN')")

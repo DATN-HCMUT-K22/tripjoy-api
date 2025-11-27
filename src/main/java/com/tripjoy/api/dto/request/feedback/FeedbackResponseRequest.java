@@ -13,7 +13,7 @@ import lombok.experimental.FieldDefaults;
 public class FeedbackResponseRequest {
 
     @NotBlank
-    @Schema(description = "The admin's reply content to the user", example = "Thank you for your feedback! We are looking into this issue.")
+    @Schema(description = "The admin's reply content to the users", example = "Thank you for your feedback! We are looking into this issue.")
     String description;
 
     @Schema(description = "New status for the feedback", example = "REPLIED")
