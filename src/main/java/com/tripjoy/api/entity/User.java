@@ -24,6 +24,7 @@ public class User extends BaseEntity {
     private String bio;
     private String avatarUrl;
     private LocalDateTime dateOfBirth;
+    private Long credits;
     private Boolean isDeleted = false;
     private Boolean isLocked = false;
 

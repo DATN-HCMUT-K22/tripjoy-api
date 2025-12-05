@@ -18,6 +18,11 @@ public class FeedbackRequest {
     String type; // maps to column "type"
 
     @NotBlank
+    @Schema(description = "Summary title of the feedback",
+            example = "App crash on startup", requiredMode = Schema.RequiredMode.REQUIRED)
+    String title;
+
+    @NotBlank
     @Schema(description = "Detailed content of the feedback",
             example = "The app crashes when opening the map.", requiredMode = Schema.RequiredMode.REQUIRED)
     String content; // maps to column "content"

@@ -26,7 +26,7 @@ public class GroupRequest {
     )
     String name;
 
-    @Schema(
+@Schema(
             name = "avatar",
             description = "URL of the group's avatar image",
             type = "String",
@@ -35,12 +35,6 @@ public class GroupRequest {
     )
     String avatar;
 
-    @Schema(
-            name = "theme",
-            description = "Theme of the group",
-            type = "String",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "Adventure"
-    )
-    String theme;
+    @Schema(name = "theme_color", description = "Hex color code for group theme", example = "#FF5733")
+    String themeColor;
 }
