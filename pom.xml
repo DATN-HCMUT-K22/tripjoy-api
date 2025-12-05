@@ -99,6 +99,30 @@
 			<artifactId>passay</artifactId>
 			<version>${passay.version}</version>
 		</dependency>
+
+		<dependency>
+			<groupId>com.corundumstudio.socketio</groupId>
+			<artifactId>netty-socketio</artifactId>
+			<version>2.0.6</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.redisson</groupId>
+			<artifactId>redisson</artifactId>
+			<version>3.24.3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.github.cdimascio</groupId>
+			<artifactId>dotenv-java</artifactId>
+			<version>3.0.0</version>
+		</dependency>
+
 	</dependencies>
 
 	<profiles>

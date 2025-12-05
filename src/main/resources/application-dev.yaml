@@ -1,34 +1,10 @@
-server:
-  port: 8080
-
 spring:
   config:
     activate:
       on-profile: dev
 
-  datasource:
-    url: jdbc:postgresql://localhost:5432/tripjoy
-    username: postgres
-    password: 2210794
-    driver-class-name: org.postgresql.Driver
-
-api:
-  swagger:
-    info:
-      title: Tripjoy API Service Documentation
-      version: v1.0.0
-      description: This API exposes optimart endpoints.
-      license:
-        name: API License
-        url: https://springdoc.org
-      contact:
-        name: Nguyen Dinh Duc
-        email: dinhduc0794.work@gmail.com
-        url: https://www.linkedin.com/in/dinhduc0794
-    servers:
-      dev:
-        url: http://localhost:${server.port}
-        description: Server URL in Development environment
-      prod:
-        url: https://api.tripjoy.com
-        description: Server URL in production environment
+logging:
+  level:
+    root: INFO
+    org.hibernate.SQL: DEBUG        # Xem câu query
+    org.hibernate.type: TRACE       # Xem tham số binding (? trong sql)
