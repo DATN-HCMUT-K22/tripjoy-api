@@ -14,7 +14,7 @@ import java.util.Set;
 public class Groups extends BaseEntity{
 
     private String name;
-    private Integer ChatbotCount;
+    private Integer chatbotCount;
     private String avatar;
     private String themeColor;
     private Boolean isPro;

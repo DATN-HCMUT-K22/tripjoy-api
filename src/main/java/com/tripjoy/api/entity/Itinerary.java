@@ -31,11 +31,16 @@ public class Itinerary extends BaseEntity{
     @ToString.Exclude
     private Set<ItineraryTheme> itineraryThemes = new HashSet<>();
 
+    @OneToMany(mappedBy = "itinerary", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private Set<TripItem> tripItems = new HashSet<>();
+
     @ManyToMany
     @JoinTable(
             name = "favourite_itinerary",
             joinColumns = @JoinColumn(name = "itinerary_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private Set<Users> favouriteUsers = new HashSet<>();
+    private Set<User> favouriteUsers = new HashSet<>();
 }

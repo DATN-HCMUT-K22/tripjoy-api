@@ -27,11 +27,11 @@ public class ChatMessage extends BaseEntity{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sender_id", nullable = false)
-    private Users sender;
+    private User sender;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "receiver_id", nullable = false)
-    private Users receiver;
+    private User receiver;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)
@@ -43,5 +43,5 @@ public class ChatMessage extends BaseEntity{
             joinColumns = @JoinColumn(name = "chat_message_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private Set<Users> likeUsers = new HashSet<>();
+    private Set<User> likeUsers = new HashSet<>();
 }

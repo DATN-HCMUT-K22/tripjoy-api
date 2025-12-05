@@ -19,5 +19,5 @@ public class HandleReportContent extends BaseEntity{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ba_id", nullable = false)
-    private Users ba;
+    private User ba;
 }

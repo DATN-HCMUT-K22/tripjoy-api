@@ -22,7 +22,7 @@ public class Comment extends BaseEntity{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private Users users;
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
@@ -34,5 +34,5 @@ public class Comment extends BaseEntity{
             joinColumns = @JoinColumn(name = "comment_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private Set<Users> likeUsers = new HashSet<>();
+    private Set<User> likeUsers = new HashSet<>();
 }

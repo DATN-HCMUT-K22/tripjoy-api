@@ -19,6 +19,7 @@ import java.util.Date;
 public class UserCreationRequest {
 
     @NotBlank(message = "{not_blank}")
+    @Size(min = 4, message = "INVALID_USERNAME")
     @Schema(
             name = "username",
             description = "Username (unique)",

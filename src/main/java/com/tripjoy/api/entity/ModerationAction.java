@@ -15,9 +15,9 @@ public class ModerationAction extends BaseEntity{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private Users users;
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ba_id", nullable = false)
-    private Users ba;
+    private User ba;
 }

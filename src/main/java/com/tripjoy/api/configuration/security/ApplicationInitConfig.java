@@ -2,7 +2,7 @@ package com.tripjoy.api.configuration.security;
 
 import com.tripjoy.api.constant.PredefinedRole;
 import com.tripjoy.api.entity.Role;
-import com.tripjoy.api.entity.Users;
+import com.tripjoy.api.entity.User;
 import com.tripjoy.api.repository.RoleRepository;
 import com.tripjoy.api.repository.UserRepository;
 import lombok.AccessLevel;
@@ -48,13 +48,13 @@ public class ApplicationInitConfig {
                 var roles = new HashSet<Role>();
                 roles.add(adminRole);
 
-                Users users = Users.builder()
+                User user = User.builder()
                         .username(ADMIN_USER_NAME)
                         .password(passwordEncoder.encode(ADMIN_PASSWORD))
                         .roles(roles)
                         .build();
 
-                userRepository.save(users);
+                userRepository.save(user);
                 log.warn("admin users has been created with default password: admin, please change it");
             }
             log.info("Application initialization completed .....");

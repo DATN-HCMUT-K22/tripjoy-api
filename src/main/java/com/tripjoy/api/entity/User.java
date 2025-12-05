@@ -12,7 +12,8 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class Users extends BaseEntity {
+@Table(name = "users")
+public class User extends BaseEntity {
 
     private String username;
     private String password;

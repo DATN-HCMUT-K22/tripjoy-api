@@ -17,8 +17,8 @@ import java.util.Set;
 public class Location extends BaseEntity {
 
     private String name;
-    private Long lat;
-    private Long lng;
+    private Double lat;
+    private Double lng;
     private String hotline;
     private String category;
     private Boolean isOpen;

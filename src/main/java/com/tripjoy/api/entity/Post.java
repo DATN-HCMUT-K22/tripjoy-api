@@ -27,7 +27,7 @@ public class Post extends BaseEntity {
     @JoinColumn(name = "creator_id")
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    private Users creator;
+    private User creator;
 
     @ManyToMany
     @JoinTable(
@@ -35,7 +35,7 @@ public class Post extends BaseEntity {
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private Set<Users> saveUsers = new HashSet<>();
+    private Set<User> saveUsers = new HashSet<>();
 
     @ManyToMany
     @JoinTable(
@@ -43,5 +43,5 @@ public class Post extends BaseEntity {
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private Set<Users> likeUsers = new HashSet<>();
+    private Set<User> likeUsers = new HashSet<>();
 }
