@@ -3,13 +3,15 @@ package com.tripjoy.api.dto.response.location;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.UUID;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class LocationResponse {
-    String id;
+    UUID id;
     String name;
     Double lat;
     Double lng;

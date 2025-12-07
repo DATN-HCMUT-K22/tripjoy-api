@@ -83,10 +83,11 @@ public class AuthenticationService {
             var signedToken = jwtUtils.verifyToken(request.getToken(), true);
 
             String jti = signedToken.getJWTClaimsSet().getJWTID();
+            UUID jtiUuid = UUID.fromString(jti);
             Date expiresAt = signedToken.getJWTClaimsSet().getExpirationTime();
 
             InvalidatedToken invalidatedToken = InvalidatedToken.builder()
-                    .id(jti)
+                    .id(jtiUuid)
                     .expiresAt(expiresAt)
                     .build();
 
@@ -102,11 +103,12 @@ public class AuthenticationService {
         var signedToken = jwtUtils.verifyToken(request.getToken(), true);
 
         var jti = signedToken.getJWTClaimsSet().getJWTID();
+        UUID jtiUuid = UUID.fromString(jti);
         var expiresAt = signedToken.getJWTClaimsSet().getExpirationTime();
 
         // Logout token cũ
         InvalidatedToken invalidatedToken = InvalidatedToken.builder()
-                .id(jti)
+                .id(jtiUuid)
                 .expiresAt(expiresAt)
                 .build();
         invalidatedTokenRepository.save(invalidatedToken);

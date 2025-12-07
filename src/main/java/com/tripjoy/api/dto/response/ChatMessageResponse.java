@@ -8,6 +8,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -16,7 +17,7 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ChatMessageResponse {
 
-    String id; // id từ "Chat_message"
+    UUID id; // id từ "Chat_message"
 
     @JsonProperty("message_type")
     String messageType;
@@ -37,9 +38,6 @@ public class ChatMessageResponse {
 
     @JsonProperty("created_at")
     LocalDateTime createdAt;
-
-    @JsonProperty("created_by")
-    UserSimpleResponse createdBy;
 
     @JsonProperty("sender_id")
     String senderId;

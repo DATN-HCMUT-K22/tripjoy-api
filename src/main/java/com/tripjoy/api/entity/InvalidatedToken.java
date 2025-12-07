@@ -6,6 +6,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -16,6 +17,6 @@ import java.util.Date;
 public class InvalidatedToken {
 
     @Id
-    String id;
+    UUID id;
     Date expiresAt;
 }
