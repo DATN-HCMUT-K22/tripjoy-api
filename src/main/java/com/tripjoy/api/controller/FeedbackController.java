@@ -18,6 +18,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping(Endpoint.Feedback.BASE)
 @RequiredArgsConstructor
@@ -47,7 +49,7 @@ public class FeedbackController {
     @Operation(summary = "Get feedback details by id (Admin)")
     @GetMapping(Endpoint.Feedback.ID)
     @PreAuthorize("hasRole('ADMIN')")
-    public ApiResponse<FeedbackResponse> getFeedbackById(@PathVariable String feedbackId) {
+    public ApiResponse<FeedbackResponse> getFeedbackById(@PathVariable UUID feedbackId) {
         return ApiResponse.<FeedbackResponse>builder()
 //                .data(feedbackService.getFeedbackById(feedbackId))
                 .build();
@@ -59,7 +61,7 @@ public class FeedbackController {
     @PostMapping(Endpoint.Feedback.ID + "/respond")
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<FeedbackResponseResponse> respondToFeedback(
-            @PathVariable String feedbackId,
+            @PathVariable UUID feedbackId,
             @Valid @RequestBody FeedbackResponseRequest request) {
 
         // return ApiResponse.<FeedbackResponseResponse>builder()
