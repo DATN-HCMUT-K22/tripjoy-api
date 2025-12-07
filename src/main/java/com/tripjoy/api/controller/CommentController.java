@@ -15,6 +15,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping(Endpoint.Comment.BASE)
 @RequiredArgsConstructor
@@ -26,7 +28,7 @@ public class CommentController {
 
     @Operation(summary = "Get a single comment by ID")
     @GetMapping(Endpoint.Comment.ID)
-    public ApiResponse<CommentResponse> getCommentById(@PathVariable String commentId) {
+    public ApiResponse<CommentResponse> getCommentById(@PathVariable UUID commentId) {
         return ApiResponse.<CommentResponse>builder()
 //                .data(commentService.getCommentById(commentId))
                 .build();
@@ -34,7 +36,7 @@ public class CommentController {
 
     @Operation(summary = "Update a comment")
     @PutMapping(Endpoint.Comment.ID)
-    public ApiResponse<CommentResponse> updateComment(@PathVariable String commentId, @Valid @RequestBody CommentRequest request) {
+    public ApiResponse<CommentResponse> updateComment(@PathVariable UUID commentId, @Valid @RequestBody CommentRequest request) {
         return ApiResponse.<CommentResponse>builder()
 //                .data(commentService.updateComment(commentId, request))
                 .build();
@@ -42,21 +44,21 @@ public class CommentController {
 
     @Operation(summary = "Delete a comment")
     @DeleteMapping(Endpoint.Comment.ID)
-    public ApiResponse<Void> deleteComment(@PathVariable String commentId) {
+    public ApiResponse<Void> deleteComment(@PathVariable UUID commentId) {
 //        commentService.deleteComment(commentId);
         return ApiResponse.<Void>builder().message("Comment deleted successfully").build();
     }
 
     @Operation(summary = "Like a comment")
     @PostMapping(Endpoint.Comment.LIKES)
-    public ApiResponse<Void> likeComment(@PathVariable String commentId) {
+    public ApiResponse<Void> likeComment(@PathVariable UUID commentId) {
 //        commentService.likeComment(commentId);
         return ApiResponse.<Void>builder().message("Comment liked").build();
     }
 
     @Operation(summary = "Unlike a comment")
     @DeleteMapping(Endpoint.Comment.LIKES)
-    public ApiResponse<Void> unlikeComment(@PathVariable String commentId) {
+    public ApiResponse<Void> unlikeComment(@PathVariable UUID commentId) {
 //        commentService.unlikeComment(commentId);
         return ApiResponse.<Void>builder().message("Comment unliked").build();
     }
@@ -65,7 +67,7 @@ public class CommentController {
     @Operation(summary = "Get replies for a comment (paginated)")
     @GetMapping(Endpoint.Comment.REPLIES)
     public ApiResponse<Page<CommentResponse>> getRepliesForComment(
-            @PathVariable String commentId, Pageable pageable) {
+            @PathVariable UUID commentId, Pageable pageable) {
         return ApiResponse.<Page<CommentResponse>>builder()
 //                .data(commentService.getRepliesForComment(commentId, pageable))
                 .build();
@@ -74,7 +76,7 @@ public class CommentController {
     @Operation(summary = "Create a reply for a comment")
     @PostMapping(Endpoint.Comment.REPLIES)
     public ApiResponse<CommentResponse> createReply(
-            @PathVariable String commentId, @Valid @RequestBody CommentRequest request) {
+            @PathVariable UUID commentId, @Valid @RequestBody CommentRequest request) {
         return ApiResponse.<CommentResponse>builder()
 //                .data(commentService.createReply(commentId, request))
                 .build();

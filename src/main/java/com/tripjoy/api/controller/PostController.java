@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(Endpoint.Post.BASE)
@@ -48,7 +49,7 @@ public class PostController {
 
     @Operation(summary = "Get a single post by ID")
     @GetMapping(Endpoint.Post.ID)
-    public ApiResponse<PostResponse> getPostById(@PathVariable String postId) {
+    public ApiResponse<PostResponse> getPostById(@PathVariable UUID postId) {
         return ApiResponse.<PostResponse>builder()
 //                .data(postService.getPostById(postId))
                 .build();
@@ -56,7 +57,7 @@ public class PostController {
 
     @Operation(summary = "Update a post")
     @PutMapping(Endpoint.Post.ID)
-    public ApiResponse<PostResponse> updatePost(@PathVariable String postId, @Valid @RequestBody PostRequest request) {
+    public ApiResponse<PostResponse> updatePost(@PathVariable UUID postId, @Valid @RequestBody PostRequest request) {
         return ApiResponse.<PostResponse>builder()
 //                .data(postService.updatePost(postId, request))
                 .build();
@@ -64,7 +65,7 @@ public class PostController {
 
     @Operation(summary = "Delete a post")
     @DeleteMapping(Endpoint.Post.ID)
-    public ApiResponse<Void> deletePost(@PathVariable String postId) {
+    public ApiResponse<Void> deletePost(@PathVariable UUID postId) {
 //        postService.deletePost(postId);
         return ApiResponse.<Void>builder().message("Post deleted successfully").build();
     }
@@ -73,14 +74,14 @@ public class PostController {
 
     @Operation(summary = "Like a post")
     @PostMapping(Endpoint.Post.LIKES)
-    public ApiResponse<Void> likePost(@PathVariable String postId) {
+    public ApiResponse<Void> likePost(@PathVariable UUID postId) {
 //        postService.likePost(postId);
         return ApiResponse.<Void>builder().message("Post liked").build();
     }
 
 @Operation(summary = "Unlike a post")
     @DeleteMapping(Endpoint.Post.LIKES)
-    public ApiResponse<Void> unlikePost(@PathVariable String postId) {
+    public ApiResponse<Void> unlikePost(@PathVariable UUID postId) {
 //        postService.unlikePost(postId);
         return ApiResponse.<Void>builder().message("Post unliked").build();
     }
@@ -97,14 +98,14 @@ public class PostController {
 
     @Operation(summary = "Save a post")
     @PostMapping(Endpoint.Post.SAVES)
-    public ApiResponse<Void> savePost(@PathVariable String postId) {
+    public ApiResponse<Void> savePost(@PathVariable UUID postId) {
 //        postService.savePost(postId);
         return ApiResponse.<Void>builder().message("Post saved").build();
     }
 
     @Operation(summary = "Unsave a post")
     @DeleteMapping(Endpoint.Post.SAVES)
-    public ApiResponse<Void> unsavePost(@PathVariable String postId) {
+    public ApiResponse<Void> unsavePost(@PathVariable UUID postId) {
 //        postService.unsavePost(postId);
         return ApiResponse.<Void>builder().message("Post unsaved").build();
     }
@@ -114,7 +115,7 @@ public class PostController {
     @GetMapping(Endpoint.Post.COMMENTS)
     // --- BẮT ĐẦU THAY ĐỔI ---
     public ApiResponse<Page<CommentResponse>> getCommentsForPost(
-            @PathVariable String postId, Pageable pageable) { // <-- Thêm Pageable
+            @PathVariable UUID postId, Pageable pageable) { // <-- Thêm Pageable
         return ApiResponse.<Page<CommentResponse>>builder() // <-- Đổi List sang Page
 //                .data(commentService.getRootCommentsForPost(postId, pageable))
                 .build();
@@ -122,7 +123,7 @@ public class PostController {
 
     @Operation(summary = "Create a new root comment on a post")
     @PostMapping(Endpoint.Post.COMMENTS)
-    public ApiResponse<CommentResponse> createComment(@PathVariable String postId, @Valid @RequestBody CommentRequest request) {
+    public ApiResponse<CommentResponse> createComment(@PathVariable UUID postId, @Valid @RequestBody CommentRequest request) {
         return ApiResponse.<CommentResponse>builder()
 //                .data(commentService.createRootComment(postId, request)) // <-- Đổi tên service cho rõ
                 .build();

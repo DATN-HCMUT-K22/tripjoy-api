@@ -17,6 +17,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping(Endpoint.Location.BASE)
 @RequiredArgsConstructor
@@ -44,7 +46,7 @@ public class LocationController {
 
     @Operation(summary = "Get a single location by ID")
     @GetMapping(Endpoint.Location.ID)
-    public ApiResponse<LocationResponse> getLocationById(@PathVariable String locationId) {
+    public ApiResponse<LocationResponse> getLocationById(@PathVariable UUID locationId) {
         return ApiResponse.<LocationResponse>builder()
 //                .data(locationService.getLocationById(locationId))
                 .build();
@@ -52,7 +54,7 @@ public class LocationController {
 
     @Operation(summary = "Update a location")
     @PutMapping(Endpoint.Location.ID)
-    public ApiResponse<LocationResponse> updateLocation(@PathVariable String locationId, @Valid @RequestBody LocationRequest request) {
+    public ApiResponse<LocationResponse> updateLocation(@PathVariable UUID locationId, @Valid @RequestBody LocationRequest request) {
         return ApiResponse.<LocationResponse>builder()
 //                .data(locationService.updateLocation(locationId, request))
                 .build();
@@ -60,7 +62,7 @@ public class LocationController {
 
     @Operation(summary = "Delete a location")
     @DeleteMapping(Endpoint.Location.ID)
-    public ApiResponse<Void> deleteLocation(@PathVariable String locationId) {
+    public ApiResponse<Void> deleteLocation(@PathVariable UUID locationId) {
 //        locationService.deleteLocation(locationId);
         return ApiResponse.<Void>builder().message("Location deleted successfully").build();
     }
@@ -71,7 +73,7 @@ public class LocationController {
     @Operation(summary = "Get detailed info (content) for a location")
     @GetMapping(Endpoint.Location.ID + "/info")
     public ApiResponse<LocationInfoResponse> getLocationInfo(
-            @PathVariable String locationId) {
+            @PathVariable UUID locationId) {
 
         // return ApiResponse.<LocationInfoResponse>builder()
         //        .data(locationService.getLocationInfo(locationId))
@@ -82,7 +84,7 @@ public class LocationController {
     @Operation(summary = "Update detailed info (content) for a location")
     @PutMapping(Endpoint.Location.ID + "/info")
     public ApiResponse<LocationInfoResponse> updateLocationInfo(
-            @PathVariable String locationId,
+            @PathVariable UUID locationId,
             @Valid @RequestBody LocationInfoRequest request) {
 
         // return ApiResponse.<LocationInfoResponse>builder()

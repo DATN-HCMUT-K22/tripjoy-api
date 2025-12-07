@@ -28,7 +28,7 @@ public class ChatController {
     @Operation(summary = "Get group message history (paginated)")
     @GetMapping(Endpoint.Chat.GROUP_MESSAGES) // -> /groups/{groupId}/messages
     public ApiResponse<Page<ChatMessageResponse>> getGroupMessages(
-            @PathVariable String groupId, Pageable pageable) {
+            @PathVariable UUID groupId, Pageable pageable) {
 
         return ApiResponse.<Page<ChatMessageResponse>>builder()
 //                .data(chatService.getGroupMessages(groupId, pageable))
@@ -39,7 +39,7 @@ public class ChatController {
     @Operation(summary = "Send a group message (fallback)")
     @PostMapping(Endpoint.Chat.GROUP_MESSAGES) // -> /groups/{groupId}/messages
     public ApiResponse<ChatMessageResponse> sendGroupMessage(
-            @PathVariable String groupId, @Valid @RequestBody ChatMessageRequest request) {
+            @PathVariable UUID groupId, @Valid @RequestBody ChatMessageRequest request) {
 
         return ApiResponse.<ChatMessageResponse>builder()
 //                .data(chatService.sendGroupMessage(groupId, request))
@@ -50,7 +50,7 @@ public class ChatController {
     @Operation(summary = "Get direct message history (1-1, paginated)")
     @GetMapping(Endpoint.Chat.DIRECT_MESSAGES) // -> /direct/{userId}/messages
     public ApiResponse<Page<ChatMessageResponse>> getDirectMessages(
-            @PathVariable String userId, Pageable pageable) {
+            @PathVariable UUID userId, Pageable pageable) {
 
         return ApiResponse.<Page<ChatMessageResponse>>builder()
 //                .data(chatService.getDirectMessages(userId, pageable))
@@ -61,7 +61,7 @@ public class ChatController {
     @Operation(summary = "Send a direct message (fallback)")
     @PostMapping(Endpoint.Chat.DIRECT_MESSAGES) // -> /direct/{userId}/messages
     public ApiResponse<ChatMessageResponse> sendDirectMessage(
-            @PathVariable String userId, @Valid @RequestBody ChatMessageRequest request) {
+            @PathVariable UUID userId, @Valid @RequestBody ChatMessageRequest request) {
 
         return ApiResponse.<ChatMessageResponse>builder()
 //                .data(chatService.sendDirectMessage(userId, request))
@@ -73,7 +73,7 @@ public class ChatController {
 
     @Operation(summary = "Like a chat message (Create a 'like' resource)")
     @PostMapping(Endpoint.Chat.MESSAGE_LIKES) // -> /messages/{messageId}/likes
-    public ApiResponse<Void> likeChatMessage(@PathVariable String messageId) {
+    public ApiResponse<Void> likeChatMessage(@PathVariable UUID messageId) {
 
         // chatService.likeMessage(messageId);
         return ApiResponse.<Void>builder().message("Message liked").build();
@@ -81,7 +81,7 @@ public class ChatController {
 
     @Operation(summary = "Unlike a chat message (Delete a 'like' resource)")
     @DeleteMapping(Endpoint.Chat.MESSAGE_LIKES) // -> /messages/{messageId}/likes
-    public ApiResponse<Void> unlikeChatMessage(@PathVariable String messageId) {
+    public ApiResponse<Void> unlikeChatMessage(@PathVariable UUID messageId) {
 
         // chatService.unlikeMessage(messageId);
         return ApiResponse.<Void>builder().message("Message unliked").build();

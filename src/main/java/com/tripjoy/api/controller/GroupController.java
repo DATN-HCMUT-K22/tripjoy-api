@@ -19,6 +19,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(Endpoint.Group.BASE)
@@ -39,7 +40,7 @@ public class GroupController {
 
     @Operation(summary = "Get group details by ID")
     @GetMapping(Endpoint.Group.ID)
-    public ApiResponse<GroupResponse> getGroupById(@PathVariable String groupId) {
+    public ApiResponse<GroupResponse> getGroupById(@PathVariable UUID groupId) {
         return ApiResponse.<GroupResponse>builder()
 //                .data(groupService.getGroupById(groupId))
                 .build();
@@ -47,7 +48,7 @@ public class GroupController {
 
     @Operation(summary = "Update group details")
     @PutMapping(Endpoint.Group.ID)
-    public ApiResponse<GroupResponse> updateGroup(@PathVariable String groupId, @Valid @RequestBody GroupRequest request) {
+    public ApiResponse<GroupResponse> updateGroup(@PathVariable UUID groupId, @Valid @RequestBody GroupRequest request) {
         return ApiResponse.<GroupResponse>builder()
 //                .data(groupService.updateGroup(groupId, request))
                 .build();
@@ -55,7 +56,7 @@ public class GroupController {
 
     @Operation(summary = "Delete a group")
     @DeleteMapping(Endpoint.Group.ID)
-    public ApiResponse<Void> deleteGroup(@PathVariable String groupId) {
+    public ApiResponse<Void> deleteGroup(@PathVariable UUID groupId) {
 //        groupService.deleteGroup(groupId);
         return ApiResponse.<Void>builder().message("Groups deleted successfully").build();
     }
@@ -64,7 +65,7 @@ public class GroupController {
 
     @Operation(summary = "Add a member to a group")
     @PostMapping(Endpoint.Group.MEMBERS_BASE)
-    public ApiResponse<GroupMemberResponse> addMember(@PathVariable String groupId, @Valid @RequestBody AddMemberRequest request) {
+    public ApiResponse<GroupMemberResponse> addMember(@PathVariable UUID groupId, @Valid @RequestBody AddMemberRequest request) {
         return ApiResponse.<GroupMemberResponse>builder()
 //                .data(groupService.addMember(groupId, request))
                 .build();
@@ -72,7 +73,7 @@ public class GroupController {
 
     @Operation(summary = "Get all members of a group")
     @GetMapping(Endpoint.Group.MEMBERS_BASE)
-    public ApiResponse<List<GroupMemberResponse>> getMembers(@PathVariable String groupId) {
+    public ApiResponse<List<GroupMemberResponse>> getMembers(@PathVariable UUID groupId) {
         return ApiResponse.<List<GroupMemberResponse>>builder()
 //                .data(groupService.getMembers(groupId))
                 .build();
@@ -80,22 +81,22 @@ public class GroupController {
 
     @Operation(summary = "Remove a member from a group")
     @DeleteMapping(Endpoint.Group.MEMBERS_ID)
-    public ApiResponse<Void> removeMember(@PathVariable String groupId, @PathVariable String memberId) {
+    public ApiResponse<Void> removeMember(@PathVariable UUID groupId, @PathVariable UUID memberId) {
 //        groupService.removeMember(groupId, memberId);
         return ApiResponse.<Void>builder().message("Member removed successfully").build();
     }
 
     @Operation(summary = "Update a member's role (e.g., set as leader)")
     @PutMapping(Endpoint.Group.MEMBERS_ID)
-    public ApiResponse<GroupMemberResponse> updateMemberRole(@PathVariable String groupId, @PathVariable String memberId, @Valid @RequestBody UpdateMemberRoleRequest request) {
+    public ApiResponse<GroupMemberResponse> updateMemberRole(@PathVariable UUID groupId, @PathVariable UUID memberId, @Valid @RequestBody UpdateMemberRoleRequest request) {
         return ApiResponse.<GroupMemberResponse>builder()
 //                .data(groupService.updateMemberRole(groupId, memberId, request))
                 .build();
     }
     @Operation(summary = "Suggest a new location for the group")
-    @PostMapping(Endpoint.Group.SUGGEST_LOCATIONS)
+    @PostMapping(Endpoint.Group.LOCATION_SUGGESTIONS)
     public ApiResponse<SuggestLocationResponse> suggestLocation(
-            @PathVariable String groupId,
+            @PathVariable UUID groupId,
             @Valid @RequestBody SuggestLocationRequest request) {
 
          return ApiResponse.<SuggestLocationResponse>builder()
@@ -104,9 +105,9 @@ public class GroupController {
     }
 
     @Operation(summary = "Get all suggested locations for the group")
-    @GetMapping(Endpoint.Group.SUGGEST_LOCATIONS)
+    @GetMapping(Endpoint.Group.LOCATION_SUGGESTIONS)
     public ApiResponse<List<SuggestLocationResponse>> getSuggestedLocations(
-            @PathVariable String groupId) {
+            @PathVariable UUID groupId) {
 
          return ApiResponse.<List<SuggestLocationResponse>>builder()
 //                .data(groupService.getSuggestedLocations(groupId))

@@ -18,6 +18,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping(Endpoint.Report.BASE)
 @RequiredArgsConstructor
@@ -48,7 +50,7 @@ public class ReportController {
     @Operation(summary = "Get report details by id (Admin)")
     @GetMapping("/{reportId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ApiResponse<ReportResponse> getReportById(@PathVariable String reportId) {
+    public ApiResponse<ReportResponse> getReportById(@PathVariable UUID reportId) {
         // reportId here refers to the ID in the "Report_to" table
         return ApiResponse.<ReportResponse>builder()
 //                .data(reportService.getReportById(reportId))
@@ -61,7 +63,7 @@ public class ReportController {
     @PostMapping(Endpoint.Report.ID + "/handle")
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<HandleReportResponse> handleReport(
-            @PathVariable String reportId, // ID from Report_to
+            @PathVariable UUID reportId, // ID from Report_to
             @Valid @RequestBody HandleReportRequest request) {
 
         // return ApiResponse.<HandleReportResponse>builder()

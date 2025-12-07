@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping(Endpoint.TravelNotebook.BASE)
 @RequiredArgsConstructor
@@ -36,7 +38,7 @@ public class TravelNotebookController {
     @Operation(summary = "Get a single travel notebook by ID")
     @GetMapping(Endpoint.TravelNotebook.ID)
     public ApiResponse<TravelNotebookResponse> getNotebookById(
-            @PathVariable String notebookId) {
+            @PathVariable UUID notebookId) {
 
         // return ApiResponse.<TravelNotebookResponse>builder()
         //        .data(travelNotebookService.getNotebookById(notebookId))
@@ -47,7 +49,7 @@ public class TravelNotebookController {
     @Operation(summary = "Update a travel notebook")
     @PutMapping(Endpoint.TravelNotebook.ID)
     public ApiResponse<TravelNotebookResponse> updateNotebook(
-            @PathVariable String notebookId,
+            @PathVariable UUID notebookId,
             @Valid @RequestBody TravelNotebookRequest request) {
 
         // return ApiResponse.<TravelNotebookResponse>builder()
@@ -58,7 +60,7 @@ public class TravelNotebookController {
 
     @Operation(summary = "Delete a travel notebook")
     @DeleteMapping(Endpoint.TravelNotebook.ID)
-    public ApiResponse<Void> deleteNotebook(@PathVariable String notebookId) {
+    public ApiResponse<Void> deleteNotebook(@PathVariable UUID notebookId) {
 
         // travelNotebookService.deleteNotebook(notebookId);
         // return ApiResponse.<Void>builder().message("Notebook deleted").build();

@@ -16,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(Endpoint.User.BASE)
@@ -54,7 +55,7 @@ public class UserController {
 
     @Operation(summary = "Update users by ID", description = "Updates an existing users's information by their unique ID.")
     @PutMapping(Endpoint.User.ID)
-    ApiResponse<UserResponse> updateUser(@PathVariable String userId, @RequestBody UserUpdateRequest request) {
+    ApiResponse<UserResponse> updateUser(@PathVariable UUID userId, @RequestBody UserUpdateRequest request) {
         return ApiResponse.<UserResponse>builder()
                 .data(userService.updateUser(userId, request))
                 .build();
@@ -62,7 +63,7 @@ public class UserController {
 
     @Operation(summary = "Delete users by ID", description = "Deletes a users account from the system by their unique ID.")
     @DeleteMapping(Endpoint.User.ID)
-    ApiResponse<Void> deleteUser(@PathVariable String userId) {
+    ApiResponse<Void> deleteUser(@PathVariable UUID userId) {
         userService.deleteUser(userId);
         return ApiResponse.<Void>builder()
                 .message("Users has been deleted")
