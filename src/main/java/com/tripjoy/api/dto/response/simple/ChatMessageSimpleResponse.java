@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.UUID;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -13,7 +15,7 @@ import lombok.experimental.FieldDefaults;
 public class ChatMessageSimpleResponse {
 
     @Schema(description = "ID of the replied message")
-    String id;
+    UUID id;
 
     @JsonProperty("message_content")
     @Schema(description = "Short text content of the replied message")

@@ -8,6 +8,7 @@ import lombok.experimental.FieldDefaults;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -16,7 +17,7 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ItineraryResponse {
 
-    String id;
+    UUID id;
     String name;
     String description;
 

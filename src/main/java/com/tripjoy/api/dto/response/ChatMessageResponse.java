@@ -38,9 +38,17 @@ public class ChatMessageResponse {
     @JsonProperty("created_at")
     LocalDateTime createdAt;
 
-    // Lồng thông tin người gửi (dựa trên sender_id từ Direct_message/Group_message)
     @JsonProperty("created_by")
     UserSimpleResponse createdBy;
+
+    @JsonProperty("sender_id")
+    String senderId;
+
+    @JsonProperty("receiver_id")
+    String receiverId;
+
+    @JsonProperty("group_id")
+    String groupId;
 
     @JsonProperty("reply_message_id")
     @Schema(description = "ID of the message being replied to (if any)")

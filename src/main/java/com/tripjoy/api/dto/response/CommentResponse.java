@@ -8,6 +8,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -17,7 +18,7 @@ import java.util.List;
 public class CommentResponse {
 
     @Schema(description = "UUID của comment")
-    String id;
+    UUID id;
 
     @Schema(description = "Nội dung comment")
     String content;
