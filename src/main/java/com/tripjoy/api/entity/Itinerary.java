@@ -24,7 +24,7 @@ public class Itinerary extends BaseEntity{
     @JoinColumn(name = "group_id")
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    private Groups group;
+    private Group group;
 
     @OneToMany(mappedBy = "itinerary", fetch = FetchType.LAZY)
     @EqualsAndHashCode.Exclude

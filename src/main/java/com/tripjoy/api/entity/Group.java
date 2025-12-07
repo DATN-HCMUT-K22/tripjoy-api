@@ -11,7 +11,8 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class Groups extends BaseEntity{
+@Table(name = "groups")
+public class Group extends BaseEntity{
 
     private String name;
     private Integer chatbotCount;

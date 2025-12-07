@@ -30,12 +30,12 @@ public class ChatMessage extends BaseEntity{
     private User sender;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "receiver_id", nullable = false)
+    @JoinColumn(name = "receiver_id", nullable = true)
     private User receiver;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_id", nullable = false)
-    private Groups groups;
+    @JoinColumn(name = "group_id", nullable = true)
+    private Group group;
 
     @ManyToMany
     @JoinTable(
