@@ -11,6 +11,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -106,4 +107,12 @@ public class ItineraryRequest {
             example = "[\"Beach\", \"Food\", \"Culture\"]"
     )
     Set<String> themes;
+
+    // --- CASCADE CREATE ---
+    // Cho phép tạo luôn các điểm đến và chi phí ngay trong payload tạo lịch trình
+    @JsonProperty("trip_items")
+    List<TripItemRequest> tripItems;
+
+    @JsonProperty("expenses")
+    List<ExpenseRequest> expenses;
 }

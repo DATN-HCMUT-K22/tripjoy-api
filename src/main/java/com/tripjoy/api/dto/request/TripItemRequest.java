@@ -55,7 +55,7 @@ public class TripItemRequest {
     )
     String note;
 
-    @NotBlank
+    @NotNull
     @JsonProperty("location_id")
     @Schema(
             name = "location_id",

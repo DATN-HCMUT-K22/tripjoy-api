@@ -1,5 +1,6 @@
 package com.tripjoy.api.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
@@ -8,6 +9,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
+
+import java.util.Set;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -26,7 +30,7 @@ public class GroupRequest {
     )
     String name;
 
-@Schema(
+    @Schema(
             name = "avatar",
             description = "URL of the group's avatar image",
             type = "String",
@@ -37,4 +41,8 @@ public class GroupRequest {
 
     @Schema(name = "theme_color", description = "Hex color code for group theme", example = "#FF5733")
     String themeColor;
+
+    // Optional: Add members ngay khi tạo
+    @JsonProperty("member_ids")
+    Set<UUID> memberIds;
 }

@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.UUID;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -14,13 +16,18 @@ import lombok.experimental.FieldDefaults;
 public class ChatMessageRequest {
 
     @NotBlank
+    @JsonProperty("conversation_id")
+    UUID conversationId;
+
+    @NotBlank
     @JsonProperty("message_content")
     @Schema(description = "Text content of the message", example = "Hello!")
     String messageContent;
 
+    @Builder.Default
     @JsonProperty("message_type")
     @Schema(description = "Type of the message", example = "TEXT")
-    String messageType; // "TEXT", "IMAGE", "SHARE_POST"
+    String messageType = "TEXT"; // "TEXT", "IMAGE", "SHARE_POST"
 
     @JsonProperty("media_url")
     @Schema(description = "Media URL when message_type is IMAGE", example = "http://image.url/img.png")
@@ -32,5 +39,5 @@ public class ChatMessageRequest {
 
     @JsonProperty("reply_message_id")
     @Schema(description = "ID of the message being replied to (if any)")
-    String replyMessageId; // maps to `reply_message_id`
+    String parentMessageId;
 }
