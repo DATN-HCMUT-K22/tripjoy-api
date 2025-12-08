@@ -26,11 +26,11 @@ import javax.crypto.spec.SecretKeySpec;
 @EnableMethodSecurity
 public class SecurityConfig {
     private static final String[] PUBLIC_ENDPOINTS = {
-            Endpoint.API_PREFIX + "/users",
-            Endpoint.Auth.LOGIN,
-            Endpoint.Auth.INTROSPECT,
-            Endpoint.Auth.LOGOUT,
-            Endpoint.Auth.REFRESH
+            Endpoint.Auth.BASE + Endpoint.Auth.REGISTER,
+            Endpoint.Auth.BASE + Endpoint.Auth.LOGIN,
+            Endpoint.Auth.BASE + Endpoint.Auth.INTROSPECT,
+            Endpoint.Auth.BASE + Endpoint.Auth.LOGOUT,
+            Endpoint.Auth.BASE + Endpoint.Auth.REFRESH
     };
 
     private static final String[] SWAGGER_WHITELIST = {
