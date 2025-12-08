@@ -1,4 +1,4 @@
-package com.tripjoy.api.dto.request;
+package com.tripjoy.api.dto.request.chat;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -14,10 +14,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ChatMessageRequest {
-
-    @NotBlank
-    @JsonProperty("conversation_id")
-    UUID conversationId;
 
     @NotBlank
     @JsonProperty("message_content")
@@ -37,7 +33,7 @@ public class ChatMessageRequest {
     @Schema(description = "Post URL when message_type is SHARE_POST", example = "http://tripjoy/posts/abc")
     String sharePostUrl;
 
-    @JsonProperty("reply_message_id")
+    @JsonProperty("parent_message_id")
     @Schema(description = "ID of the message being replied to (if any)")
     String parentMessageId;
 }

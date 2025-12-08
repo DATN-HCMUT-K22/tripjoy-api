@@ -20,6 +20,9 @@ public class ConversationResponse {
 
     String type; // DIRECT / GROUP
 
+    @JsonProperty("group_id")
+    UUID groupId;
+
     String name; // Tên Group hoặc Tên người chat cùng
 
     String avatar; // Avatar Group hoặc Avatar người chat cùng

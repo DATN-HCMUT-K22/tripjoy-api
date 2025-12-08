@@ -1,0 +1,41 @@
+package com.tripjoy.api.controller;
+
+import com.tripjoy.api.constant.Endpoint;
+import com.tripjoy.api.dto.response.ApiResponse;
+import com.tripjoy.api.entity.User;
+import com.tripjoy.api.service.MessageService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.UUID;
+
+@RestController
+@RequestMapping(Endpoint.Message.BASE)
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Tag(name = "Messages", description = "Các hành động trên tin nhắn cụ thể (Like, Revoke...)")
+public class MessageController {
+
+    MessageService messageService;
+
+    @Operation(summary = "Thả tim / Bỏ tim tin nhắn (Toggle)")
+    @PostMapping(Endpoint.Message.LIKES)
+    public ApiResponse<Void> toggleLikeMessage(
+            @PathVariable UUID messageId,
+            @AuthenticationPrincipal User currentUser) {
+
+        messageService.toggleLikeMessage(messageId, currentUser.getId());
+
+        return ApiResponse.<Void>builder()
+                .message("Success")
+                .build();
+    }
+}

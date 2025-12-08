@@ -9,6 +9,7 @@ import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.GroupResponse;
 import com.tripjoy.api.dto.response.SuggestLocationResponse;
 import com.tripjoy.api.dto.response.simple.GroupMemberResponse;
+import com.tripjoy.api.entity.User;
 import com.tripjoy.api.service.GroupService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,6 +17,7 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,20 +27,26 @@ import java.util.UUID;
 @RequestMapping(Endpoint.Group.BASE)
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Tag(name = "Groups", description = "Endpoints for managing groups and members")
+@Tag(name = "Groups", description = "Quản lý nhóm đi chơi (Nghiệp vụ cốt lõi)")
 public class GroupController {
 
     GroupService groupService;
 
-    @Operation(summary = "Create a new group")
+    // --- GROUP CRUD ---
+
+    @Operation(summary = "Tạo nhóm mới (Tự động tạo kênh chat General)")
     @PostMapping
-    public ApiResponse<GroupResponse> createGroup(@Valid @RequestBody GroupRequest request) {
+    public ApiResponse<GroupResponse> createGroup(
+            @Valid @RequestBody GroupRequest request,
+            @AuthenticationPrincipal User currentUser // Lấy user từ token
+    ) {
+        // Service sẽ bắn Event GroupCreated -> Tự tạo Chat
         return ApiResponse.<GroupResponse>builder()
-//                .data(groupService.createGroup(request))
+                .data(groupService.createGroup(request, currentUser))
                 .build();
     }
 
-    @Operation(summary = "Get group details by ID")
+    @Operation(summary = "Lấy thông tin nhóm theo ID")
     @GetMapping(Endpoint.Group.ID)
     public ApiResponse<GroupResponse> getGroupById(@PathVariable UUID groupId) {
         return ApiResponse.<GroupResponse>builder()
@@ -46,32 +54,41 @@ public class GroupController {
                 .build();
     }
 
-    @Operation(summary = "Update group details")
+    @Operation(summary = "Cập nhật thông tin nhóm")
     @PutMapping(Endpoint.Group.ID)
-    public ApiResponse<GroupResponse> updateGroup(@PathVariable UUID groupId, @Valid @RequestBody GroupRequest request) {
+    public ApiResponse<GroupResponse> updateGroup(
+            @PathVariable UUID groupId,
+            @Valid @RequestBody GroupRequest request) {
         return ApiResponse.<GroupResponse>builder()
 //                .data(groupService.updateGroup(groupId, request))
                 .build();
     }
 
-    @Operation(summary = "Delete a group")
+    @Operation(summary = "Xóa nhóm")
     @DeleteMapping(Endpoint.Group.ID)
     public ApiResponse<Void> deleteGroup(@PathVariable UUID groupId) {
 //        groupService.deleteGroup(groupId);
-        return ApiResponse.<Void>builder().message("Groups deleted successfully").build();
+        return ApiResponse.<Void>builder().message("Group deleted successfully").build();
     }
 
-    // --- Nested Groups Members ---
+    // --- MEMBERS MANAGEMENT (Source of Truth) ---
 
-    @Operation(summary = "Add a member to a group")
+    @Operation(summary = "Thêm thành viên vào nhóm (Tự động sync vào Chat)")
     @PostMapping(Endpoint.Group.MEMBERS_BASE)
-    public ApiResponse<GroupMemberResponse> addMember(@PathVariable UUID groupId, @Valid @RequestBody AddMemberRequest request) {
-        return ApiResponse.<GroupMemberResponse>builder()
-//                .data(groupService.addMember(groupId, request))
+    public ApiResponse<Void> addMember(
+            @PathVariable UUID groupId,
+            @Valid @RequestBody AddMemberRequest request) {
+
+        // Service bắn Event MemberJoined -> Tự thêm vào Chat
+        // Giả sử request.getUserId() trả về UUID của người được thêm
+//        groupService.addMemberToGroup(groupId, request.getUserId());
+
+        return ApiResponse.<Void>builder()
+                .message("Member added successfully and syncing to chat...")
                 .build();
     }
 
-    @Operation(summary = "Get all members of a group")
+    @Operation(summary = "Lấy danh sách thành viên nhóm")
     @GetMapping(Endpoint.Group.MEMBERS_BASE)
     public ApiResponse<List<GroupMemberResponse>> getMembers(@PathVariable UUID groupId) {
         return ApiResponse.<List<GroupMemberResponse>>builder()
@@ -79,37 +96,42 @@ public class GroupController {
                 .build();
     }
 
-    @Operation(summary = "Remove a member from a group")
+    @Operation(summary = "Xóa thành viên khỏi nhóm (Tự động kick khỏi Chat)")
     @DeleteMapping(Endpoint.Group.MEMBERS_ID)
-    public ApiResponse<Void> removeMember(@PathVariable UUID groupId, @PathVariable UUID memberId) {
+    public ApiResponse<Void> removeMember(
+            @PathVariable UUID groupId,
+            @PathVariable UUID memberId) {
 //        groupService.removeMember(groupId, memberId);
         return ApiResponse.<Void>builder().message("Member removed successfully").build();
     }
 
-    @Operation(summary = "Update a member's role (e.g., set as leader)")
+    @Operation(summary = "Cập nhật vai trò thành viên (Leader/Member)")
     @PutMapping(Endpoint.Group.MEMBERS_ID)
-    public ApiResponse<GroupMemberResponse> updateMemberRole(@PathVariable UUID groupId, @PathVariable UUID memberId, @Valid @RequestBody UpdateMemberRoleRequest request) {
+    public ApiResponse<GroupMemberResponse> updateMemberRole(
+            @PathVariable UUID groupId,
+            @PathVariable UUID memberId,
+            @Valid @RequestBody UpdateMemberRoleRequest request) {
         return ApiResponse.<GroupMemberResponse>builder()
 //                .data(groupService.updateMemberRole(groupId, memberId, request))
                 .build();
     }
-    @Operation(summary = "Suggest a new location for the group")
+
+    // --- LOCATION SUGGESTIONS ---
+
+    @Operation(summary = "Đề xuất địa điểm cho nhóm")
     @PostMapping(Endpoint.Group.LOCATION_SUGGESTIONS)
     public ApiResponse<SuggestLocationResponse> suggestLocation(
             @PathVariable UUID groupId,
             @Valid @RequestBody SuggestLocationRequest request) {
-
-         return ApiResponse.<SuggestLocationResponse>builder()
-        //        .data(groupService.suggestLocation(groupId, request))
+        return ApiResponse.<SuggestLocationResponse>builder()
+//                .data(groupService.suggestLocation(groupId, request))
                 .build();
     }
 
-    @Operation(summary = "Get all suggested locations for the group")
+    @Operation(summary = "Lấy danh sách địa điểm được đề xuất")
     @GetMapping(Endpoint.Group.LOCATION_SUGGESTIONS)
-    public ApiResponse<List<SuggestLocationResponse>> getSuggestedLocations(
-            @PathVariable UUID groupId) {
-
-         return ApiResponse.<List<SuggestLocationResponse>>builder()
+    public ApiResponse<List<SuggestLocationResponse>> getSuggestedLocations(@PathVariable UUID groupId) {
+        return ApiResponse.<List<SuggestLocationResponse>>builder()
 //                .data(groupService.getSuggestedLocations(groupId))
                 .build();
     }

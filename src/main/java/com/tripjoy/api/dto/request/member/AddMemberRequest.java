@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.UUID;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,7 +24,7 @@ public class AddMemberRequest {
             requiredMode = Schema.RequiredMode.REQUIRED,
             example = "a1b2c3d4-e5f6-7890-1234-567890abcdef"
     )
-    String memberId;
+    UUID memberId;
 
     @Schema(
             name = "is_leader",
