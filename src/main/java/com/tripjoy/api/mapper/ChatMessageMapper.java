@@ -1,7 +1,7 @@
 package com.tripjoy.api.mapper;
 
 import com.tripjoy.api.configuration.mapper.BaseMapperConfig;
-import com.tripjoy.api.dto.request.ChatMessageRequest;
+import com.tripjoy.api.dto.request.chat.ChatMessageRequest;
 import com.tripjoy.api.dto.response.ChatMessageResponse;
 import com.tripjoy.api.entity.ChatMessage;
 import org.mapstruct.Mapper;
@@ -12,7 +12,7 @@ import org.mapstruct.Mapping;
 public interface ChatMessageMapper {
 
     // 1. Request -> Entity
-    ChatMessage toChatMessage(ChatMessageRequest request);
+    ChatMessage toEntity(ChatMessageRequest request);
 
     // 2. Entity -> Response
     @Mapping(source = "conversation.id", target = "conversationId") // Đã đổi group -> conversation theo DB mới
