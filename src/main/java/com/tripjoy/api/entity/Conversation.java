@@ -19,6 +19,10 @@ public class Conversation extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ConversationType type;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id")
+    private Group group;
+
     private String name;
 
     private LocalDateTime lastMessageTimestamp;

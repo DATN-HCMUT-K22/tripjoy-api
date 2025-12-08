@@ -29,5 +29,9 @@ public class Group extends BaseEntity{
     @OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<GroupMember> members = new HashSet<>();
+
+    @OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnore
+    private Set<Conversation> conversations = new HashSet<>();
 }
 
