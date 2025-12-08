@@ -73,7 +73,7 @@ public class AuthenticationController {
     @PostMapping(Endpoint.Auth.REGISTER)
     public ApiResponse<UserResponse> register(@Valid @RequestBody UserCreationRequest request) {
         return ApiResponse.<UserResponse>builder()
-//                .data(authService.register(request))
+                .data(authenticationService.register(request))
                 .build();
     }
     //// --------

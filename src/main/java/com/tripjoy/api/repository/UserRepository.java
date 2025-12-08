@@ -22,5 +22,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     List<User> findAllOnlyDeleted();
 
     boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
     Optional<User> findByUsername(String username);
 }

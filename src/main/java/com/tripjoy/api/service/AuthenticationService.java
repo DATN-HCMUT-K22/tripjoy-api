@@ -6,17 +6,23 @@ import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.tripjoy.api.configuration.security.JwtUtils;
+import com.tripjoy.api.constant.PredefinedRole;
+import com.tripjoy.api.dto.request.UserCreationRequest;
 import com.tripjoy.api.dto.request.auth.AuthenticationRequest;
 import com.tripjoy.api.dto.request.auth.IntrospectRequest;
 import com.tripjoy.api.dto.request.auth.LogoutRequest;
 import com.tripjoy.api.dto.request.auth.RefreshRequest;
+import com.tripjoy.api.dto.response.UserResponse;
 import com.tripjoy.api.dto.response.auth.AuthenticationResponse;
 import com.tripjoy.api.dto.response.auth.IntrospectResponse;
 import com.tripjoy.api.entity.InvalidatedToken;
+import com.tripjoy.api.entity.Role;
 import com.tripjoy.api.entity.User;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
+import com.tripjoy.api.mapper.UserMapper;
 import com.tripjoy.api.repository.InvalidatedTokenRepository;
+import com.tripjoy.api.repository.RoleRepository;
 import com.tripjoy.api.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -27,14 +33,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.StringJoiner;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +50,44 @@ public class AuthenticationService {
     InvalidatedTokenRepository invalidatedTokenRepository;
     PasswordEncoder passwordEncoder;
     JwtUtils jwtUtils;
+    UserMapper userMapper;
+    RoleRepository roleRepository;
+
+    @Transactional
+    public UserResponse register(UserCreationRequest request) {
+        // 1. Kiểm tra tồn tại (Username & Email)
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new AppException(ErrorCode.USER_EXISTED);
+        }
+
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new AppException(ErrorCode.EMAIL_EXISTED);
+        }
+
+        // 2. Map Request -> Entity
+        User user = userMapper.toUser(request);
+
+        // 3. Mã hóa mật khẩu
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        // 4. Gán Role mặc định (USER)
+        // Tìm role tên là "USER" trong DB, nếu chưa có thì lỗi server
+        Role userRole = roleRepository.findByName(PredefinedRole.USER_ROLE)
+                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+
+        Set<Role> roles = new HashSet<>();
+        roles.add(userRole);
+        user.setRoles(roles);
+
+        // Set các giá trị mặc định khác
+        user.setIsDeleted(false);
+        user.setIsLocked(false);
+        user.setIsEmailVerified(false); // Mới đăng ký thì chưa verify
+        user.setCredits(0L);
+
+        // 5. Lưu xuống DB
+        return userMapper.toUserResponse(userRepository.save(user));
+    }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         var user = userRepository.findByUsername(request.getUsername())
