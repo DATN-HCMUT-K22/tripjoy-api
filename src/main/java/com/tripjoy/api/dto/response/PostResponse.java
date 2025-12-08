@@ -7,6 +7,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -57,4 +58,7 @@ public class PostResponse {
 
     @JsonProperty("is_saved")
     Boolean isSaved; // Users này đã save post chưa?
+
+    @JsonProperty("latest_comments")
+    List<CommentResponse> latestComments;
 }

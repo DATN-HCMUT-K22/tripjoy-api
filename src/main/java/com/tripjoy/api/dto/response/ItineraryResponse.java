@@ -44,4 +44,7 @@ public class ItineraryResponse {
 
     @JsonProperty("trip_items")
     List<TripItemResponse> tripItems;
+
+    @JsonProperty("expenses")
+    List<ExpenseResponse> expenses;
 }
