@@ -1,12 +1,118 @@
 package com.tripjoy.api.service;
 
+import com.tripjoy.api.dto.event.GroupCreatedEvent;
+import com.tripjoy.api.dto.event.MemberJoinedGroupEvent;
+import com.tripjoy.api.dto.request.GroupRequest;
+import com.tripjoy.api.dto.response.GroupResponse;
+import com.tripjoy.api.dto.response.simple.GroupMemberResponse;
+import com.tripjoy.api.entity.*;
+import com.tripjoy.api.enums.ConversationType;
+import com.tripjoy.api.mapper.GroupMapper;
+import com.tripjoy.api.repository.*;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class GroupService {
+
+    GroupRepository groupRepository;
+    GroupMemberRepository groupMemberRepository;
+    UserRepository userRepository;
+    ApplicationEventPublisher eventPublisher;
+
+    // Inject Mapper
+    GroupMapper groupMapper;
+
+    @Transactional
+    public GroupResponse createGroup(GroupRequest request, User owner) {
+        // --- STEP 1: MAP REQUEST -> ENTITY ---
+        Group group = groupMapper.toGroup(request);
+        // Set default logic...
+        groupRepository.save(group);
+
+        // --- STEP 2: ADD OWNER (LEADER) ---
+        GroupMember ownerMember = GroupMember.builder()
+                .group(group)
+                .user(owner)
+                .isLeader(true)
+                .build();
+        groupMemberRepository.save(ownerMember);
+
+        // --- STEP 3: HANDLE INITIAL MEMBERS (Mời thêm bạn bè ngay lúc tạo) ---
+        List<User> initialMembers = new ArrayList<>();
+
+        if (request.getMemberIds() != null && !request.getMemberIds().isEmpty()) {
+            // 3.1 Lấy danh sách User từ DB theo List ID
+            initialMembers = userRepository.findAllById(request.getMemberIds());
+
+            // 3.2 Lưu vào bảng GroupMember
+            for (User member : initialMembers) {
+                // Tránh add trùng Owner nếu client lỡ gửi ID của owner lên
+                if (member.getId().equals(owner.getId())) continue;
+
+                GroupMember groupMember = GroupMember.builder()
+                        .group(group)
+                        .user(member)
+                        .isLeader(false)
+                        .build();
+                groupMemberRepository.save(groupMember);
+            }
+        }
+
+        // --- STEP 4: FIRE EVENT (Sửa lỗi ở đây) ---
+        // Truyền đủ 3 tham số: group, creator, và list thành viên ban đầu
+        eventPublisher.publishEvent(new GroupCreatedEvent(group, owner, initialMembers));
+
+        // --- STEP 5: MAP ENTITY -> RESPONSE ---
+        return groupMapper.toGroupResponse(group);
+    }
+
+    @Transactional
+    public GroupMemberResponse addMemberToGroup(UUID groupId, UUID userId) {
+        // --- STEP 1: VALIDATION ---
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new RuntimeException("Group not found with ID: " + groupId));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+
+        // Check exists (Optional)
+        if (groupMemberRepository.existsByGroupAndUser(group, user)) {
+            throw new RuntimeException("User already in group");
+        }
+
+        // --- STEP 2: SAVE MEMBER ---
+        GroupMember gMember = GroupMember.builder()
+                .group(group)
+                .user(user)
+                .isLeader(false) // Mặc định vào là member thường
+                .build();
+
+        // Lưu xong mới có ID, createdAt...
+        GroupMember savedMember = groupMemberRepository.save(gMember);
+
+        // --- STEP 3: FIRE EVENT ---
+        eventPublisher.publishEvent(new MemberJoinedGroupEvent(groupId, userId));
+
+        // --- STEP 4: MAP ENTITY -> RESPONSE ---
+        return groupMapper.toGroupMemberResponse(savedMember);
+    }
+
+    // Bổ sung hàm tiện ích lấy Group Detail
+    @Transactional(readOnly = true)
+    public GroupResponse getGroupById(UUID groupId) {
+        return groupRepository.findById(groupId)
+                .map(groupMapper::toGroupResponse)
+                .orElseThrow(() -> new RuntimeException("Group not found"));
+    }
 }
