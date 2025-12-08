@@ -1,16 +1,14 @@
 package com.tripjoy.api.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+@Getter
+@Setter
+@Entity
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Data
-@Entity
 public class Expense extends BaseEntity{
 
     private String name;

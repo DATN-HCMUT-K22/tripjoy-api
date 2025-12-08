@@ -4,10 +4,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class TravelNotebook extends BaseEntity{
 
     private String name;

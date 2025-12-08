@@ -18,7 +18,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @MappedSuperclass
 @SuperBuilder
-@Data
+@Getter
+@Setter
 public abstract class BaseEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

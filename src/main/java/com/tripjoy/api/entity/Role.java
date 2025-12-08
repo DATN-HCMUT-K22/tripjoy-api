@@ -7,11 +7,12 @@ import org.springframework.context.annotation.Bean;
 
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
+@Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
 public class Role extends BaseEntity {
 
     private String name;

@@ -1,13 +1,17 @@
 package com.tripjoy.api.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ChatMessage extends BaseEntity{
 
     private String messageType;
@@ -19,10 +23,10 @@ public class ChatMessage extends BaseEntity{
     private Boolean isDeleted;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reply_message_id", referencedColumnName = "id")
-    private ChatMessage replyMessage;
+    @JoinColumn(name = "parent_message_id", referencedColumnName = "id")
+    private ChatMessage parentMessage;
 
-    @OneToMany(mappedBy = "replyMessage", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "parentMessage", fetch = FetchType.LAZY)
     private Set<ChatMessage> replies = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -30,12 +34,8 @@ public class ChatMessage extends BaseEntity{
     private User sender;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "receiver_id", nullable = true)
-    private User receiver;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_id", nullable = true)
-    private Group group;
+    @JoinColumn(name = "conversation_id", nullable = false)
+    private Conversation conversation; // Mỗi tin nhắn thuộc về 1 conversation
 
     @ManyToMany
     @JoinTable(

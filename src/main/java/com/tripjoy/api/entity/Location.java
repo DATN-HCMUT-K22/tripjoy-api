@@ -1,5 +1,6 @@
 package com.tripjoy.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -9,11 +10,12 @@ import lombok.*;
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
+@Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
 public class Location extends BaseEntity {
 
     private String name;
@@ -24,7 +26,6 @@ public class Location extends BaseEntity {
     private Boolean isOpen;
 
     @OneToMany(mappedBy = "location", fetch = FetchType.LAZY)
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
+    @JsonIgnore
     private Set<LocationInfo> locationInfos = new HashSet<>();
 }

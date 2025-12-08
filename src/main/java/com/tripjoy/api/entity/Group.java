@@ -1,16 +1,18 @@
 package com.tripjoy.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
+@Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
 @Table(name = "groups")
 public class Group extends BaseEntity{
 
@@ -20,10 +22,12 @@ public class Group extends BaseEntity{
     private String themeColor;
     private Boolean isPro;
 
-    @OneToMany(mappedBy = "group", fetch = FetchType.LAZY)
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
+    @OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnore
     private Set<Itinerary> itineraries = new HashSet<>();
 
+    @OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnore
+    private Set<GroupMember> members = new HashSet<>();
 }
 

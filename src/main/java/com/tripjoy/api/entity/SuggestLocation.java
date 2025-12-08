@@ -4,10 +4,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class SuggestLocation extends BaseEntity{
 
     @ManyToOne(fetch = FetchType.LAZY)

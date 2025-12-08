@@ -1,5 +1,6 @@
 package com.tripjoy.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,8 +9,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 
-@Data
+@Getter
+@Setter
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Itinerary extends BaseEntity{
 
     private String name;
@@ -22,19 +27,19 @@ public class Itinerary extends BaseEntity{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id")
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private Group group;
 
-    @OneToMany(mappedBy = "itinerary", fetch = FetchType.LAZY)
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
-    private Set<ItineraryTheme> itineraryThemes = new HashSet<>();
+    @OneToMany(mappedBy = "itinerary", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnore
+    private Set<ItineraryTheme> itineraryThemes;
 
     @OneToMany(mappedBy = "itinerary", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
-    private Set<TripItem> tripItems = new HashSet<>();
+    @JsonIgnore
+    private Set<TripItem> tripItems;
+
+    @OneToMany(mappedBy = "itinerary", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnore
+    private Set<Expense> expenses = new HashSet<>();
 
     @ManyToMany
     @JoinTable(
