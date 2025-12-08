@@ -42,17 +42,17 @@ public class ChatMessageResponse {
     @JsonProperty("sender_id")
     String senderId;
 
-    @JsonProperty("receiver_id")
-    String receiverId;
+    @JsonProperty("sender")
+    UserSimpleResponse sender;
 
-    @JsonProperty("group_id")
-    String groupId;
+    @JsonProperty("conversation_id")
+    UUID conversationId;
 
-    @JsonProperty("reply_message_id")
+    @JsonProperty("parent_message_id")
     @Schema(description = "ID of the message being replied to (if any)")
-    String replyMessageId; // Vẫn giữ ID gốc
+    String parentMessageId;
 
-    @JsonProperty("replied_to_message")
+    @JsonProperty("parent_message")
     @Schema(description = "Summary information of the message being replied to")
-    ChatMessageSimpleResponse repliedToMessage; // Object lồng nhau
+    ChatMessageSimpleResponse parentMessage;
 }

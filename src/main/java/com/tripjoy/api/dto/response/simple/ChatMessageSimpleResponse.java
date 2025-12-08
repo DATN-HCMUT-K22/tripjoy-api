@@ -26,7 +26,7 @@ public class ChatMessageSimpleResponse {
     String messageType;
 
     // Lồng thông tin người gửi tin nhắn gốc
-    @JsonProperty("created_by")
+    @JsonProperty("sender")
     @Schema(description = "Information about the original message sender")
-    UserSimpleResponse createdBy;
+    UserSimpleResponse sender;
 }

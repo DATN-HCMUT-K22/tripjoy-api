@@ -1,5 +1,6 @@
 package com.tripjoy.api.mapper;
 
+import com.tripjoy.api.configuration.mapper.BaseMapperConfig;
 import com.tripjoy.api.dto.request.UserCreationRequest;
 import com.tripjoy.api.dto.request.UserUpdateRequest;
 import com.tripjoy.api.dto.response.UserResponse;
@@ -9,18 +10,17 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
-@Mapper(componentModel = "spring")
+@Mapper(config = BaseMapperConfig.class)
 public interface UserMapper {
     User toUser(UserCreationRequest request);
 
-    @Mapping(source = "id", target = "id")
     UserResponse toUserResponse(User user);
 
-//    @BeanMapping(ignoreByDefault = true) // Phớt lờ TẤT CẢ các trường
+    UserSimpleResponse toUserSimpleResponse(User user);
+
+    // Update: Chỉ cần ignore những cái CẤM update (như password, roles)
     @Mapping(target = "roles", ignore = true)
     @Mapping(target = "password", ignore = true)
+    @Mapping(target = "username", ignore = true)
     void updateUser(@MappingTarget User user, UserUpdateRequest request);
-
-    @Mapping(source = "id", target = "id")
-    UserSimpleResponse toUserSimpleResponse(User user);
 }
