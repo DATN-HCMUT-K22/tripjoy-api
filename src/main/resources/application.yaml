@@ -52,5 +52,9 @@ api:
         email: dinhduc0794.work@gmail.com
         url: https://www.linkedin.com/in/dinhduc0794
     servers:
-      - url: ${SWAGGER_SERVER_URL:http://localhost:8080}
-        description: ${SWAGGER_SERVER_DESCRIPTION:Current Environment}
+      dev:
+        url: ${SWAGGER_SERVER_URL:http://localhost:8080}
+        description: Local Environment
+      prod:
+        url: https://api.tripjoy.com
+        description: Production Environment
