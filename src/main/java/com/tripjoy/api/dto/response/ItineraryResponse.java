@@ -33,6 +33,9 @@ public class ItineraryResponse {
     @JsonProperty("budget_estimate")
     Double budgetEstimate;
 
+    @JsonProperty("destination")
+    String destination;
+
     String status;
 
     @JsonProperty("is_favorited")

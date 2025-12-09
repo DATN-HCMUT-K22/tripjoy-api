@@ -24,6 +24,7 @@ public class Itinerary extends BaseEntity{
     private Integer peopleQuantity;
     private Long budgetEstimate;
     private String status;
+    private String destination;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id")

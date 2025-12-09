@@ -81,6 +81,15 @@ public class ItineraryRequest {
     Double budgetEstimate;
 
     @Schema(
+            name = "destination",
+            description = "Destination of the trip",
+            type = "String",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            example = "Da Nang"
+    )
+    String destination;
+
+    @Schema(
             name = "status",
             description = "Status of the itinerary",
             type = "String",
