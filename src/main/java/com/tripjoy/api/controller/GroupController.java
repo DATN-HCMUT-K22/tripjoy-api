@@ -33,7 +33,7 @@ public class GroupController {
 
         // --- GROUP CRUD ---
 
-        @Operation(summary = "Create a new group (Automatically creates General chat channel)")
+        @Operation(summary = "Create a new group (Automatically creates General chat channel) - OK")
         @PostMapping
         public ApiResponse<GroupResponse> createGroup(@Valid @RequestBody GroupRequest request) {
                 UUID ownerId = SecurityUtils.getCurrentUserId();

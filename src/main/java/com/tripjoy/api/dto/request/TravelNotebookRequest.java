@@ -3,12 +3,15 @@ package com.tripjoy.api.dto.request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
+
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -36,8 +39,8 @@ public class TravelNotebookRequest {
     )
     String description;
 
-    @NotBlank
+    @NotNull
     @JsonProperty("itinerary_id")
     @Schema(description = "UUID of the itinerary this notebook belongs to", requiredMode = Schema.RequiredMode.REQUIRED)
-    String itineraryId;
+    UUID itineraryId;
 }

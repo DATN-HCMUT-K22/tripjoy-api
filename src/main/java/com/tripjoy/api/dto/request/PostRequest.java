@@ -3,11 +3,13 @@ package com.tripjoy.api.dto.request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -38,6 +40,7 @@ public class PostRequest {
     private String content;
 
     @JsonProperty("itinerary_id")
+    @NotNull
     @Schema(
             name = "itinerary_id",
             description = "UUID of the Itinerary this post is linked to (from Create_post table)",
@@ -45,7 +48,7 @@ public class PostRequest {
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
             example = "c1d2e3f4-g5h6-7890-1234-567890uvwxyz"
     )
-    String itineraryId;
+    UUID itineraryId;
 
     @Schema(
             name = "hashtags",

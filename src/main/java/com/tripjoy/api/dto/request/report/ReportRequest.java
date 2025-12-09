@@ -3,8 +3,11 @@ package com.tripjoy.api.dto.request.report;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.util.UUID;
 
 @Data
 @Builder
@@ -13,11 +16,11 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ReportRequest {
 
-    @NotBlank(message = "{not_blank}")
+    @NotNull(message = "Content ID is required")
     @JsonProperty("content_id")
     @Schema(description = "ID of the reported content (Post ID, Comment ID, Users ID, etc.)",
             example = "a1b2c3d4-...", requiredMode = Schema.RequiredMode.REQUIRED)
-    String contentId;
+    UUID contentId;
 
     @NotBlank(message = "{not_blank}")
     @JsonProperty("content_type")

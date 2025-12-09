@@ -2,6 +2,7 @@ package com.tripjoy.api.dto.request.report;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,7 +15,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ModerationActionRequest {
 
-    @NotBlank
+    @NotNull(message = "User ID is required")
     @Schema(
             name = "userId",
             description = "The unique ID of the users receiving the action",

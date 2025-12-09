@@ -9,6 +9,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -64,5 +65,5 @@ public class TripItemRequest {
             requiredMode = Schema.RequiredMode.REQUIRED,
             example = "f1g2h3i4-j5k6-7890-1234-567890lmn-op"
     )
-    String locationId;
+    UUID locationId;
 }

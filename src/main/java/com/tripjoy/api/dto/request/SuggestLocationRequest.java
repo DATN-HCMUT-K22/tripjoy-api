@@ -2,8 +2,11 @@ package com.tripjoy.api.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -12,7 +15,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SuggestLocationRequest {
 
-    @NotBlank
+    @NotNull
     @Schema(
             name = "location_id",
             description = "The UUID of the Location being suggested",
@@ -20,7 +23,7 @@ public class SuggestLocationRequest {
             requiredMode = Schema.RequiredMode.REQUIRED,
             example = "a1b2c3d4-e5f6-7890-1234-567890abcdef"
     )
-    String locationId;
+    UUID locationId;
 
     @Schema(
             name = "notes",
