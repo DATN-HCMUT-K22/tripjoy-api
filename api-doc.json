@@ -31,16 +31,20 @@
   ],
   "tags": [
     {
+      "name": "Groups",
+      "description": "Manage travel groups (Core business)"
+    },
+    {
       "name": "Travel Notebook",
       "description": "Endpoints for managing travel notebooks"
     },
     {
-      "name": "Messages",
-      "description": "Các hành động trên tin nhắn cụ thể (Like, Revoke...)"
+      "name": "Users",
+      "description": "Endpoints for managing user accounts"
     },
     {
-      "name": "Conversations (Chat)",
-      "description": "Quản lý hội thoại và tin nhắn"
+      "name": "Messages",
+      "description": "Actions on specific messages (Like, Revoke...)"
     },
     {
       "name": "Comment",
@@ -55,10 +59,6 @@
       "description": "Endpoints for submitting and managing feedback"
     },
     {
-      "name": "Authentication",
-      "description": "Endpoints for users authentication"
-    },
-    {
       "name": "Itinerary",
       "description": "Endpoints for managing itineraries and trip items"
     },
@@ -67,20 +67,20 @@
       "description": "Endpoints for viewing permissions (Admin only)"
     },
     {
+      "name": "Conversations (Chat)",
+      "description": "Manage conversations and messages"
+    },
+    {
       "name": "Role",
       "description": "Endpoints for managing roles (Admin only)"
     },
     {
-      "name": "Users",
-      "description": "Endpoints for managing users accounts"
+      "name": "Authentication",
+      "description": "Endpoints for user authentication"
     },
     {
       "name": "Location",
       "description": "Endpoints for managing locations"
-    },
-    {
-      "name": "Groups",
-      "description": "Quản lý nhóm đi chơi (Nghiệp vụ cốt lõi)"
     },
     {
       "name": "Report",
@@ -97,8 +97,8 @@
         "tags": [
           "Users"
         ],
-        "summary": "Update users by ID",
-        "description": "Updates an existing users's information by their unique ID.",
+        "summary": "Update user by ID",
+        "description": "Updates an existing user's information by their unique ID.",
         "operationId": "updateUser",
         "parameters": [
           {
@@ -138,8 +138,8 @@
         "tags": [
           "Users"
         ],
-        "summary": "Delete users by ID",
-        "description": "Deletes a users account from the system by their unique ID.",
+        "summary": "Delete user by ID",
+        "description": "Deletes a user account from the system by their unique ID.",
         "operationId": "deleteUser",
         "parameters": [
           {
@@ -831,7 +831,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Lấy thông tin nhóm theo ID",
+        "summary": "Get group information by ID",
         "operationId": "getGroupById",
         "parameters": [
           {
@@ -861,7 +861,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Cập nhật thông tin nhóm",
+        "summary": "Update group information",
         "operationId": "updateGroup",
         "parameters": [
           {
@@ -901,7 +901,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Xóa nhóm",
+        "summary": "Delete group",
         "operationId": "deleteGroup",
         "parameters": [
           {
@@ -933,7 +933,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Cập nhật vai trò thành viên (Leader/Member)",
+        "summary": "Update member role (Leader/Member)",
         "operationId": "updateMemberRole",
         "parameters": [
           {
@@ -982,7 +982,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Xóa thành viên khỏi nhóm (Tự động kick khỏi Chat)",
+        "summary": "Remove member from group (Automatically kicks from Chat)",
         "operationId": "removeMember",
         "parameters": [
           {
@@ -1145,8 +1145,8 @@
         "tags": [
           "Users"
         ],
-        "summary": "Create a new users",
-        "description": "Creates a new users account based on the provided request.",
+        "summary": "Create a new user",
+        "description": "Creates a new user account based on the provided request.",
         "operationId": "createUser",
         "requestBody": {
           "content": {
@@ -1256,7 +1256,7 @@
         "tags": [
           "Report"
         ],
-        "summary": "Users submits a new report",
+        "summary": "User submits a new report",
         "operationId": "submitReport",
         "requestBody": {
           "content": {
@@ -1389,7 +1389,7 @@
         "tags": [
           "Post"
         ],
-        "summary": "Get saved posts for the current users",
+        "summary": "Get saved posts for the current user",
         "operationId": "getSavedPosts",
         "responses": {
           "200": {
@@ -1693,7 +1693,7 @@
         "tags": [
           "Messages"
         ],
-        "summary": "Thả tim / Bỏ tim tin nhắn (Toggle)",
+        "summary": "Like / Unlike message (Toggle)",
         "operationId": "toggleLikeMessage",
         "parameters": [
           {
@@ -2022,7 +2022,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Tạo nhóm mới (Tự động tạo kênh chat General)",
+        "summary": "Create a new group (Automatically creates General chat channel)",
         "operationId": "createGroup",
         "requestBody": {
           "content": {
@@ -2053,7 +2053,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Lấy danh sách thành viên nhóm",
+        "summary": "Get group members list",
         "operationId": "getMembers",
         "parameters": [
           {
@@ -2083,7 +2083,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Thêm thành viên vào nhóm (Tự động sync vào Chat)",
+        "summary": "Add member to group (Automatically syncs to Chat)",
         "operationId": "addMember",
         "parameters": [
           {
@@ -2125,7 +2125,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Lấy danh sách địa điểm được đề xuất",
+        "summary": "Get list of suggested locations",
         "operationId": "getSuggestedLocations",
         "parameters": [
           {
@@ -2155,7 +2155,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Đề xuất địa điểm cho nhóm",
+        "summary": "Suggest location for group",
         "operationId": "suggestLocation",
         "parameters": [
           {
@@ -2257,7 +2257,7 @@
         "tags": [
           "Feedback"
         ],
-        "summary": "Admin responds to a users's feedback",
+        "summary": "Admin responds to a user's feedback",
         "operationId": "respondToFeedback",
         "parameters": [
           {
@@ -2299,7 +2299,7 @@
         "tags": [
           "Conversations (Chat)"
         ],
-        "summary": "Lấy danh sách hội thoại của tôi (Inbox)",
+        "summary": "Get my conversations list (Inbox)",
         "operationId": "getMyConversations",
         "responses": {
           "200": {
@@ -2318,7 +2318,7 @@
         "tags": [
           "Conversations (Chat)"
         ],
-        "summary": "Tạo cuộc trò chuyện 1-1 (Direct Chat)",
+        "summary": "Create 1-on-1 conversation (Direct Chat)",
         "operationId": "createDirectConversation",
         "requestBody": {
           "content": {
@@ -2349,7 +2349,7 @@
         "tags": [
           "Conversations (Chat)"
         ],
-        "summary": "Lấy lịch sử tin nhắn (Phân trang)",
+        "summary": "Get message history (Paginated)",
         "operationId": "getMessages",
         "parameters": [
           {
@@ -2366,13 +2366,7 @@
             "in": "query",
             "required": true,
             "schema": {
-              "type": "object",
-              "properties": {
-                "numberOfPages": {
-                  "type": "integer",
-                  "format": "int32"
-                }
-              }
+              "$ref": "#/components/schemas/Pageable"
             }
           }
         ],
@@ -2393,7 +2387,7 @@
         "tags": [
           "Conversations (Chat)"
         ],
-        "summary": "Gửi tin nhắn vào hội thoại",
+        "summary": "Send message to conversation",
         "operationId": "sendMessage",
         "parameters": [
           {
@@ -2732,7 +2726,7 @@
         "tags": [
           "Admin"
         ],
-        "summary": "Perform a moderation action on a users (e.g., BAN, WARN)",
+        "summary": "Perform a moderation action on a user (e.g., BAN, WARN)",
         "operationId": "moderateUser",
         "requestBody": {
           "content": {
@@ -2763,8 +2757,8 @@
         "tags": [
           "Users"
         ],
-        "summary": "Get current users's info",
-        "description": "Retrieves the profile information of the currently authenticated users.",
+        "summary": "Get current user's info",
+        "description": "Retrieves the profile information of the currently authenticated user.",
         "operationId": "getMyInfo",
         "responses": {
           "200": {
@@ -2881,7 +2875,7 @@
         "tags": [
           "Conversations (Chat)"
         ],
-        "summary": "Lấy chi tiết hội thoại",
+        "summary": "Get conversation details",
         "operationId": "getConversationById",
         "parameters": [
           {
@@ -2975,7 +2969,7 @@
         "tags": [
           "Conversations (Chat)"
         ],
-        "summary": "Rời khỏi cuộc trò chuyện (Nếu là Group Chat -\u003E Rời cả Group?)",
+        "summary": "Leave conversation",
         "operationId": "leaveConversation",
         "parameters": [
           {
@@ -3152,10 +3146,10 @@
           "locked": {
             "type": "boolean"
           },
-          "deleted": {
+          "emailVerified": {
             "type": "boolean"
           },
-          "emailVerified": {
+          "deleted": {
             "type": "boolean"
           }
         }
@@ -3641,6 +3635,11 @@
             "format": "double",
             "example": 10000000
           },
+          "destination": {
+            "type": "string",
+            "description": "Destination of the trip",
+            "example": "Da Nang"
+          },
           "status": {
             "type": "string",
             "description": "Status of the itinerary",
@@ -3809,6 +3808,9 @@
           "budget_estimate": {
             "type": "number",
             "format": "double"
+          },
+          "destination": {
+            "type": "string"
           },
           "is_favorited": {
             "type": "boolean"

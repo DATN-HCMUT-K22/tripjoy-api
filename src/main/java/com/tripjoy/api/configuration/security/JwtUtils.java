@@ -46,7 +46,7 @@ public class JwtUtils {
     public String generateToken(User user) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(user.getUsername())
+                .subject(user.getId().toString())
                 .issuer("tripjoy")
                 .issueTime(new Date())
                 .expirationTime(new Date(
