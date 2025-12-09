@@ -86,7 +86,8 @@ public class JwtUtils {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
 
         // Kiểm tra xem token đã bị logout chưa
-        if (invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID()))
+        UUID tokenId = UUID.fromString(signedJWT.getJWTClaimsSet().getJWTID());
+        if (invalidatedTokenRepository.existsById(tokenId))
             throw new AppException(ErrorCode.UNAUTHENTICATED);
 
         return signedJWT;
