@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ConversationRepository extends JpaRepository<Conversation, UUID> {
-    List<Conversation> findByGroupId(UUID groupId);
+    List<Conversation> findByGroup_Id(UUID groupId);
 
     @Query("SELECT c FROM Conversation c JOIN c.members m WHERE m.user.id = :userId")
     List<Conversation> findAllByUserId(@Param("userId") UUID userId);

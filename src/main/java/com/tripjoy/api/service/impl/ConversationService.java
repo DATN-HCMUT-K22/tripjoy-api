@@ -2,6 +2,8 @@ package com.tripjoy.api.service.impl;
 
 import com.tripjoy.api.dto.response.ConversationResponse;
 import com.tripjoy.api.entity.Conversation;
+import com.tripjoy.api.exception.AppException;
+import com.tripjoy.api.exception.ErrorCode;
 import com.tripjoy.api.mapper.ConversationMapper;
 import com.tripjoy.api.repository.ConversationRepository;
 import com.tripjoy.api.service.IConversationService;
@@ -30,7 +32,7 @@ public class ConversationService implements IConversationService {
 
     public ConversationResponse getConversationDetail(UUID conversationId, UUID currentUserId) {
         Conversation conv = conversationRepository.findById(conversationId)
-                .orElseThrow(() -> new RuntimeException("Not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_FOUND));
 
         // Truyền currentUserId để mapper biết đường lấy tên/avatar đối phương
         return conversationMapper.toResponse(conv, currentUserId);

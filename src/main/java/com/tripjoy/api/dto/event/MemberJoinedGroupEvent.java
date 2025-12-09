@@ -1,5 +1,7 @@
 package com.tripjoy.api.dto.event;
 
+import com.tripjoy.api.entity.Group;
+import com.tripjoy.api.entity.User;
 import lombok.*;
 
 import java.util.UUID;
@@ -10,6 +12,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MemberJoinedGroupEvent {
-    private UUID groupId;
-    private UUID userId;
+    private Group group;
+    private User user;
 }

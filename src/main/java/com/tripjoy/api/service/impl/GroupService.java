@@ -94,7 +94,7 @@ public class GroupService implements IGroupService {
 
         // Check exists (Optional)
         if (groupMemberRepository.existsByGroupAndUser(group, user)) {
-            throw new RuntimeException("User already in group");
+            throw new AppException(ErrorCode.USER_ALREADY_IN_GROUP);
         }
 
         // --- STEP 2: SAVE MEMBER ---
@@ -108,7 +108,7 @@ public class GroupService implements IGroupService {
         GroupMember savedMember = groupMemberRepository.save(gMember);
 
         // --- STEP 3: FIRE EVENT ---
-        eventPublisher.publishEvent(new MemberJoinedGroupEvent(groupId, userId));
+        eventPublisher.publishEvent(new MemberJoinedGroupEvent(group, user));
 
         // --- STEP 4: MAP ENTITY -> RESPONSE ---
         return groupMapper.toGroupMemberResponse(savedMember);

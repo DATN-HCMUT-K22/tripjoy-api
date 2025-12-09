@@ -36,11 +36,11 @@ public class MessageService implements IMessageService {
     public void toggleLikeMessage(UUID messageId, UUID userId) {
         // 1. Tìm tin nhắn
         ChatMessage message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new RuntimeException("Message not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.MESSAGE_NOT_FOUND));
 
         // 2. Tìm user
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         // 3. Logic Toggle (Có rồi thì xóa, chưa có thì thêm)
         // Lưu ý: message.getLikeUsers() trả về Set<User>
