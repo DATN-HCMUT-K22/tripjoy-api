@@ -30,7 +30,7 @@ import java.text.ParseException;
 public class AuthenticationController {
         IAuthenticationService authenticationService;
 
-        @Operation(summary = "Log in to the system")
+        @Operation(summary = "Log in to the system", security = {})
         @PostMapping(Endpoint.Auth.LOGIN)
         public ApiResponse<AuthenticationResponse> login(@RequestBody AuthenticationRequest request) {
                 var result = authenticationService.authenticate(request);
@@ -39,7 +39,7 @@ public class AuthenticationController {
                                 .build();
         }
 
-        @Operation(summary = "Introspect authentication token")
+        @Operation(summary = "Introspect authentication token", security = {})
         @PostMapping(Endpoint.Auth.INTROSPECT)
         public ApiResponse<IntrospectResponse> introspectToken(@RequestBody IntrospectRequest request)
                         throws ParseException, JOSEException {
@@ -49,7 +49,7 @@ public class AuthenticationController {
                                 .build();
         }
 
-        @Operation(summary = "Refresh authentication token")
+        @Operation(summary = "Refresh authentication token", security = {})
         @PostMapping(Endpoint.Auth.REFRESH)
         public ApiResponse<AuthenticationResponse> refreshToken(@RequestBody RefreshRequest request)
                         throws ParseException, JOSEException {
@@ -59,7 +59,7 @@ public class AuthenticationController {
                                 .build();
         }
 
-        @Operation(summary = "Log out from the system")
+        @Operation(summary = "Log out from the system", security = {})
         @PostMapping(Endpoint.Auth.LOGOUT)
         public ApiResponse<Void> logout(@RequestBody LogoutRequest request)
                         throws ParseException, JOSEException {
@@ -69,7 +69,7 @@ public class AuthenticationController {
         }
 
         //// --------
-        @Operation(summary = "Register a new users account")
+        @Operation(summary = "Register a new users account", security = {})
         @PostMapping(Endpoint.Auth.REGISTER)
         public ApiResponse<UserResponse> register(@Valid @RequestBody UserCreationRequest request) {
                 return ApiResponse.<UserResponse>builder()
