@@ -1,22 +1,22 @@
-package com.tripjoy.api.service;
+package com.tripjoy.api.service.impl;
 
 import com.tripjoy.api.dto.request.PermissionRequest;
 import com.tripjoy.api.dto.response.PermissionResponse;
 import com.tripjoy.api.entity.Permission;
 import com.tripjoy.api.mapper.PermissionMapper;
 import com.tripjoy.api.repository.PermissionRepository;
+import com.tripjoy.api.service.IPermissionService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class PermissionService {
+public class PermissionService implements IPermissionService {
     PermissionRepository permissionRepository;
     PermissionMapper mapper;
 

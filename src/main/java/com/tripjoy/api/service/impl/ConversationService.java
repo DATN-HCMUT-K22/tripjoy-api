@@ -1,12 +1,11 @@
-package com.tripjoy.api.service;
+package com.tripjoy.api.service.impl;
 
 import com.tripjoy.api.dto.response.ConversationResponse;
 import com.tripjoy.api.entity.Conversation;
 import com.tripjoy.api.mapper.ConversationMapper;
 import com.tripjoy.api.repository.ConversationRepository;
-import lombok.AccessLevel;
+import com.tripjoy.api.service.IConversationService;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,7 +13,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class ConversationService {
+public class ConversationService implements IConversationService {
 
     private final ConversationRepository conversationRepository;
     private final ConversationMapper conversationMapper; // Inject Mapper

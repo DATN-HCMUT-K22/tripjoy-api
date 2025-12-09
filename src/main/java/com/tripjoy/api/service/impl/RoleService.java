@@ -1,15 +1,13 @@
-package com.tripjoy.api.service;
+package com.tripjoy.api.service.impl;
 
-import com.tripjoy.api.dto.request.PermissionRequest;
 import com.tripjoy.api.dto.request.RoleRequest;
-import com.tripjoy.api.dto.response.PermissionResponse;
 import com.tripjoy.api.dto.response.RoleResponse;
 import com.tripjoy.api.entity.Permission;
 import com.tripjoy.api.entity.Role;
-import com.tripjoy.api.mapper.PermissionMapper;
 import com.tripjoy.api.mapper.RoleMapper;
 import com.tripjoy.api.repository.PermissionRepository;
 import com.tripjoy.api.repository.RoleRepository;
+import com.tripjoy.api.service.IRoleService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -17,12 +15,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class RoleService {
+public class RoleService implements IRoleService {
     RoleRepository roleRepository;
     PermissionRepository permissionRepository;
     RoleMapper mapper;

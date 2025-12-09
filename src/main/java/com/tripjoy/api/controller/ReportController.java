@@ -6,7 +6,7 @@ import com.tripjoy.api.dto.request.report.ReportRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.report.HandleReportResponse;
 import com.tripjoy.api.dto.response.report.ReportResponse;
-import com.tripjoy.api.service.ReportService;
+import com.tripjoy.api.service.IReportService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -27,14 +27,15 @@ import java.util.UUID;
 @Tag(name = "Report", description = "Endpoints for reporting inappropriate content")
 public class ReportController {
 
-    ReportService reportService;
+    IReportService reportService;
 
-    @Operation(summary = "Users submits a new report")
+    @Operation(summary = "User submits a new report")
     @PostMapping
     public ApiResponse<ReportResponse> submitReport(@Valid @RequestBody ReportRequest request) {
-        // Service will handle complex logic (create Report_content, then create Report_to)
+        // Service will handle complex logic (create Report_content, then create
+        // Report_to)
         return ApiResponse.<ReportResponse>builder()
-//                .data(reportService.submitReport(request))
+                // .data(reportService.submitReport(request))
                 .build();
     }
 
@@ -43,7 +44,7 @@ public class ReportController {
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Page<ReportResponse>> getAllReports(Pageable pageable) {
         return ApiResponse.<Page<ReportResponse>>builder()
-//                .data(reportService.getAllReports(pageable))
+                // .data(reportService.getAllReports(pageable))
                 .build();
     }
 
@@ -53,7 +54,7 @@ public class ReportController {
     public ApiResponse<ReportResponse> getReportById(@PathVariable UUID reportId) {
         // reportId here refers to the ID in the "Report_to" table
         return ApiResponse.<ReportResponse>builder()
-//                .data(reportService.getReportById(reportId))
+                // .data(reportService.getReportById(reportId))
                 .build();
     }
 
@@ -67,8 +68,8 @@ public class ReportController {
             @Valid @RequestBody HandleReportRequest request) {
 
         // return ApiResponse.<HandleReportResponse>builder()
-        //        .data(reportService.handleReport(reportId, request))
-        //        .build();
+        // .data(reportService.handleReport(reportId, request))
+        // .build();
         return null; // Placeholder
     }
 }

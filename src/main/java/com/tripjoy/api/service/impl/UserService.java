@@ -1,4 +1,4 @@
-package com.tripjoy.api.service;
+package com.tripjoy.api.service.impl;
 
 import com.tripjoy.api.dto.request.UserCreationRequest;
 import com.tripjoy.api.dto.request.UserUpdateRequest;
@@ -10,6 +10,7 @@ import com.tripjoy.api.exception.ErrorCode;
 import com.tripjoy.api.mapper.UserMapper;
 import com.tripjoy.api.repository.RoleRepository;
 import com.tripjoy.api.repository.UserRepository;
+import com.tripjoy.api.service.IUserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -26,7 +27,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class UserService {
+public class UserService implements IUserService {
     UserRepository userRepository;
     RoleRepository roleRepository;
     UserMapper userMapper;
@@ -36,7 +37,7 @@ public class UserService {
     public List<UserResponse> getUsers() {
 
         return userRepository.findAll().stream()
-                .map(userMapper::toUserResponse)    //.map(users -> userMapper.toUserResponse(users))
+                .map(userMapper::toUserResponse) // .map(users -> userMapper.toUserResponse(users))
                 .toList();
     }
 
@@ -62,9 +63,9 @@ public class UserService {
 
         User user = userMapper.toUser(request);
 
-//        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+        // PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-//        Users.setRole()
+        // Users.setRole()
 
         return userMapper.toUserResponse(userRepository.save(user));
     }

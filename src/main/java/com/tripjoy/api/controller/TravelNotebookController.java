@@ -4,7 +4,7 @@ import com.tripjoy.api.constant.Endpoint;
 import com.tripjoy.api.dto.request.TravelNotebookRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.TravelNotebookResponse;
-import com.tripjoy.api.service.TravelNotebookService;
+import com.tripjoy.api.service.ITravelNotebookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -22,7 +22,7 @@ import java.util.UUID;
 @Tag(name = "Travel Notebook", description = "Endpoints for managing travel notebooks")
 public class TravelNotebookController {
 
-    TravelNotebookService travelNotebookService;
+    ITravelNotebookService travelNotebookService;
 
     @Operation(summary = "Create a new travel notebook")
     @PostMapping
@@ -30,8 +30,8 @@ public class TravelNotebookController {
             @Valid @RequestBody TravelNotebookRequest request) {
 
         // return ApiResponse.<TravelNotebookResponse>builder()
-        //        .data(travelNotebookService.createNotebook(request))
-        //        .build();
+        // .data(travelNotebookService.createNotebook(request))
+        // .build();
         return null; // Placeholder
     }
 
@@ -41,8 +41,8 @@ public class TravelNotebookController {
             @PathVariable UUID notebookId) {
 
         // return ApiResponse.<TravelNotebookResponse>builder()
-        //        .data(travelNotebookService.getNotebookById(notebookId))
-        //        .build();
+        // .data(travelNotebookService.getNotebookById(notebookId))
+        // .build();
         return null; // Placeholder
     }
 
@@ -53,8 +53,8 @@ public class TravelNotebookController {
             @Valid @RequestBody TravelNotebookRequest request) {
 
         // return ApiResponse.<TravelNotebookResponse>builder()
-        //        .data(travelNotebookService.updateNotebook(notebookId, request))
-        //        .build();
+        // .data(travelNotebookService.updateNotebook(notebookId, request))
+        // .build();
         return null; // Placeholder
     }
 

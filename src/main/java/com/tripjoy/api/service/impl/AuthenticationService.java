@@ -1,12 +1,9 @@
-package com.tripjoy.api.service;
+package com.tripjoy.api.service.impl;
 
 import com.nimbusds.jose.*;
-import com.nimbusds.jose.crypto.MACSigner;
-import com.nimbusds.jose.crypto.MACVerifier;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.SignedJWT;
 import com.tripjoy.api.configuration.security.JwtUtils;
 import com.tripjoy.api.constant.PredefinedRole;
+import com.tripjoy.api.service.IAuthenticationService;
 import com.tripjoy.api.dto.request.UserCreationRequest;
 import com.tripjoy.api.dto.request.auth.AuthenticationRequest;
 import com.tripjoy.api.dto.request.auth.IntrospectRequest;
@@ -27,25 +24,19 @@ import com.tripjoy.api.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import java.text.ParseException;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class AuthenticationService {
+public class AuthenticationService implements IAuthenticationService {
     UserRepository userRepository;
     InvalidatedTokenRepository invalidatedTokenRepository;
     PasswordEncoder passwordEncoder;
@@ -120,7 +111,7 @@ public class AuthenticationService {
     }
 
     public void logout(LogoutRequest request)
-        throws JOSEException, ParseException {
+            throws JOSEException, ParseException {
         try {
             // Gọi JwtProvider để lấy thông tin token
             var signedToken = jwtUtils.verifyToken(request.getToken(), true);

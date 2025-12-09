@@ -1,4 +1,4 @@
-package com.tripjoy.api.service;
+package com.tripjoy.api.service.impl;
 
 import com.tripjoy.api.dto.request.chat.ChatMessageRequest;
 import com.tripjoy.api.dto.response.ChatMessageResponse;
@@ -11,6 +11,7 @@ import com.tripjoy.api.mapper.ChatMessageMapper;
 import com.tripjoy.api.repository.ChatMessageRepository;
 import com.tripjoy.api.repository.ConversationRepository;
 import com.tripjoy.api.repository.UserRepository;
+import com.tripjoy.api.service.IMessageService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -23,7 +24,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class MessageService {
+public class MessageService implements IMessageService {
     private final ChatMessageRepository messageRepository;
     private final UserRepository userRepository;
     private final SocketService socketService;
@@ -52,8 +53,10 @@ public class MessageService {
         // 4. Lưu lại
         messageRepository.save(message);
 
-        // 5. [REAL-TIME] Quan trọng: Gửi sự kiện qua Socket để client cập nhật icon tim ngay lập tức
-        // socketService.sendLikeUpdate(message.getConversation().getId(), messageId, userId, isLiked);
+        // 5. [REAL-TIME] Quan trọng: Gửi sự kiện qua Socket để client cập nhật icon tim
+        // ngay lập tức
+        // socketService.sendLikeUpdate(message.getConversation().getId(), messageId,
+        // userId, isLiked);
     }
 
     @Transactional

@@ -1,13 +1,13 @@
-package com.tripjoy.api.service;
+package com.tripjoy.api.service.impl;
 
+import com.tripjoy.api.service.IAdminService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class AdminService {
+public class AdminService implements IAdminService {
 }

@@ -1,9 +1,7 @@
 package com.tripjoy.api.configuration.security;
 
 import com.nimbusds.jose.JOSEException;
-import com.tripjoy.api.dto.request.auth.IntrospectRequest;
 import com.tripjoy.api.exception.AppException;
-import com.tripjoy.api.service.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;

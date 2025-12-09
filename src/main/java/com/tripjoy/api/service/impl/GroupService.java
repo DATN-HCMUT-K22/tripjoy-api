@@ -1,4 +1,4 @@
-package com.tripjoy.api.service;
+package com.tripjoy.api.service.impl;
 
 import com.tripjoy.api.dto.event.GroupCreatedEvent;
 import com.tripjoy.api.dto.event.MemberJoinedGroupEvent;
@@ -6,11 +6,11 @@ import com.tripjoy.api.dto.request.GroupRequest;
 import com.tripjoy.api.dto.response.GroupResponse;
 import com.tripjoy.api.dto.response.simple.GroupMemberResponse;
 import com.tripjoy.api.entity.*;
-import com.tripjoy.api.enums.ConversationType;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
 import com.tripjoy.api.mapper.GroupMapper;
 import com.tripjoy.api.repository.*;
+import com.tripjoy.api.service.IGroupService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -25,7 +25,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class GroupService {
+public class GroupService implements IGroupService {
 
     GroupRepository groupRepository;
     GroupMemberRepository groupMemberRepository;
@@ -63,7 +63,8 @@ public class GroupService {
             // 3.2 Lưu vào bảng GroupMember
             for (User member : initialMembers) {
                 // Tránh add trùng Owner nếu client lỡ gửi ID của owner lên
-                if (member.getId().equals(owner.getId())) continue;
+                if (member.getId().equals(owner.getId()))
+                    continue;
 
                 GroupMember groupMember = GroupMember.builder()
                         .group(group)

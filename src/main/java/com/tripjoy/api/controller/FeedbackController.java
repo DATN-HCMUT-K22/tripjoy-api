@@ -6,7 +6,7 @@ import com.tripjoy.api.dto.request.feedback.FeedbackResponseRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.feedback.FeedbackResponse;
 import com.tripjoy.api.dto.response.feedback.FeedbackResponseResponse;
-import com.tripjoy.api.service.FeedbackService;
+import com.tripjoy.api.service.IFeedbackService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -27,13 +27,13 @@ import java.util.UUID;
 @Tag(name = "Feedback", description = "Endpoints for submitting and managing feedback")
 public class FeedbackController {
 
-    FeedbackService feedbackService;
+    IFeedbackService feedbackService;
 
     @Operation(summary = "Submit new feedback")
     @PostMapping
     public ApiResponse<FeedbackResponse> submitFeedback(@Valid @RequestBody FeedbackRequest request) {
         return ApiResponse.<FeedbackResponse>builder()
-//                .data(feedbackService.submitFeedback(request))
+                // .data(feedbackService.submitFeedback(request))
                 .build();
     }
 
@@ -42,7 +42,7 @@ public class FeedbackController {
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Page<FeedbackResponse>> getAllFeedback(Pageable pageable) {
         return ApiResponse.<Page<FeedbackResponse>>builder()
-//                .data(feedbackService.getAllFeedback(pageable))
+                // .data(feedbackService.getAllFeedback(pageable))
                 .build();
     }
 
@@ -51,13 +51,13 @@ public class FeedbackController {
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<FeedbackResponse> getFeedbackById(@PathVariable UUID feedbackId) {
         return ApiResponse.<FeedbackResponse>builder()
-//                .data(feedbackService.getFeedbackById(feedbackId))
+                // .data(feedbackService.getFeedbackById(feedbackId))
                 .build();
     }
 
     // --- Admin Response ---
 
-    @Operation(summary = "Admin responds to a users's feedback")
+    @Operation(summary = "Admin responds to a user's feedback")
     @PostMapping(Endpoint.Feedback.ID + "/respond")
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<FeedbackResponseResponse> respondToFeedback(
@@ -65,8 +65,8 @@ public class FeedbackController {
             @Valid @RequestBody FeedbackResponseRequest request) {
 
         // return ApiResponse.<FeedbackResponseResponse>builder()
-        //        .data(feedbackService.respondToFeedback(feedbackId, request))
-        //        .build();
+        // .data(feedbackService.respondToFeedback(feedbackId, request))
+        // .build();
         return null; // Placeholder
     }
 }

@@ -1,4 +1,4 @@
-package com.tripjoy.api.service;
+package com.tripjoy.api.service.impl;
 
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
@@ -6,6 +6,7 @@ import com.corundumstudio.socketio.annotation.OnConnect;
 import com.corundumstudio.socketio.annotation.OnDisconnect;
 import com.corundumstudio.socketio.annotation.OnEvent;
 import com.tripjoy.api.dto.response.ChatMessageResponse;
+import com.tripjoy.api.service.ISocketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,7 +16,7 @@ import java.util.UUID;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class SocketService {
+public class SocketService implements ISocketService {
 
     private final SocketIOServer server;
 

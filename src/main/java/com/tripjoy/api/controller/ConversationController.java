@@ -6,9 +6,8 @@ import com.tripjoy.api.dto.request.chat.DirectConversationCreationRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.ChatMessageResponse;
 import com.tripjoy.api.dto.response.ConversationResponse;
-import com.tripjoy.api.entity.User;
-import com.tripjoy.api.service.ConversationService;
-import com.tripjoy.api.service.MessageService;
+import com.tripjoy.api.service.IConversationService;
+import com.tripjoy.api.service.IMessageService;
 import com.tripjoy.api.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,7 +16,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.data.domain.Pageable;
@@ -28,87 +26,88 @@ import java.util.UUID;
 @RequestMapping(Endpoint.Conversation.BASE)
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Tag(name = "Conversations (Chat)", description = "Quản lý hội thoại và tin nhắn")
+@Tag(name = "Conversations (Chat)", description = "Manage conversations and messages")
 public class ConversationController {
 
-    ConversationService conversationService;
-    MessageService messageService; // Tách service xử lý message riêng nếu cần
+        IConversationService conversationService;
+        IMessageService messageService; // Separate service for message handling if needed
 
-    // --- QUẢN LÝ HỘI THOẠI ---
+        // --- QUẢN LÝ HỘI THOẠI ---
 
+        @Operation(summary = "Get my conversations list (Inbox)")
+        @GetMapping
+        public ApiResponse<List<ConversationResponse>> getMyConversations() {
+                // [FIX] Lấy current user ID từ Utils
+                UUID currentUserId = SecurityUtils.getCurrentUserId();
 
-    @Operation(summary = "Lấy danh sách hội thoại của tôi (Inbox)")
-    @GetMapping
-    public ApiResponse<List<ConversationResponse>> getMyConversations() {
-        // [FIX] Lấy current user ID từ Utils
-        UUID currentUserId = SecurityUtils.getCurrentUserId();
+                return ApiResponse.<List<ConversationResponse>>builder()
+                                .data(conversationService.getUserConversations(currentUserId))
+                                .build();
+        }
 
-        return ApiResponse.<List<ConversationResponse>>builder()
-                .data(conversationService.getUserConversations(currentUserId))
-                .build();
-    }
+        @Operation(summary = "Create 1-on-1 conversation (Direct Chat)")
+        @PostMapping
+        public ApiResponse<ConversationResponse> createDirectConversation(
+                        @Valid @RequestBody DirectConversationCreationRequest request) {
 
-    @Operation(summary = "Tạo cuộc trò chuyện 1-1 (Direct Chat)")
-    @PostMapping
-    public ApiResponse<ConversationResponse> createDirectConversation(
-            @Valid @RequestBody DirectConversationCreationRequest request) {
+                UUID currentUserId = SecurityUtils.getCurrentUserId();
 
-        UUID currentUserId = SecurityUtils.getCurrentUserId();
+                return ApiResponse.<ConversationResponse>builder()
+                                // .data(conversationService.createDirectConversation(currentUserId,
+                                // request.getTargetUserId()))
+                                .build();
+        }
 
-        return ApiResponse.<ConversationResponse>builder()
-//                .data(conversationService.createDirectConversation(currentUserId, request.getTargetUserId()))
-                .build();
-    }
+        @Operation(summary = "Get conversation details")
+        @GetMapping(Endpoint.Conversation.ID)
+        public ApiResponse<ConversationResponse> getConversationById(@PathVariable UUID conversationId) {
 
-    @Operation(summary = "Lấy chi tiết hội thoại")
-    @GetMapping(Endpoint.Conversation.ID)
-    public ApiResponse<ConversationResponse> getConversationById(@PathVariable UUID conversationId) {
+                UUID currentUserId = SecurityUtils.getCurrentUserId();
 
-        UUID currentUserId = SecurityUtils.getCurrentUserId();
+                return ApiResponse.<ConversationResponse>builder()
+                                // .data(conversationService.getConversationDetail(conversationId,
+                                // currentUserId))
+                                .build();
+        }
 
-        return ApiResponse.<ConversationResponse>builder()
-//                .data(conversationService.getConversationDetail(conversationId, currentUserId))
-                .build();
-    }
+        // --- QUẢN LÝ TIN NHẮN (MESSAGES) ---
 
-    // --- QUẢN LÝ TIN NHẮN (MESSAGES) ---
+        @Operation(summary = "Send message to conversation")
+        @PostMapping(Endpoint.Conversation.MESSAGES)
+        public ApiResponse<ChatMessageResponse> sendMessage(
+                        @PathVariable UUID conversationId,
+                        @Valid @RequestBody ChatMessageRequest request) {
 
-    @Operation(summary = "Gửi tin nhắn vào hội thoại")
-    @PostMapping(Endpoint.Conversation.MESSAGES)
-    public ApiResponse<ChatMessageResponse> sendMessage(
-            @PathVariable UUID conversationId,
-            @Valid @RequestBody ChatMessageRequest request) {
+                UUID senderId = SecurityUtils.getCurrentUserId();
 
-        UUID senderId = SecurityUtils.getCurrentUserId();
+                return ApiResponse.<ChatMessageResponse>builder()
+                                .data(messageService.sendMessage(conversationId, senderId, request))
+                                .build();
+        }
 
-        return ApiResponse.<ChatMessageResponse>builder()
-                .data(messageService.sendMessage(conversationId, senderId, request))
-                .build();
-    }
+        @Operation(summary = "Get message history (Paginated)")
+        @GetMapping(Endpoint.Conversation.MESSAGES)
+        public ApiResponse<Page<ChatMessageResponse>> getMessages(
+                        @PathVariable UUID conversationId,
+                        Pageable pageable) { // Spring will auto-inject page, size, sort from URL params
 
-    @Operation(summary = "Lấy lịch sử tin nhắn (Phân trang)")
-    @GetMapping(Endpoint.Conversation.MESSAGES)
-    public ApiResponse<Page<ChatMessageResponse>> getMessages(
-            @PathVariable UUID conversationId,
-            Pageable pageable) { // Spring sẽ tự inject page, size, sort từ URL param
+                UUID currentUserId = SecurityUtils.getCurrentUserId();
 
-        UUID currentUserId = SecurityUtils.getCurrentUserId();
+                return ApiResponse.<Page<ChatMessageResponse>>builder()
+                                // .data(messageService.getMessages(conversationId, currentUserId, pageable))
+                                .build();
+        }
 
-        return ApiResponse.<Page<ChatMessageResponse>>builder()
-//                .data(messageService.getMessages(conversationId, currentUserId, pageable))
-                .build();
-    }
+        // --- SETTING CÁ NHÂN (MEMBERS) ---
 
-    // --- SETTING CÁ NHÂN (MEMBERS) ---
+        @Operation(summary = "Leave conversation")
+        @DeleteMapping(Endpoint.Conversation.MEMBERS)
+        public ApiResponse<Void> leaveConversation(@PathVariable UUID conversationId) {
 
-    @Operation(summary = "Rời khỏi cuộc trò chuyện")
-    @DeleteMapping(Endpoint.Conversation.MEMBERS)
-    public ApiResponse<Void> leaveConversation(@PathVariable UUID conversationId) {
+                UUID currentUserId = SecurityUtils.getCurrentUserId();
 
-        UUID currentUserId = SecurityUtils.getCurrentUserId();
+                // conversationService.leaveConversation(conversationId, currentUserId);
 
-//        conversationService.leaveConversation(conversationId, currentUserId);
-
-        return ApiResponse.<Void>builder().message("Left conversation").build();
-    }
+                return ApiResponse.<Void>builder().message("Left conversation").build();
+        }
 }

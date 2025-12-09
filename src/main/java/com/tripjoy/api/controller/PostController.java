@@ -6,8 +6,8 @@ import com.tripjoy.api.dto.request.PostRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.CommentResponse;
 import com.tripjoy.api.dto.response.PostResponse;
-import com.tripjoy.api.service.CommentService;
-import com.tripjoy.api.service.PostService;
+import com.tripjoy.api.service.ICommentService;
+import com.tripjoy.api.service.IPostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -18,7 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -28,14 +27,14 @@ import java.util.UUID;
 @Tag(name = "Post", description = "Endpoints for managing posts and interactions")
 public class PostController {
 
-    PostService postService;
-    CommentService commentService; // Dùng cho nested comments
+    IPostService postService;
+    ICommentService commentService; // Used for nested comments
 
     @Operation(summary = "Create a new post")
     @PostMapping
     public ApiResponse<PostResponse> createPost(@Valid @RequestBody PostRequest request) {
         return ApiResponse.<PostResponse>builder()
-//                .data(postService.createPost(request))
+                // .data(postService.createPost(request))
                 .build();
     }
 
@@ -43,7 +42,7 @@ public class PostController {
     @GetMapping
     public ApiResponse<Page<PostResponse>> getAllPosts(Pageable pageable) {
         return ApiResponse.<Page<PostResponse>>builder()
-//                .data(postService.getAllPosts(pageable))
+                // .data(postService.getAllPosts(pageable))
                 .build();
     }
 
@@ -51,7 +50,7 @@ public class PostController {
     @GetMapping(Endpoint.Post.ID)
     public ApiResponse<PostResponse> getPostById(@PathVariable UUID postId) {
         return ApiResponse.<PostResponse>builder()
-//                .data(postService.getPostById(postId))
+                // .data(postService.getPostById(postId))
                 .build();
     }
 
@@ -59,14 +58,14 @@ public class PostController {
     @PutMapping(Endpoint.Post.ID)
     public ApiResponse<PostResponse> updatePost(@PathVariable UUID postId, @Valid @RequestBody PostRequest request) {
         return ApiResponse.<PostResponse>builder()
-//                .data(postService.updatePost(postId, request))
+                // .data(postService.updatePost(postId, request))
                 .build();
     }
 
     @Operation(summary = "Delete a post")
     @DeleteMapping(Endpoint.Post.ID)
     public ApiResponse<Void> deletePost(@PathVariable UUID postId) {
-//        postService.deletePost(postId);
+        // postService.deletePost(postId);
         return ApiResponse.<Void>builder().message("Post deleted successfully").build();
     }
 
@@ -75,41 +74,40 @@ public class PostController {
     @Operation(summary = "Like a post")
     @PostMapping(Endpoint.Post.LIKES)
     public ApiResponse<Void> likePost(@PathVariable UUID postId) {
-//        postService.likePost(postId);
+        // postService.likePost(postId);
         return ApiResponse.<Void>builder().message("Post liked").build();
     }
 
-@Operation(summary = "Unlike a post")
+    @Operation(summary = "Unlike a post")
     @DeleteMapping(Endpoint.Post.LIKES)
     public ApiResponse<Void> unlikePost(@PathVariable UUID postId) {
-//        postService.unlikePost(postId);
+        // postService.unlikePost(postId);
         return ApiResponse.<Void>builder().message("Post unliked").build();
     }
 
     // --- Save Actions ---
 
-    @Operation(summary = "Get saved posts for the current users")
+    @Operation(summary = "Get saved posts for the current user")
     @GetMapping(Endpoint.Post.SAVES)
     public ApiResponse<PostResponse> getSavedPosts() {
         return ApiResponse.<PostResponse>builder()
-//                .data(postService.getSavedPosts())
+                // .data(postService.getSavedPosts())
                 .build();
     }
 
     @Operation(summary = "Save a post")
     @PostMapping(Endpoint.Post.SAVES)
     public ApiResponse<Void> savePost(@PathVariable UUID postId) {
-//        postService.savePost(postId);
+        // postService.savePost(postId);
         return ApiResponse.<Void>builder().message("Post saved").build();
     }
 
     @Operation(summary = "Unsave a post")
     @DeleteMapping(Endpoint.Post.SAVES)
     public ApiResponse<Void> unsavePost(@PathVariable UUID postId) {
-//        postService.unsavePost(postId);
+        // postService.unsavePost(postId);
         return ApiResponse.<Void>builder().message("Post unsaved").build();
     }
-
 
     @Operation(summary = "Get root comments for a post (paginated)")
     @GetMapping(Endpoint.Post.COMMENTS)
@@ -117,15 +115,17 @@ public class PostController {
     public ApiResponse<Page<CommentResponse>> getCommentsForPost(
             @PathVariable UUID postId, Pageable pageable) { // <-- Thêm Pageable
         return ApiResponse.<Page<CommentResponse>>builder() // <-- Đổi List sang Page
-//                .data(commentService.getRootCommentsForPost(postId, pageable))
+                // .data(commentService.getRootCommentsForPost(postId, pageable))
                 .build();
     }
 
     @Operation(summary = "Create a new root comment on a post")
     @PostMapping(Endpoint.Post.COMMENTS)
-    public ApiResponse<CommentResponse> createComment(@PathVariable UUID postId, @Valid @RequestBody CommentRequest request) {
+    public ApiResponse<CommentResponse> createComment(@PathVariable UUID postId,
+            @Valid @RequestBody CommentRequest request) {
         return ApiResponse.<CommentResponse>builder()
-//                .data(commentService.createRootComment(postId, request)) // <-- Đổi tên service cho rõ
+                // .data(commentService.createRootComment(postId, request)) // <-- Đổi tên
+                // service cho rõ
                 .build();
     }
 }
