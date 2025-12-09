@@ -7,6 +7,8 @@ import com.tripjoy.api.dto.response.GroupResponse;
 import com.tripjoy.api.dto.response.simple.GroupMemberResponse;
 import com.tripjoy.api.entity.*;
 import com.tripjoy.api.enums.ConversationType;
+import com.tripjoy.api.exception.AppException;
+import com.tripjoy.api.exception.ErrorCode;
 import com.tripjoy.api.mapper.GroupMapper;
 import com.tripjoy.api.repository.*;
 import lombok.AccessLevel;
@@ -34,7 +36,10 @@ public class GroupService {
     GroupMapper groupMapper;
 
     @Transactional
-    public GroupResponse createGroup(GroupRequest request, User owner) {
+    public GroupResponse createGroup(GroupRequest request, UUID ownerId) {
+        // --- STEP 0: FETCH OWNER ---
+        User owner = userRepository.findById(ownerId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         // --- STEP 1: MAP REQUEST -> ENTITY ---
         Group group = groupMapper.toGroup(request);
         // Set default logic...
@@ -81,10 +86,10 @@ public class GroupService {
     public GroupMemberResponse addMemberToGroup(UUID groupId, UUID userId) {
         // --- STEP 1: VALIDATION ---
         Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new RuntimeException("Group not found with ID: " + groupId));
+                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         // Check exists (Optional)
         if (groupMemberRepository.existsByGroupAndUser(group, user)) {
@@ -113,6 +118,6 @@ public class GroupService {
     public GroupResponse getGroupById(UUID groupId) {
         return groupRepository.findById(groupId)
                 .map(groupMapper::toGroupResponse)
-                .orElseThrow(() -> new RuntimeException("Group not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
     }
 }

@@ -5,6 +5,8 @@ import com.tripjoy.api.dto.response.ChatMessageResponse;
 import com.tripjoy.api.entity.ChatMessage;
 import com.tripjoy.api.entity.Conversation;
 import com.tripjoy.api.entity.User;
+import com.tripjoy.api.exception.AppException;
+import com.tripjoy.api.exception.ErrorCode;
 import com.tripjoy.api.mapper.ChatMessageMapper;
 import com.tripjoy.api.repository.ChatMessageRepository;
 import com.tripjoy.api.repository.ConversationRepository;
@@ -55,10 +57,13 @@ public class MessageService {
     }
 
     @Transactional
-    public ChatMessageResponse sendMessage(UUID conversationId, User sender, ChatMessageRequest request) {
+    public ChatMessageResponse sendMessage(UUID conversationId, UUID senderId, ChatMessageRequest request) {
+        // 0. Tìm Sender
+        User sender = userRepository.findById(senderId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         // 1. Validate Conversation
         Conversation conversation = conversationRepository.findById(conversationId)
-                .orElseThrow(() -> new RuntimeException("Conversation not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_FOUND));
 
         // 2. Map Request -> Entity
         ChatMessage message = chatMessageMapper.toEntity(request);

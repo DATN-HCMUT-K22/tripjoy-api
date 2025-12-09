@@ -11,6 +11,7 @@ import com.tripjoy.api.dto.response.SuggestLocationResponse;
 import com.tripjoy.api.dto.response.simple.GroupMemberResponse;
 import com.tripjoy.api.entity.User;
 import com.tripjoy.api.service.GroupService;
+import com.tripjoy.api.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -36,13 +37,11 @@ public class GroupController {
 
     @Operation(summary = "Tạo nhóm mới (Tự động tạo kênh chat General)")
     @PostMapping
-    public ApiResponse<GroupResponse> createGroup(
-            @Valid @RequestBody GroupRequest request,
-            @AuthenticationPrincipal User currentUser // Lấy user từ token
-    ) {
-        // Service sẽ bắn Event GroupCreated -> Tự tạo Chat
+    public ApiResponse<GroupResponse> createGroup(@Valid @RequestBody GroupRequest request) {
+        UUID ownerId = SecurityUtils.getCurrentUserId();
+
         return ApiResponse.<GroupResponse>builder()
-                .data(groupService.createGroup(request, currentUser))
+                .data(groupService.createGroup(request, ownerId))
                 .build();
     }
 

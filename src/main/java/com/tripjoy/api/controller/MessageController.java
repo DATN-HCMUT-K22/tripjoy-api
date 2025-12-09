@@ -4,6 +4,7 @@ import com.tripjoy.api.constant.Endpoint;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.entity.User;
 import com.tripjoy.api.service.MessageService;
+import com.tripjoy.api.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
@@ -28,11 +29,11 @@ public class MessageController {
 
     @Operation(summary = "Thả tim / Bỏ tim tin nhắn (Toggle)")
     @PostMapping(Endpoint.Message.LIKES)
-    public ApiResponse<Void> toggleLikeMessage(
-            @PathVariable UUID messageId,
-            @AuthenticationPrincipal User currentUser) {
+    public ApiResponse<Void> toggleLikeMessage(@PathVariable UUID messageId) {
 
-        messageService.toggleLikeMessage(messageId, currentUser.getId());
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+
+        messageService.toggleLikeMessage(messageId, currentUserId);
 
         return ApiResponse.<Void>builder()
                 .message("Success")
