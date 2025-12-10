@@ -70,7 +70,7 @@ public class GroupController {
 
         // --- MEMBERS MANAGEMENT (Source of Truth) ---
 
-        @Operation(summary = "Add member to group (Automatically syncs to Chat)")
+        @Operation(summary = "Add member to group (Automatically syncs to Chat) - OK")
         @PostMapping(Endpoint.Group.MEMBERS_BASE)
         public ApiResponse<Void> addMember(
                         @PathVariable UUID groupId,

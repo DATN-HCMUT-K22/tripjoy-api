@@ -7,7 +7,7 @@ import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.ChatMessageResponse;
 import com.tripjoy.api.dto.response.ConversationResponse;
 import com.tripjoy.api.service.IConversationService;
-import com.tripjoy.api.service.IMessageService;
+import com.tripjoy.api.service.IChatMessageService;
 import com.tripjoy.api.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,7 +30,7 @@ import java.util.UUID;
 public class ConversationController {
 
         IConversationService conversationService;
-        IMessageService messageService; // Separate service for message handling if needed
+        IChatMessageService messageService; // Separate service for message handling if needed
 
         // --- QUẢN LÝ HỘI THOẠI ---
 

@@ -5,6 +5,7 @@ import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.annotation.OnConnect;
 import com.corundumstudio.socketio.annotation.OnDisconnect;
 import com.corundumstudio.socketio.annotation.OnEvent;
+import com.tripjoy.api.configuration.socketio.SocketRateLimiter;
 import com.tripjoy.api.dto.response.ChatMessageResponse;
 import com.tripjoy.api.service.ISocketService;
 import lombok.RequiredArgsConstructor;
@@ -19,80 +20,116 @@ import java.util.UUID;
 public class SocketService implements ISocketService {
 
     private final SocketIOServer server;
-
-    // --- 1. CONNECTION MANAGEMENT ---
+    private final SocketRateLimiter rateLimiter;
 
     @OnConnect
     public void onConnect(SocketIOClient client) {
         String userId = client.getHandshakeData().getSingleUrlParam("userId");
-        if (userId != null) {
-            // Join room riêng của User để nhận thông báo cá nhân (Notification)
-            client.joinRoom("user_" + userId);
-            log.info("Socket: User connected: {}", userId);
+        String sessionId = client.getSessionId().toString();
+
+        if (userId != null && !userId.trim().isEmpty()) {
+            String userRoom = "user_" + userId;
+            client.joinRoom(userRoom);
+            log.info("User connected: userId={}, sessionId={}", userId, sessionId);
+        } else {
+            log.warn("Client connected without userId: sessionId={}", sessionId);
         }
     }
 
     @OnDisconnect
     public void onDisconnect(SocketIOClient client) {
-        log.info("Socket: Client disconnected: {}", client.getSessionId());
+        String userId = client.getHandshakeData().getSingleUrlParam("userId");
+        String sessionId = client.getSessionId().toString();
+
+        if (userId != null) {
+            rateLimiter.cleanup(userId);
+        }
+
+        log.info("Client disconnected: userId={}, sessionId={}", userId != null ? userId : "unknown", sessionId);
     }
 
-    // --- 2. ROOM MANAGEMENT (Client chủ động join vào room chat) ---
-
-    // Client khi mở màn hình chat nào thì emit event này để join room đó
     @OnEvent("join_conversation")
     public void onJoinConversation(SocketIOClient client, String conversationId) {
-        // Room name: "conversation_uuid"
-        String roomName = "conversation_" + conversationId;
-        client.joinRoom(roomName);
-        log.info("Socket: Client joined room: {}", roomName);
+        try {
+            String roomName = "conversation_" + conversationId;
+            client.joinRoom(roomName);
+
+            String userId = client.getHandshakeData().getSingleUrlParam("userId");
+            log.info("Client joined conversation: userId={}, conversationId={}", userId, conversationId);
+        } catch (Exception e) {
+            log.error("Error joining conversation {}: {}", conversationId, e.getMessage());
+        }
     }
 
-    // Client khi thoát màn hình chat thì leave room (để đỡ nhận tin rác)
     @OnEvent("leave_conversation")
     public void onLeaveConversation(SocketIOClient client, String conversationId) {
-        String roomName = "conversation_" + conversationId;
-        client.leaveRoom(roomName);
-        log.info("Socket: Client left room: {}", roomName);
-    }
+        try {
+            String roomName = "conversation_" + conversationId;
+            client.leaveRoom(roomName);
 
-    // --- 3. TYPING INDICATOR (Hiệu ứng đang gõ...) ---
+            String userId = client.getHandshakeData().getSingleUrlParam("userId");
+            log.info("Client left conversation: userId={}, conversationId={}", userId, conversationId);
+        } catch (Exception e) {
+            log.error("Error leaving conversation {}: {}", conversationId, e.getMessage());
+        }
+    }
 
     @OnEvent("typing")
     public void onTyping(SocketIOClient client, String conversationId) {
-        // Báo cho những người khác trong phòng là "Có ai đó đang gõ"
-        // Exclude client gửi (mình gõ thì mình không cần nhận tin mình đang gõ)
-        client.getNamespace()
-                .getRoomOperations("conversation_" + conversationId)
-                .sendEvent("user_typing", client.getHandshakeData().getSingleUrlParam("userId"));
+        try {
+            String userId = client.getHandshakeData().getSingleUrlParam("userId");
+
+            if (!rateLimiter.allowTyping(userId)) {
+                return; // Silently ignore if rate limited
+            }
+
+            String roomName = "conversation_" + conversationId;
+
+            server.getRoomOperations(roomName)
+                    .getClients()
+                    .stream()
+                    .filter(c -> !c.getSessionId().equals(client.getSessionId()))
+                    .forEach(c -> c.sendEvent("user_typing", userId));
+
+        } catch (Exception e) {
+            log.error("Error broadcasting typing indicator: {}", e.getMessage());
+        }
     }
 
     @OnEvent("stop_typing")
     public void onStopTyping(SocketIOClient client, String conversationId) {
-        client.getNamespace()
-                .getRoomOperations("conversation_" + conversationId)
-                .sendEvent("user_stop_typing");
+        try {
+            String userId = client.getHandshakeData().getSingleUrlParam("userId");
+            String roomName = "conversation_" + conversationId;
+
+            server.getRoomOperations(roomName)
+                    .getClients()
+                    .stream()
+                    .filter(c -> !c.getSessionId().equals(client.getSessionId()))
+                    .forEach(c -> c.sendEvent("user_stop_typing", userId));
+
+        } catch (Exception e) {
+            log.error("Error broadcasting stop typing: {}", e.getMessage());
+        }
     }
 
-    // --- 4. BROADCAST METHODS (Được gọi từ MessageService) ---
-
-    /**
-     * Hàm này được MessageService gọi SAU KHI lưu tin nhắn vào DB thành công.
-     * Nhiệm vụ: Gửi tin nhắn đến tất cả user đang online trong conversation đó.
-     */
     public void sendNewMessage(UUID conversationId, ChatMessageResponse messageResponse) {
-        String roomName = "conversation_" + conversationId.toString();
-
-        // Gửi event "receive_message" kèm cục data response chuẩn
-        server.getRoomOperations(roomName)
-                .sendEvent("receive_message", messageResponse);
-
-        log.info("Socket: Broadcast message {} to room {}", messageResponse.getId(), roomName);
+        try {
+            String roomName = "conversation_" + conversationId;
+            server.getRoomOperations(roomName).sendEvent("receive_message", messageResponse);
+            log.info("Message broadcasted: messageId={}, conversationId={}", messageResponse.getId(), conversationId);
+        } catch (Exception e) {
+            log.error("Failed to broadcast message: conversationId={}, messageId={}", conversationId,
+                    messageResponse.getId(), e);
+        }
     }
 
-    // Ví dụ gửi thông báo like
     public void sendLikeUpdate(UUID conversationId, UUID messageId, UUID userId, boolean isLiked) {
-        server.getRoomOperations("conversation_" + conversationId.toString())
-                .sendEvent("update_like", messageId, userId, isLiked);
+        try {
+            String roomName = "conversation_" + conversationId;
+            server.getRoomOperations(roomName).sendEvent("update_like", messageId, userId, isLiked);
+        } catch (Exception e) {
+            log.error("Failed to broadcast like update: {}", e.getMessage());
+        }
     }
 }

@@ -2,7 +2,7 @@ package com.tripjoy.api.controller;
 
 import com.tripjoy.api.constant.Endpoint;
 import com.tripjoy.api.dto.response.ApiResponse;
-import com.tripjoy.api.service.IMessageService;
+import com.tripjoy.api.service.IChatMessageService;
 import com.tripjoy.api.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,9 +21,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Tag(name = "Messages", description = "Actions on specific messages (Like, Revoke...)")
-public class MessageController {
+public class ChatMessageController {
 
-    IMessageService messageService;
+    IChatMessageService messageService;
 
     @Operation(summary = "Like / Unlike message (Toggle)")
     @PostMapping(Endpoint.Message.LIKES)

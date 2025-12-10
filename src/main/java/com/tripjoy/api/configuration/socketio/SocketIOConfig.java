@@ -1,23 +1,27 @@
 package com.tripjoy.api.configuration.socketio;
 
+import com.corundumstudio.socketio.AuthorizationResult;
 import com.corundumstudio.socketio.SocketIOServer;
+import com.corundumstudio.socketio.protocol.JacksonJsonSupport;
 import com.corundumstudio.socketio.store.RedissonStoreFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.tripjoy.api.configuration.security.JwtUtils;
-import com.tripjoy.api.dto.response.auth.AuthenticationResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import com.corundumstudio.socketio.AuthorizationResult;
+import com.corundumstudio.socketio.*;
 
 @Configuration
 @RequiredArgsConstructor
 @Slf4j
 public class SocketIOConfig {
 
-    private final RedissonClient redissonClient; // Inject Redis client đã tạo ở bước 2
+    private final RedissonClient redissonClient;
     private final JwtUtils jwtUtils;
 
     @Value("${socket-server.host}")
@@ -27,41 +31,42 @@ public class SocketIOConfig {
     private Integer port;
 
     @Bean
-    public SocketIOServer socketIOServer() {
+    public SocketIOServer socketIOServer(ObjectMapper objectMapper) {
         com.corundumstudio.socketio.Configuration config = new com.corundumstudio.socketio.Configuration();
         config.setHostname(host);
         config.setPort(port);
+        config.setMaxFramePayloadLength(1024 * 1024);
+        config.setMaxHttpContentLength(1024 * 1024);
+        config.setPingTimeout(60000);
+        config.setPingInterval(25000);
 
-        // --- CẤU HÌNH STORE FACTORY (QUAN TRỌNG) ---
-        // Dòng này bảo Socket.IO: "Đừng lưu client trong RAM, hãy lưu vào Redis qua Redisson"
-        // Điều này cho phép Pub/Sub hoạt động giữa nhiều server backend.
+        JacksonJsonSupport jsonSupport = new JacksonJsonSupport(
+                new ParameterNamesModule(),
+                new JavaTimeModule());
+        config.setJsonSupport(jsonSupport);
         config.setStoreFactory(new RedissonStoreFactory(redissonClient));
+        config.setAuthorizationListener(this::authorizeConnection);
+        config.setExceptionListener(new SocketExceptionHandler());
 
-        // --- Cấu hình Authentication ---
-        config.setAuthorizationListener(data -> {
-            // Client gửi: ws://host:8085?token=eyJ...
+        SocketIOServer server = new SocketIOServer(config);
+        log.info("Socket.IO server configured on {}:{}", host, port);
+        return server;
+    }
+
+    private AuthorizationResult authorizeConnection(HandshakeData data) {
+        try {
             String token = data.getSingleUrlParam("token");
-
-            if (token == null || token.isEmpty()) {
-                log.error("SocketIO: Token missing");
+            if (token == null || token.trim().isEmpty()) {
+                log.warn("Socket.IO connection without token from {}", data.getAddress().getHostString());
                 return AuthorizationResult.FAILED_AUTHORIZATION;
             }
 
-            try {
-                // Sử dụng JwtProvider để validate
-                // Hàm verifyToken sẽ throw Exception nếu token sai/hết hạn
-                jwtUtils.verifyToken(token, false);
+            jwtUtils.verifyToken(token, false);
+            return AuthorizationResult.SUCCESSFUL_AUTHORIZATION;
 
-                // (Tuỳ chọn) Lấy userId từ token để dùng sau này nếu cần
-                // String userId = jwtProvider.getUserIdFromToken(token);
-
-                return AuthorizationResult.SUCCESSFUL_AUTHORIZATION; // Token hợp lệ -> Cho phép kết nối
-            } catch (Exception e) {
-                log.error("SocketIO: Token invalid - {}", e.getMessage());
-                return AuthorizationResult.FAILED_AUTHORIZATION; // Từ chối kết nối
-            }
-        });
-
-        return new SocketIOServer(config);
+        } catch (Exception e) {
+            log.error("Socket.IO authorization failed: {}", e.getMessage());
+            return AuthorizationResult.FAILED_AUTHORIZATION;
+        }
     }
 }
