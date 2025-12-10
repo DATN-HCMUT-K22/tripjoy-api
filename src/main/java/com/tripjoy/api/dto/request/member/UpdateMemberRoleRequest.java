@@ -1,5 +1,6 @@
 package com.tripjoy.api.dto.request.member;
 
+import com.tripjoy.api.enums.GroupRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -12,13 +13,14 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UpdateMemberRoleRequest {
 
-    @NotNull
+    @NotNull(message = "Role is required")
     @Schema(
-            name = "is_leader",
-            description = "Set the member's leader status",
-            type = "Boolean",
+            name = "role",
+            description = "Assign new role to member",
+            type = "string",
+            allowableValues = {"LEADER", "CO_LEADER", "MEMBER"},
             requiredMode = Schema.RequiredMode.REQUIRED,
-            example = "true"
+            example = "CO_LEADER"
     )
-    Boolean isLeader;
+    GroupRole role;
 }
