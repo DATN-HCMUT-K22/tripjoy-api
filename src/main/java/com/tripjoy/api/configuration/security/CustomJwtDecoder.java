@@ -1,8 +1,7 @@
 package com.tripjoy.api.configuration.security;
 
 import com.nimbusds.jose.JOSEException;
-import com.tripjoy.api.dto.request.auth.IntrospectRequest;
-import com.tripjoy.api.service.AuthenticationService;
+import com.tripjoy.api.exception.AppException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -21,7 +20,7 @@ public class CustomJwtDecoder implements JwtDecoder {
     private String signerKey;
 
     @Autowired
-    private AuthenticationService authenticationService;
+    private JwtUtils jwtUtils;
 
     private NimbusJwtDecoder nimbusJwtDecoder = null;
 
@@ -29,11 +28,8 @@ public class CustomJwtDecoder implements JwtDecoder {
     public Jwt decode(String token) throws JwtException {
 
         try {
-            var response = authenticationService.introspectToken(
-                    IntrospectRequest.builder().token(token).build());
-
-            if (!response.isValid()) throw new JwtException("Invalid token");
-        } catch (JOSEException | ParseException e) {
+            jwtUtils.verifyToken(token, false);
+        } catch (JOSEException | ParseException | AppException e) {
             throw new JwtException(e.getMessage());
         }
 

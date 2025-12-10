@@ -3,8 +3,11 @@ package com.tripjoy.api.dto.request.member;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -13,7 +16,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AddMemberRequest {
 
-    @NotBlank
+    @NotNull(message = "User ID is required")
     @JsonProperty("member_id")
     @Schema(
             name = "member_id",
@@ -22,7 +25,7 @@ public class AddMemberRequest {
             requiredMode = Schema.RequiredMode.REQUIRED,
             example = "a1b2c3d4-e5f6-7890-1234-567890abcdef"
     )
-    String memberId;
+    UUID memberId;
 
     @Schema(
             name = "is_leader",

@@ -6,24 +6,24 @@ import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
+@Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
 public class TripItem extends BaseEntity{
 
     private LocalDateTime startTime;
     private Integer duration;
     private String note;
 
-    @OneToOne(fetch = FetchType.LAZY)
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location_id")
     private Location location;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "itinerary_id")
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private Itinerary itinerary;
 }

@@ -7,7 +7,9 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -16,7 +18,7 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PostResponse {
 
-    String id;
+    UUID id;
 
     @JsonProperty("media_url")
     String mediaUrl;
@@ -56,4 +58,7 @@ public class PostResponse {
 
     @JsonProperty("is_saved")
     Boolean isSaved; // Users này đã save post chưa?
+
+    @JsonProperty("latest_comments")
+    List<CommentResponse> latestComments;
 }

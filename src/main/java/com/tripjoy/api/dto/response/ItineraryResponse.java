@@ -8,6 +8,7 @@ import lombok.experimental.FieldDefaults;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -16,7 +17,7 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ItineraryResponse {
 
-    String id;
+    UUID id;
     String name;
     String description;
 
@@ -32,6 +33,9 @@ public class ItineraryResponse {
     @JsonProperty("budget_estimate")
     Double budgetEstimate;
 
+    @JsonProperty("destination")
+    String destination;
+
     String status;
 
     @JsonProperty("is_favorited")
@@ -43,4 +47,7 @@ public class ItineraryResponse {
 
     @JsonProperty("trip_items")
     List<TripItemResponse> tripItems;
+
+    @JsonProperty("expenses")
+    List<ExpenseResponse> expenses;
 }

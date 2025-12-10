@@ -4,7 +4,7 @@ import com.tripjoy.api.constant.Endpoint;
 import com.tripjoy.api.dto.request.report.ModerationActionRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.report.ModerationActionResponse;
-import com.tripjoy.api.service.AdminService;
+import com.tripjoy.api.service.IAdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -25,16 +25,16 @@ import org.springframework.web.bind.annotation.RestController;
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
-    AdminService adminService;
+    IAdminService adminService;
 
-    @Operation(summary = "Perform a moderation action on a users (e.g., BAN, WARN)")
+    @Operation(summary = "Perform a moderation action on a user (e.g., BAN, WARN)")
     @PostMapping("/moderate-user")
     public ApiResponse<ModerationActionResponse> moderateUser(
             @Valid @RequestBody ModerationActionRequest request) {
 
         // return ApiResponse.<ModerationActionResponse>builder()
-        //        .data(adminService.moderateUser(request))
-        //        .build();
+        // .data(adminService.moderateUser(request))
+        // .build();
         return null; // Placeholder
     }
 }

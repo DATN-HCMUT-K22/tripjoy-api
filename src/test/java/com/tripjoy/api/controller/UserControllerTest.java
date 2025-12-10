@@ -3,10 +3,9 @@ package com.tripjoy.api.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tripjoy.api.dto.request.UserCreationRequest;
 import com.tripjoy.api.dto.response.UserResponse;
-import com.tripjoy.api.service.UserService;
+import com.tripjoy.api.service.impl.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatcher;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +16,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import java.util.UUID;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -42,8 +43,10 @@ public class UserControllerTest {
                 .fullName("Test User")
                 .build();
 
+        UUID uuid = UUID.randomUUID();
+
         response = UserResponse.builder()
-                .id("123e4567-e89b-12d3-a456-426614174000")
+                .id(uuid)
                 .username("testuser")
                 .email("testuser@example.com")
                 .fullName("Test User")

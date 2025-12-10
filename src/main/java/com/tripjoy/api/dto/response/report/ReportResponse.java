@@ -5,6 +5,8 @@ import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.UUID;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -12,7 +14,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ReportResponse {
 
-    String id; // ID của bảng "Report_to"
+    UUID id; // ID của bảng "Report_to"
 
     @JsonProperty("report_type")
     String reportType;

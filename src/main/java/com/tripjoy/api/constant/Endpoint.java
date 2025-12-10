@@ -49,28 +49,48 @@ public class Endpoint {
         public static final String MEMBERS_BASE = ID + "/members";
         public static final String MEMBERS_ID = MEMBERS_BASE + "/{memberId}";
 
-        // Chat trong group
-        public static final String MESSAGES_BASE = ID + "/messages";
-
         // Đề xuất địa điểm trong group
-        public static final String SUGGEST_LOCATIONS = ID + "/suggest-locations";
+        public static final String LOCATION_SUGGESTIONS = ID + "/location-suggestions";
     }
 
-    public static final class Chat {
-        public static final String BASE = API_PREFIX + "/chat"; // -> /api/v1/chat
+//    public static final class Chat {
+//        public static final String BASE = API_PREFIX + "/chat"; // -> /api/v1/chat
+//
+//        // --- Endpoints cho Tin nhắn (Message) ---
+//        public static final String MESSAGES = "/messages";
+//        public static final String MESSAGE_ID = MESSAGES + "/{messageId}"; // -> /api/v1/chat/messages/{messageId}
+//        public static final String MESSAGE_LIKES = MESSAGE_ID + "/likes"; // -> .../{messageId}/likes
+//
+//        // --- Endpoints cho Chat 1-1 (Direct) ---
+//        public static final String DIRECT_BASE = "/direct/{userId}"; // -> /api/v1/chat/direct/{userId}
+//        public static final String DIRECT_MESSAGES = DIRECT_BASE + "/messages"; // -> .../direct/{userId}/messages
+//
+//        // --- Endpoints cho Chat Nhóm (Groups) ---
+//        public static final String GROUP_BASE = "/groups/{groupId}"; // -> /api/v1/chat/groups/{groupId}
+//        public static final String GROUP_MESSAGES = GROUP_BASE + "/messages"; // -> .../groups/{groupId}/messages
+//    }
 
-        // --- Endpoints cho Tin nhắn (Message) ---
-        public static final String MESSAGES = "/messages";
-        public static final String MESSAGE_ID = MESSAGES + "/{messageId}"; // -> /api/v1/chat/messages/{messageId}
-        public static final String MESSAGE_LIKES = MESSAGE_ID + "/likes"; // -> .../{messageId}/likes
+    public static final class Conversation {
+        public static final String BASE = API_PREFIX + "/conversations";
 
-        // --- Endpoints cho Chat 1-1 (Direct) ---
-        public static final String DIRECT_BASE = "/direct/{userId}"; // -> /api/v1/chat/direct/{userId}
-        public static final String DIRECT_MESSAGES = DIRECT_BASE + "/messages"; // -> .../direct/{userId}/messages
+        // GET: Lấy danh sách Inbox
+        // POST: Tạo cuộc hội thoại mới
 
-        // --- Endpoints cho Chat Nhóm (Groups) ---
-        public static final String GROUP_BASE = "/groups/{groupId}"; // -> /api/v1/chat/groups/{groupId}
-        public static final String GROUP_MESSAGES = GROUP_BASE + "/messages"; // -> .../groups/{groupId}/messages
+        public static final String ID = "/{conversationId}"; // GET: Lấy chi tiết hội thoại
+
+        // Quản lý tin nhắn trong hội thoại
+        public static final String MESSAGES = ID + "/messages";
+
+        // Quản lý thành viên (Thêm, Xóa, Rời nhóm, Mute)
+        public static final String MEMBERS = ID + "/members";
+    }
+
+    // Class này để xử lý hành động trên 1 tin nhắn cụ thể (Global ID)
+    public static final class Message {
+        public static final String BASE = API_PREFIX + "/messages";
+        public static final String ID = "/{messageId}";
+
+        public static final String LIKES = ID + "/likes";
     }
 
     public static final class Itinerary {
@@ -86,9 +106,9 @@ public class Endpoint {
         public static final String EXPENSES_ID = EXPENSES_BASE + "/{expenseId}";
 
         // Thêm/bỏ yêu thích
-        public static final String FAVORITE = ID + "/favorite";
+        public static final String FAVORITES = ID + "/favorites";
 
-        public static final String NOTEBOOKS_BASE = ID + "/notebooks";
+        public static final String NOTEBOOKS = ID + "/notebooks";
     }
 
     public static final class TravelNotebook {

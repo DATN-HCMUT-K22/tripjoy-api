@@ -6,6 +6,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FeedbackResponseResponse {
 
-    String id; // ID from Response_feedback table
+    UUID id; // ID from Response_feedback table
 
     @JsonProperty("feedback_id")
     String feedbackId;

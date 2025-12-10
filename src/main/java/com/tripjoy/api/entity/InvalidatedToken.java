@@ -6,16 +6,17 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.Date;
+import java.util.UUID;
 
-@Data
+@Getter
+@Setter
+@Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
-@Entity
 public class InvalidatedToken {
 
     @Id
-    String id;
-    Date expiresAt;
+    private UUID id;
+    private Date expiresAt;
 }

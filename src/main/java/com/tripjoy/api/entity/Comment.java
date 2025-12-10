@@ -1,24 +1,30 @@
 package com.tripjoy.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Comment extends BaseEntity{
 
     private String content;
     private Boolean isDeleted;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reply_comment_id", referencedColumnName = "id")
-    private Comment replyComment;
+    @JoinColumn(name = "parent_comment_id", referencedColumnName = "id")
+    private Comment parentComment;
 
-    @OneToMany(mappedBy = "replyComment", fetch = FetchType.LAZY)
-    private Set<Comment> comments = new HashSet<>();
+    @OneToMany(mappedBy = "parentComment", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private Set<Comment> replies = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

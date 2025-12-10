@@ -6,7 +6,7 @@ import com.tripjoy.api.dto.request.feedback.FeedbackResponseRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.feedback.FeedbackResponse;
 import com.tripjoy.api.dto.response.feedback.FeedbackResponseResponse;
-import com.tripjoy.api.service.FeedbackService;
+import com.tripjoy.api.service.IFeedbackService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -18,6 +18,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping(Endpoint.Feedback.BASE)
 @RequiredArgsConstructor
@@ -25,13 +27,13 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Feedback", description = "Endpoints for submitting and managing feedback")
 public class FeedbackController {
 
-    FeedbackService feedbackService;
+    IFeedbackService feedbackService;
 
     @Operation(summary = "Submit new feedback")
     @PostMapping
     public ApiResponse<FeedbackResponse> submitFeedback(@Valid @RequestBody FeedbackRequest request) {
         return ApiResponse.<FeedbackResponse>builder()
-//                .data(feedbackService.submitFeedback(request))
+                // .data(feedbackService.submitFeedback(request))
                 .build();
     }
 
@@ -40,31 +42,31 @@ public class FeedbackController {
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Page<FeedbackResponse>> getAllFeedback(Pageable pageable) {
         return ApiResponse.<Page<FeedbackResponse>>builder()
-//                .data(feedbackService.getAllFeedback(pageable))
+                // .data(feedbackService.getAllFeedback(pageable))
                 .build();
     }
 
     @Operation(summary = "Get feedback details by id (Admin)")
     @GetMapping(Endpoint.Feedback.ID)
     @PreAuthorize("hasRole('ADMIN')")
-    public ApiResponse<FeedbackResponse> getFeedbackById(@PathVariable String feedbackId) {
+    public ApiResponse<FeedbackResponse> getFeedbackById(@PathVariable UUID feedbackId) {
         return ApiResponse.<FeedbackResponse>builder()
-//                .data(feedbackService.getFeedbackById(feedbackId))
+                // .data(feedbackService.getFeedbackById(feedbackId))
                 .build();
     }
 
     // --- Admin Response ---
 
-    @Operation(summary = "Admin responds to a users's feedback")
+    @Operation(summary = "Admin responds to a user's feedback")
     @PostMapping(Endpoint.Feedback.ID + "/respond")
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<FeedbackResponseResponse> respondToFeedback(
-            @PathVariable String feedbackId,
+            @PathVariable UUID feedbackId,
             @Valid @RequestBody FeedbackResponseRequest request) {
 
         // return ApiResponse.<FeedbackResponseResponse>builder()
-        //        .data(feedbackService.respondToFeedback(feedbackId, request))
-        //        .build();
+        // .data(feedbackService.respondToFeedback(feedbackId, request))
+        // .build();
         return null; // Placeholder
     }
 }

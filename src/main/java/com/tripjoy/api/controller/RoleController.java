@@ -1,13 +1,10 @@
 package com.tripjoy.api.controller;
 
 import com.tripjoy.api.constant.Endpoint;
-import com.tripjoy.api.dto.request.PermissionRequest;
 import com.tripjoy.api.dto.request.RoleRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
-import com.tripjoy.api.dto.response.PermissionResponse;
 import com.tripjoy.api.dto.response.RoleResponse;
-import com.tripjoy.api.service.PermissionService;
-import com.tripjoy.api.service.RoleService;
+import com.tripjoy.api.service.IRoleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
@@ -25,7 +22,7 @@ import java.util.List;
 @Tag(name = "Role", description = "Endpoints for managing roles (Admin only)")
 @PreAuthorize("hasRole('ADMIN')")
 public class RoleController {
-    RoleService roleService;
+    IRoleService roleService;
 
     @Operation(summary = "Create a new role")
     @PostMapping

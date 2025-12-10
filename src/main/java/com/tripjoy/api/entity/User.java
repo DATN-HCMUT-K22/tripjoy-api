@@ -1,5 +1,6 @@
 package com.tripjoy.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -7,11 +8,12 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
+@Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
 @Table(name = "users")
 public class User extends BaseEntity {
 
@@ -37,6 +39,7 @@ public class User extends BaseEntity {
     private Set<Role> roles;
 
     @ManyToMany(mappedBy = "favouriteUsers")
+    @JsonIgnore
     private Set<Itinerary> favouriteItineraries = new HashSet<>();
 
 }

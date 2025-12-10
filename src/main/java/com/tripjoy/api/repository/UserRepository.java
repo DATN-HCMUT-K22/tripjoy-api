@@ -7,9 +7,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, String> {
+public interface UserRepository extends JpaRepository<User, UUID> {
     // SELECT * FROM users WHERE is_deleted = false
     @Override
     List<User> findAll();
@@ -21,5 +22,6 @@ public interface UserRepository extends JpaRepository<User, String> {
     List<User> findAllOnlyDeleted();
 
     boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
     Optional<User> findByUsername(String username);
 }
