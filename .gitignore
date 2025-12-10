@@ -33,3 +33,6 @@ build/
 .vscode/
 
 .env
+
+### Redis data ###
+/infra/redis/data/
