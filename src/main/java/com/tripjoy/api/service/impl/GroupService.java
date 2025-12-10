@@ -114,7 +114,6 @@ public class GroupService implements IGroupService {
         return groupMapper.toGroupMemberResponse(savedMember);
     }
 
-    // Bổ sung hàm tiện ích lấy Group Detail
     @Transactional(readOnly = true)
     public GroupResponse getGroupById(UUID groupId) {
         return groupRepository.findById(groupId)

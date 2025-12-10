@@ -2022,7 +2022,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Create a new group (Automatically creates General chat channel)",
+        "summary": "Create a new group (Automatically creates General chat channel) - OK",
         "operationId": "createGroup",
         "requestBody": {
           "content": {
@@ -2083,7 +2083,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Add member to group (Automatically syncs to Chat)",
+        "summary": "Add member to group (Automatically syncs to Chat) - OK",
         "operationId": "addMember",
         "parameters": [
           {
@@ -3146,10 +3146,10 @@
           "locked": {
             "type": "boolean"
           },
-          "emailVerified": {
+          "deleted": {
             "type": "boolean"
           },
-          "deleted": {
+          "emailVerified": {
             "type": "boolean"
           }
         }
@@ -3189,7 +3189,7 @@
           "itinerary_id": {
             "type": "string",
             "description": "UUID of the Itinerary this post is linked to (from Create_post table)",
-            "example": "c1d2e3f4-g5h6-7890-1234-567890uvwxyz"
+            "format": "uuid"
           }
         }
       },
@@ -3373,7 +3373,8 @@
           },
           "itinerary_id": {
             "type": "string",
-            "description": "UUID of the itinerary this notebook belongs to"
+            "description": "UUID of the itinerary this notebook belongs to",
+            "format": "uuid"
           }
         }
       },
@@ -3705,7 +3706,7 @@
           "location_id": {
             "type": "string",
             "description": "UUID of the Location for this trip item",
-            "example": "f1g2h3i4-j5k6-7890-1234-567890lmn-op"
+            "format": "uuid"
           }
         }
       },
@@ -3934,8 +3935,13 @@
           "user": {
             "$ref": "#/components/schemas/UserSimpleResponse"
           },
-          "is_leader": {
-            "type": "boolean"
+          "role": {
+            "type": "string",
+            "enum": [
+              "LEADER",
+              "CO_LEADER",
+              "MEMBER"
+            ]
           },
           "join_at": {
             "type": "string",
@@ -3979,14 +3985,19 @@
       },
       "UpdateMemberRoleRequest": {
         "required": [
-          "is_leader"
+          "role"
         ],
         "type": "object",
         "properties": {
-          "is_leader": {
-            "type": "boolean",
-            "description": "Set the member's leader status",
-            "example": true
+          "role": {
+            "type": "string",
+            "description": "Assign new role to member",
+            "example": "CO_LEADER",
+            "enum": [
+              "LEADER",
+              "CO_LEADER",
+              "MEMBER"
+            ]
           }
         }
       },
@@ -4126,7 +4137,7 @@
           "content_id": {
             "type": "string",
             "description": "ID of the reported content (Post ID, Comment ID, Users ID, etc.)",
-            "example": "a1b2c3d4-..."
+            "format": "uuid"
           },
           "content_type": {
             "type": "string",
@@ -4280,15 +4291,20 @@
       },
       "AddMemberRequest": {
         "required": [
-          "member_id"
+          "member_id",
+          "role"
         ],
         "type": "object",
         "properties": {
-          "is_leader": {
-            "type": "boolean",
-            "description": "Set this member as a group leader",
-            "example": false,
-            "default": false
+          "role": {
+            "type": "string",
+            "description": "Assign new role to member",
+            "example": "CO_LEADER",
+            "enum": [
+              "LEADER",
+              "CO_LEADER",
+              "MEMBER"
+            ]
           },
           "member_id": {
             "type": "string",
@@ -4307,6 +4323,7 @@
           "location_id": {
             "type": "string",
             "description": "The UUID of the Location being suggested",
+            "format": "uuid",
             "example": "a1b2c3d4-e5f6-7890-1234-567890abcdef"
           },
           "notes": {
@@ -4893,13 +4910,13 @@
       "PageReportResponse": {
         "type": "object",
         "properties": {
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
           "totalElements": {
             "type": "integer",
             "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
           },
           "size": {
             "type": "integer",
@@ -5006,13 +5023,13 @@
       "PagePostResponse": {
         "type": "object",
         "properties": {
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
           "totalElements": {
             "type": "integer",
             "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
           },
           "size": {
             "type": "integer",
@@ -5070,13 +5087,13 @@
       "PageCommentResponse": {
         "type": "object",
         "properties": {
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
           "totalElements": {
             "type": "integer",
             "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
           },
           "size": {
             "type": "integer",
@@ -5152,13 +5169,13 @@
       "PageLocationResponse": {
         "type": "object",
         "properties": {
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
           "totalElements": {
             "type": "integer",
             "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
           },
           "size": {
             "type": "integer",
@@ -5306,13 +5323,13 @@
       "PageFeedbackResponse": {
         "type": "object",
         "properties": {
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
           "totalElements": {
             "type": "integer",
             "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
           },
           "size": {
             "type": "integer",
@@ -5388,13 +5405,13 @@
       "PageChatMessageResponse": {
         "type": "object",
         "properties": {
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
           "totalElements": {
             "type": "integer",
             "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
           },
           "size": {
             "type": "integer",

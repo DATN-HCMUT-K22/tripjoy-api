@@ -1,6 +1,9 @@
 package com.tripjoy.api.dto.response.simple;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.tripjoy.api.enums.GroupRole;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -16,8 +19,7 @@ public class GroupMemberResponse {
     // Lồng thông tin users
     UserSimpleResponse user;
 
-    @JsonProperty("is_leader")
-    Boolean isLeader;
+    GroupRole role;
 
     @JsonProperty("join_at")
     LocalDateTime joinAt;
