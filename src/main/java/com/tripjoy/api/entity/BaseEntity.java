@@ -1,15 +1,10 @@
 package com.tripjoy.api.entity;
 
-import com.tripjoy.api.configuration.security.UserDetailsCustom;
+import com.tripjoy.api.utils.SecurityUtils;
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -20,36 +15,47 @@ import java.util.UUID;
 @SuperBuilder
 @Getter
 @Setter
+@Slf4j
 public abstract class BaseEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private LocalDateTime createdAt;
-
     private UUID createdBy;
-
     private LocalDateTime updatedAt;
-
     private UUID updatedBy;
 
     @PrePersist
     public void onPrePersist() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = this.createdAt;
-        UserDetailsCustom user = UserDetailsCustom.getCurrentUser();
-        if (user != null) {
-            if (this.createdBy == null) this.createdBy = user.getUserId();
-            this.updatedBy = user.getUserId();
+
+        // Get current user ID safely (returns null if not authenticated)
+        UUID currentUserId = SecurityUtils.getCurrentUserIdSafe();
+
+        if (currentUserId != null) {
+            if (this.createdBy == null) {
+                this.createdBy = currentUserId;
+            }
+            this.updatedBy = currentUserId;
+        } else {
+            log.warn("PrePersist: Cannot get current user - createdBy/updatedBy will be null for entity: {}",
+                    this.getClass().getSimpleName());
         }
     }
 
     @PreUpdate
     public void onPreUpdate() {
         this.updatedAt = LocalDateTime.now();
-        UserDetailsCustom user = UserDetailsCustom.getCurrentUser();
-        if (user != null) {
-            this.updatedBy = user.getUserId();
+
+        UUID currentUserId = SecurityUtils.getCurrentUserIdSafe();
+
+        if (currentUserId != null) {
+            this.updatedBy = currentUserId;
+        } else {
+            log.warn("PreUpdate: Cannot get current user - updatedBy will be null for entity: {}",
+                    this.getClass().getSimpleName());
         }
     }
 }
