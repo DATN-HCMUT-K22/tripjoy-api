@@ -99,14 +99,14 @@ public class ConversationController {
 
         // --- SETTING CÁ NHÂN (MEMBERS) ---
 
-        @Operation(summary = "Leave conversation")
-        @DeleteMapping(Endpoint.Conversation.MEMBERS)
-        public ApiResponse<Void> leaveConversation(@PathVariable UUID conversationId) {
-
-                UUID currentUserId = SecurityUtils.getCurrentUserId();
-
-                // conversationService.leaveConversation(conversationId, currentUserId);
-
-                return ApiResponse.<Void>builder().message("Left conversation").build();
-        }
+//        @Operation(summary = "Leave conversation) -- Roi conversation dong nghia voi roi group -> /api/v1/groups/{groupId}/members/me
+//        @DeleteMapping(Endpoint.Conversation.MEMBERS)
+//        public ApiResponse<Void> leaveConversation(@PathVariable UUID conversationId) {
+//
+//                UUID currentUserId = SecurityUtils.getCurrentUserId();
+//
+//                // conversationService.leaveConversation(conversationId, currentUserId);
+//
+//                return ApiResponse.<Void>builder().message("Left conversation").build();
+//        }
 }

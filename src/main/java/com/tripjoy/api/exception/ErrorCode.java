@@ -46,6 +46,10 @@ public enum ErrorCode {
     CANNOT_REMOVE_YOURSELF(3008, "You cannot remove yourself from the group", HttpStatus.BAD_REQUEST),
     CANNOT_REMOVE_LEADER(3009, "Cannot remove the group leader", HttpStatus.FORBIDDEN),
     LEADER_CANNOT_LEAVE(3010, "Leader cannot leave group. Transfer leadership first", HttpStatus.BAD_REQUEST),
+    CANNOT_CHANGE_LEADER_ROLE(3011, "Cannot change the leader's role", HttpStatus.FORBIDDEN),
+    CANNOT_ASSIGN_LEADER_ROLE(3012, "Cannot assign LEADER role. Use transfer leadership instead",
+            HttpStatus.BAD_REQUEST),
+    CANNOT_TRANSFER_TO_YOURSELF(3013, "Cannot transfer leadership to yourself", HttpStatus.BAD_REQUEST),
 
     // --- 4. CHAT & CONVERSATION DOMAIN (4000 - 4999) ---
     CONVERSATION_NOT_FOUND(4001, "Conversation not found", HttpStatus.NOT_FOUND),

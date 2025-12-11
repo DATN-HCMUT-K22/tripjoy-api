@@ -4,7 +4,10 @@ import com.tripjoy.api.dto.event.GroupCreatedEvent;
 import com.tripjoy.api.dto.event.MemberJoinedGroupEvent;
 import com.tripjoy.api.dto.event.MemberRemovedFromGroupEvent;
 import com.tripjoy.api.dto.request.GroupRequest;
+import com.tripjoy.api.dto.request.member.TransferLeadershipRequest;
+import com.tripjoy.api.dto.request.member.UpdateMemberRoleRequest;
 import com.tripjoy.api.dto.response.GroupResponse;
+import com.tripjoy.api.dto.response.GroupMemberResponse;
 import com.tripjoy.api.dto.response.GroupMemberResponse;
 import com.tripjoy.api.entity.*;
 import com.tripjoy.api.enums.GroupRole;
@@ -248,7 +251,88 @@ public class GroupService implements IGroupService {
         eventPublisher.publishEvent(new MemberRemovedFromGroupEvent(
                 group,
                 currentUser,
-                currentUser  // Self-initiated leave
+                currentUser // Self-initiated leave
         ));
+    }
+
+    @Override
+    @Transactional
+    public GroupMemberResponse updateMemberRole(UUID groupId, UUID memberId, UpdateMemberRoleRequest request,
+            UUID currentUserId) {
+        // 1. Validate Group exists
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
+
+        // 2. Verify current user is LEADER
+        User currentUser = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        GroupMember currentMember = groupMemberRepository.findByGroupAndUser(group, currentUser)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_IN_GROUP));
+
+        if (currentMember.getRole() != GroupRole.LEADER) {
+            throw new AppException(ErrorCode.ONLY_LEADER_ALLOWED);
+        }
+
+        // 3. Find member to update
+        GroupMember memberToUpdate = groupMemberRepository.findById(memberId)
+                .orElseThrow(() -> new AppException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 4. Business Rules
+        // Cannot change LEADER role
+        if (memberToUpdate.getRole() == GroupRole.LEADER) {
+            throw new AppException(ErrorCode.CANNOT_CHANGE_LEADER_ROLE);
+        }
+
+        // Cannot assign LEADER role (use transfer leadership instead)
+        if (request.getRole() == GroupRole.LEADER) {
+            throw new AppException(ErrorCode.CANNOT_ASSIGN_LEADER_ROLE);
+        }
+
+        // 5. Update role
+        memberToUpdate.setRole(request.getRole());
+        GroupMember updated = groupMemberRepository.save(memberToUpdate);
+
+        return groupMapper.toGroupMemberResponse(updated);
+    }
+
+    @Override
+    @Transactional
+    public void transferLeadership(UUID groupId, TransferLeadershipRequest request, UUID currentUserId) {
+        // 1. Validate Group exists
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
+
+        // 2. Verify current user is LEADER
+        User currentUser = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        GroupMember currentLeader = groupMemberRepository.findByGroupAndUser(group, currentUser)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_IN_GROUP));
+
+        if (currentLeader.getRole() != GroupRole.LEADER) {
+            throw new AppException(ErrorCode.ONLY_LEADER_ALLOWED);
+        }
+
+        // 3. Validate new leader exists and is a member
+        User newLeaderUser = userRepository.findById(request.getNewLeaderId())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        GroupMember newLeader = groupMemberRepository.findByGroupAndUser(group, newLeaderUser)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_IN_GROUP));
+
+        // 4. Cannot transfer to yourself
+        if (currentUserId.equals(request.getNewLeaderId())) {
+            throw new AppException(ErrorCode.CANNOT_TRANSFER_TO_YOURSELF);
+        }
+
+        // 5. Swap roles
+        // Old LEADER -> CO_LEADER
+        currentLeader.setRole(GroupRole.CO_LEADER);
+        groupMemberRepository.save(currentLeader);
+
+        // New member -> LEADER
+        newLeader.setRole(GroupRole.LEADER);
+        groupMemberRepository.save(newLeader);
     }
 }

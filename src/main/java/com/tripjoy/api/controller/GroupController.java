@@ -4,6 +4,7 @@ import com.tripjoy.api.constant.Endpoint;
 import com.tripjoy.api.dto.request.SuggestLocationRequest;
 import com.tripjoy.api.dto.request.member.AddMemberRequest;
 import com.tripjoy.api.dto.request.GroupRequest;
+import com.tripjoy.api.dto.request.member.TransferLeadershipRequest;
 import com.tripjoy.api.dto.request.member.UpdateMemberRoleRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.GroupResponse;
@@ -127,14 +128,27 @@ public class GroupController {
                                 .build();
         }
 
-        @Operation(summary = "Update member role (Leader/Member)")
+        @Operation(summary = "Update member role (Leader/CO_LEADER/Member) - OK")
         @PutMapping(Endpoint.Group.MEMBERS_ID)
         public ApiResponse<GroupMemberResponse> updateMemberRole(
                         @PathVariable UUID groupId,
                         @PathVariable UUID memberId,
                         @Valid @RequestBody UpdateMemberRoleRequest request) {
+                UUID currentUserId = SecurityUtils.getCurrentUserId();
                 return ApiResponse.<GroupMemberResponse>builder()
-                                // .data(groupService.updateMemberRole(groupId, memberId, request))
+                                .data(groupService.updateMemberRole(groupId, memberId, request, currentUserId))
+                                .build();
+        }
+
+        @Operation(summary = "Transfer leadership to another member - OK")
+        @PostMapping(Endpoint.Group.ID + "/transfer-leadership")
+        public ApiResponse<Void> transferLeadership(
+                        @PathVariable UUID groupId,
+                        @Valid @RequestBody TransferLeadershipRequest request) {
+                UUID currentUserId = SecurityUtils.getCurrentUserId();
+                groupService.transferLeadership(groupId, request, currentUserId);
+                return ApiResponse.<Void>builder()
+                                .message("Leadership transferred successfully")
                                 .build();
         }
 
