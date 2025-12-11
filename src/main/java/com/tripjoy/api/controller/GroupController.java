@@ -8,7 +8,7 @@ import com.tripjoy.api.dto.request.member.UpdateMemberRoleRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.GroupResponse;
 import com.tripjoy.api.dto.response.SuggestLocationResponse;
-import com.tripjoy.api.dto.response.simple.GroupMemberResponse;
+import com.tripjoy.api.dto.response.GroupMemberResponse;
 import com.tripjoy.api.service.IGroupService;
 import com.tripjoy.api.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -61,13 +61,15 @@ public class GroupController {
                                 .build();
         }
 
-        @Operation(summary = "Update group information")
+        @Operation(summary = "Update group information - OK")
         @PutMapping(Endpoint.Group.ID)
         public ApiResponse<GroupResponse> updateGroup(
                         @PathVariable UUID groupId,
                         @Valid @RequestBody GroupRequest request) {
+                UUID currentUserId = SecurityUtils.getCurrentUserId();
+                
                 return ApiResponse.<GroupResponse>builder()
-                                // .data(groupService.updateGroup(groupId, request))
+                                .data(groupService.updateGroup(groupId, request, currentUserId))
                                 .build();
         }
 

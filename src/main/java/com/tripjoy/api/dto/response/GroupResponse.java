@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Data
@@ -32,5 +33,5 @@ public class GroupResponse extends BaseResponse {
     Integer chatbotCount;
 
     // Lồng danh sách thành viên
-    List<GroupMemberResponse> members;
+    Set<GroupMemberResponse> members;
 }

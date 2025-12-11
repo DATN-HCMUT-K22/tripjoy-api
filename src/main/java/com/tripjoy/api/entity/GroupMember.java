@@ -14,8 +14,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class GroupMember extends BaseEntity{
 
-    private Boolean isLeader;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)
     private Group group;

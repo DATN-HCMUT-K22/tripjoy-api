@@ -14,7 +14,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "groups")
-public class Group extends BaseEntity{
+public class Group extends BaseEntity {
 
     private String name;
     private String description;
@@ -35,4 +35,3 @@ public class Group extends BaseEntity{
     @JsonIgnore
     private Set<Conversation> conversations = new HashSet<>();
 }
-

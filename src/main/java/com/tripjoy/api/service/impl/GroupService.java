@@ -4,13 +4,16 @@ import com.tripjoy.api.dto.event.GroupCreatedEvent;
 import com.tripjoy.api.dto.event.MemberJoinedGroupEvent;
 import com.tripjoy.api.dto.request.GroupRequest;
 import com.tripjoy.api.dto.response.GroupResponse;
-import com.tripjoy.api.dto.response.simple.GroupMemberResponse;
+import com.tripjoy.api.dto.response.GroupMemberResponse;
 import com.tripjoy.api.entity.*;
+import com.tripjoy.api.enums.GroupRole;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
 import com.tripjoy.api.mapper.GroupMapper;
 import com.tripjoy.api.repository.*;
 import com.tripjoy.api.service.IGroupService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -31,6 +34,8 @@ public class GroupService implements IGroupService {
     GroupMemberRepository groupMemberRepository;
     UserRepository userRepository;
     ApplicationEventPublisher eventPublisher;
+    @PersistenceContext
+    EntityManager entityManager;
 
     // Inject Mapper
     GroupMapper groupMapper;
@@ -59,6 +64,15 @@ public class GroupService implements IGroupService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         // --- STEP 1: MAP REQUEST -> ENTITY ---
         Group group = groupMapper.toGroup(request);
+
+        // Init collections if null (vì @Builder không init được)
+        if (group.getMembers() == null)
+            group.setMembers(new java.util.HashSet<>());
+        if (group.getItineraries() == null)
+            group.setItineraries(new java.util.HashSet<>());
+        if (group.getConversations() == null)
+            group.setConversations(new java.util.HashSet<>());
+
         // Set default logic...
         groupRepository.save(group);
 
@@ -66,7 +80,7 @@ public class GroupService implements IGroupService {
         GroupMember ownerMember = GroupMember.builder()
                 .group(group)
                 .user(owner)
-                .isLeader(true)
+                .role(GroupRole.LEADER)
                 .build();
         groupMemberRepository.save(ownerMember);
 
@@ -86,11 +100,15 @@ public class GroupService implements IGroupService {
                 GroupMember groupMember = GroupMember.builder()
                         .group(group)
                         .user(member)
-                        .isLeader(false)
+                        .role(GroupRole.MEMBER)
                         .build();
                 groupMemberRepository.save(groupMember);
             }
         }
+
+        // [REFRESH] Để lấy lại danh sách member chuẩn từ DB
+        entityManager.flush();
+        entityManager.refresh(group);
 
         // --- STEP 4: FIRE EVENT (Sửa lỗi ở đây) ---
         // Truyền đủ 3 tham số: group, creator, và list thành viên ban đầu
@@ -118,7 +136,7 @@ public class GroupService implements IGroupService {
         GroupMember gMember = GroupMember.builder()
                 .group(group)
                 .user(user)
-                .isLeader(false) // Mặc định vào là member thường
+                .role(GroupRole.MEMBER)
                 .build();
 
         // Lưu xong mới có ID, createdAt...
@@ -129,5 +147,25 @@ public class GroupService implements IGroupService {
 
         // --- STEP 4: MAP ENTITY -> RESPONSE ---
         return groupMapper.toGroupMemberResponse(savedMember);
+    }
+
+    @Transactional
+    public GroupResponse updateGroup(UUID groupId, GroupRequest request, UUID currentUserId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
+
+        User currentUser = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        // Check if user has LEADER or CO_LEADER role
+        if (!groupMemberRepository.hasLeadershipRole(group, currentUser)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        // Update group fields using mapper
+        groupMapper.updateGroup(group, request);
+        Group updated = groupRepository.save(group);
+
+        return groupMapper.toGroupResponse(updated);
     }
 }
