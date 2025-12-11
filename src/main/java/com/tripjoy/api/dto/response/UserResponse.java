@@ -3,6 +3,7 @@ package com.tripjoy.api.dto.response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -11,9 +12,10 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
+@EqualsAndHashCode(callSuper = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserResponse {
+public class UserResponse extends BaseResponse {
     UUID id;
     String username;
     String email;
@@ -25,9 +27,6 @@ public class UserResponse {
     String avatarUrl;
 
     Long credits;
-
-    LocalDateTime createdAt;
-    LocalDateTime updatedAt;
 
     boolean isDeleted;
     boolean isLocked;

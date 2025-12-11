@@ -5,16 +5,18 @@ import com.tripjoy.api.dto.response.simple.ChatMessageSimpleResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 import java.util.UUID;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ConversationResponse {
+public class ConversationResponse extends BaseResponse {
 
     UUID id;
 

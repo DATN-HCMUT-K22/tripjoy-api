@@ -5,18 +5,19 @@ import com.tripjoy.api.dto.response.simple.ItinerarySimpleResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PostResponse {
+public class PostResponse extends BaseResponse {
 
     UUID id;
 
@@ -25,11 +26,7 @@ public class PostResponse {
 
     String content;
 
-    @JsonProperty("created_at")
-    LocalDateTime createdAt;
-
-    @JsonProperty("updated_at")
-    LocalDateTime updatedAt;
+    // createdAt, updatedAt đã có từ BaseResponse - REMOVED
 
     @JsonProperty("shared_quantity")
     Integer sharedQuantity;
@@ -42,8 +39,8 @@ public class PostResponse {
     Set<String> hashtags;
 
     // Lồng thông tin người tạo
-    @JsonProperty("created_by")
-    UserSimpleResponse createdBy;
+    @JsonProperty("created_by_user") // Renamed để tránh conflict với createdBy từ BaseResponse
+    UserSimpleResponse createdByUser;
 
     // --- Dữ liệu theo ngữ cảnh ---
     // (Lấy từ bảng Like_post, Save_post, Comment)

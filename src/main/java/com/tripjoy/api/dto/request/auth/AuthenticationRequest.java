@@ -18,7 +18,7 @@ public class AuthenticationRequest {
             description = "Username for login",
             type = "String",
             requiredMode = Schema.RequiredMode.REQUIRED,
-            example = "johndoe"
+            example = "user"
     )
     String username;
 
@@ -28,7 +28,7 @@ public class AuthenticationRequest {
             description = "Users's password",
             type = "String",
             requiredMode = Schema.RequiredMode.REQUIRED,
-            example = "P@sswd123."
+            example = "StrongP@ss123"
     )
     String password;
 }

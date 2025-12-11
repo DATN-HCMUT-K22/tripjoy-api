@@ -6,16 +6,17 @@ import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ChatMessageResponse {
+public class ChatMessageResponse extends BaseResponse {
 
     UUID id; // id từ "Chat_message"
 
@@ -36,8 +37,7 @@ public class ChatMessageResponse {
 
     String status;
 
-    @JsonProperty("created_at")
-    LocalDateTime createdAt;
+    // createdAt đã có từ BaseResponse - REMOVED
 
     @JsonProperty("sender_id")
     String senderId;

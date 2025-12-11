@@ -4,16 +4,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tripjoy.api.dto.response.location.LocationResponse;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TripItemResponse {
+public class TripItemResponse extends BaseResponse {
 
     UUID id;
 
@@ -22,8 +24,8 @@ public class TripItemResponse {
 
     Integer duration; // (in minutes)
 
-//    @JsonProperty("day_order")
-//    Integer dayOrder;
+    // @JsonProperty("day_order")
+    // Integer dayOrder;
 
     String note;
 
