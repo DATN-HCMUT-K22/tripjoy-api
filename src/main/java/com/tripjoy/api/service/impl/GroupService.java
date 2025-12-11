@@ -35,6 +35,23 @@ public class GroupService implements IGroupService {
     // Inject Mapper
     GroupMapper groupMapper;
 
+    @Transactional(readOnly = true)
+    public GroupResponse getGroupById(UUID groupId) {
+        return groupRepository.findById(groupId)
+                .map(groupMapper::toGroupResponse)
+                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
+    }
+
+    @Transactional(readOnly = true)
+    public List<GroupResponse> getMyGroups(UUID userId) {
+        List<GroupMember> memberRecords = groupMemberRepository.findByUserId(userId);
+
+        return memberRecords.stream()
+                .map(GroupMember::getGroup)
+                .map(groupMapper::toGroupResponse)
+                .toList();
+    }
+
     @Transactional
     public GroupResponse createGroup(GroupRequest request, UUID ownerId) {
         // --- STEP 0: FETCH OWNER ---
@@ -112,12 +129,5 @@ public class GroupService implements IGroupService {
 
         // --- STEP 4: MAP ENTITY -> RESPONSE ---
         return groupMapper.toGroupMemberResponse(savedMember);
-    }
-
-    @Transactional(readOnly = true)
-    public GroupResponse getGroupById(UUID groupId) {
-        return groupRepository.findById(groupId)
-                .map(groupMapper::toGroupResponse)
-                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
     }
 }

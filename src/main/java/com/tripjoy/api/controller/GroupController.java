@@ -43,11 +43,21 @@ public class GroupController {
                                 .build();
         }
 
+        @Operation(summary = "Get my groups list - OK")
+        @GetMapping
+        public ApiResponse<List<GroupResponse>> getMyGroups() {
+                UUID currentUserId = SecurityUtils.getCurrentUserId();
+
+                return ApiResponse.<List<GroupResponse>>builder()
+                                .data(groupService.getMyGroups(currentUserId))
+                                .build();
+        }
+
         @Operation(summary = "Get group information by ID")
         @GetMapping(Endpoint.Group.ID)
         public ApiResponse<GroupResponse> getGroupById(@PathVariable UUID groupId) {
                 return ApiResponse.<GroupResponse>builder()
-                                 .data(groupService.getGroupById(groupId))
+                                .data(groupService.getGroupById(groupId))
                                 .build();
         }
 
@@ -78,7 +88,7 @@ public class GroupController {
 
                 // Service bắn Event MemberJoined -> Tự thêm vào Chat
                 // Giả sử request.getUserId() trả về UUID của người được thêm
-                 groupService.addMemberToGroup(groupId, request.getMemberId());
+                groupService.addMemberToGroup(groupId, request.getMemberId());
 
                 return ApiResponse.<Void>builder()
                                 .message("Member added successfully and syncing to chat...")

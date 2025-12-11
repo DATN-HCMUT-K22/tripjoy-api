@@ -30,14 +30,13 @@ import java.util.UUID;
 public class ConversationController {
 
         IConversationService conversationService;
-        IChatMessageService messageService; // Separate service for message handling if needed
+        IChatMessageService messageService;
 
         // --- QUẢN LÝ HỘI THOẠI ---
 
-        @Operation(summary = "Get my conversations list (Inbox)")
+        @Operation(summary = "Get my conversations list (Inbox) - OK")
         @GetMapping
         public ApiResponse<List<ConversationResponse>> getMyConversations() {
-                // [FIX] Lấy current user ID từ Utils
                 UUID currentUserId = SecurityUtils.getCurrentUserId();
 
                 return ApiResponse.<List<ConversationResponse>>builder()
@@ -72,7 +71,7 @@ public class ConversationController {
 
         // --- QUẢN LÝ TIN NHẮN (MESSAGES) ---
 
-        @Operation(summary = "Send message to conversation")
+        @Operation(summary = "Send message to conversation - OK")
         @PostMapping(Endpoint.Conversation.MESSAGES)
         public ApiResponse<ChatMessageResponse> sendMessage(
                         @PathVariable UUID conversationId,
