@@ -5,17 +5,18 @@ import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CommentResponse {
+public class CommentResponse extends BaseResponse {
 
     @Schema(description = "UUID của comment")
     UUID id;
@@ -23,17 +24,11 @@ public class CommentResponse {
     @Schema(description = "Nội dung comment")
     String content;
 
-    @JsonProperty("created_at")
-    @Schema(description = "Thời điểm tạo")
-    LocalDateTime createdAt;
-
-    @JsonProperty("updated_at")
-    @Schema(description = "Thời điểm cập nhật")
-    LocalDateTime updatedAt;
+    // createdAt, updatedAt đã có từ BaseResponse - REMOVED
 
     // Lồng thông tin người tạo
-    @JsonProperty("created_by")
-    UserSimpleResponse createdBy;
+    @JsonProperty("created_by_user") // Renamed để tránh conflict
+    UserSimpleResponse createdByUser;
 
     // --- Dữ liệu theo ngữ cảnh ---
     @JsonProperty("like_count")

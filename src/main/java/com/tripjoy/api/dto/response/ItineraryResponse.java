@@ -1,53 +1,39 @@
 package com.tripjoy.api.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.tripjoy.api.dto.response.simple.GroupSimpleResponse;
+import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ItineraryResponse {
+public class ItineraryResponse extends BaseResponse {
 
     UUID id;
-    String name;
+
+    String title;
+
     String description;
 
     @JsonProperty("start_date")
-    LocalDateTime startDate;
+    LocalDate startDate;
 
     @JsonProperty("end_date")
-    LocalDateTime endDate;
-
-    @JsonProperty("people_quantity")
-    Integer peopleQuantity;
-
-    @JsonProperty("budget_estimate")
-    Double budgetEstimate;
-
-    @JsonProperty("destination")
-    String destination;
+    LocalDate endDate;
 
     String status;
 
-    @JsonProperty("is_favorited")
-    Boolean isFavorited;
+    @JsonProperty("group_id")
+    UUID groupId;
 
-    GroupSimpleResponse group;
-
-    Set<String> themes;
-
-    @JsonProperty("trip_items")
-    List<TripItemResponse> tripItems;
-
-    @JsonProperty("expenses")
-    List<ExpenseResponse> expenses;
+    @JsonProperty("created_by_user") // Renamed
+    UserSimpleResponse createdByUser;
 }

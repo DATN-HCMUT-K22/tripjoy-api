@@ -25,7 +25,7 @@ public class UserCreationRequest {
             description = "Username (unique)",
             type = "String",
             requiredMode = Schema.RequiredMode.REQUIRED,
-            example = "johndoe"
+            example = "user"
     )
     String username;
 

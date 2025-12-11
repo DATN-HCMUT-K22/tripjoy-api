@@ -1,6 +1,7 @@
 package com.tripjoy.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,40 +16,35 @@ import java.util.Set;
 @AllArgsConstructor
 public class Post extends BaseEntity {
 
-    private String mediaUrl;
-    private Boolean isDeleted;
-    private String content;
-    private Integer shareQuantity;
+        private String mediaUrl;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "itinerary_id")
-    private Itinerary itinerary;
+        @Embedded
+        private SoftDeleteInfo softDeleteInfo = new SoftDeleteInfo();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "creator_id")
-    private User creator;
+        private String content;
+        private Integer shareQuantity;
 
-    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonIgnore
-    private Set<Comment> comments = new HashSet<>();
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "itinerary_id")
+        private Itinerary itinerary;
 
-    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonIgnore
-    private Set<PostHashtag> hashtags = new HashSet<>();
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "creator_id")
+        private User creator;
 
-    @ManyToMany
-    @JoinTable(
-            name = "save_post",
-            joinColumns = @JoinColumn(name = "post_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    private Set<User> saveUsers = new HashSet<>();
+        @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+        @JsonIgnore
+        private Set<Comment> comments = new HashSet<>();
 
-    @ManyToMany
-    @JoinTable(
-            name = "like_post",
-            joinColumns = @JoinColumn(name = "post_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    private Set<User> likeUsers = new HashSet<>();
+        @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+        @JsonIgnore
+        private Set<PostHashtag> hashtags = new HashSet<>();
+
+        @ManyToMany
+        @JoinTable(name = "save_post", joinColumns = @JoinColumn(name = "post_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
+        private Set<User> saveUsers = new HashSet<>();
+
+        @ManyToMany
+        @JoinTable(name = "like_post", joinColumns = @JoinColumn(name = "post_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
+        private Set<User> likeUsers = new HashSet<>();
 }

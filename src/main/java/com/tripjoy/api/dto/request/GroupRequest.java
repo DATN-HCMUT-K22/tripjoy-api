@@ -39,6 +39,18 @@ public class GroupRequest {
     )
     String avatar;
 
+    @Schema(
+            name = "description",
+            description = "Description of the travel group",
+            type = "String",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            example = ""
+    )
+    String description;
+
+    private Integer chatbotCount;
+    private Boolean isPro;
+
     @Schema(name = "theme_color", description = "Hex color code for group theme", example = "#FF5733")
     String themeColor;
 

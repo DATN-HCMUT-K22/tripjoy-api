@@ -3,7 +3,7 @@ package com.tripjoy.api.mapper;
 import com.tripjoy.api.configuration.mapper.BaseMapperConfig;
 import com.tripjoy.api.dto.request.GroupRequest;
 import com.tripjoy.api.dto.response.GroupResponse;
-import com.tripjoy.api.dto.response.simple.GroupMemberResponse;
+import com.tripjoy.api.dto.response.GroupMemberResponse;
 import com.tripjoy.api.entity.Group;
 import com.tripjoy.api.entity.GroupMember;
 import org.mapstruct.Mapper;
@@ -22,6 +22,9 @@ public interface GroupMapper {
 
     // 3. Update Entity từ Request (Dùng cho hàm updateGroup)
     // @MappingTarget: Map đè dữ liệu từ request vào entity có sẵn
+    @Mapping(target = "members", ignore = true)
+    @Mapping(target = "itineraries", ignore = true)
+    @Mapping(target = "conversations", ignore = true)
     void updateGroup(@MappingTarget Group group, GroupRequest request);
 
     // 4. Member Entity -> Member Response

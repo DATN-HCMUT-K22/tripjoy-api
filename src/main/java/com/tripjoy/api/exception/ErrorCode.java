@@ -13,6 +13,8 @@ public enum ErrorCode {
     INVALID_REQUEST(1002, "Invalid request input", HttpStatus.BAD_REQUEST),
     RESOURCE_NOT_FOUND(1003, "Resource not found", HttpStatus.NOT_FOUND),
     METHOD_NOT_ALLOWED(1004, "Method not allowed", HttpStatus.METHOD_NOT_ALLOWED),
+    INVALID_JSON(1005, "Invalid JSON format", HttpStatus.BAD_REQUEST),
+    MISSING_PARAMETER(1006, "Missing required parameter", HttpStatus.BAD_REQUEST),
 
     // --- 2. AUTHENTICATION & USER (2000 - 2999) ---
     // 401 Unauthorized: Chưa đăng nhập hoặc token sai
@@ -40,6 +42,15 @@ public enum ErrorCode {
     ONLY_LEADER_ALLOWED(3004, "Only group leader can perform this action", HttpStatus.FORBIDDEN),
     GROUP_FULL(3005, "Group has reached maximum capacity", HttpStatus.BAD_REQUEST),
     CANNOT_DELETE_GROUP(3006, "Cannot delete group with active members or itineraries", HttpStatus.BAD_REQUEST),
+    MEMBER_NOT_FOUND(3007, "Member not found in this group", HttpStatus.NOT_FOUND),
+    CANNOT_REMOVE_YOURSELF(3008, "You cannot remove yourself from the group", HttpStatus.BAD_REQUEST),
+    CANNOT_REMOVE_LEADER(3009, "Cannot remove the group leader", HttpStatus.FORBIDDEN),
+    LEADER_CANNOT_LEAVE(3010, "Leader cannot leave group. Transfer leadership first", HttpStatus.BAD_REQUEST),
+    CANNOT_CHANGE_LEADER_ROLE(3011, "Cannot change the leader's role", HttpStatus.FORBIDDEN),
+    CANNOT_ASSIGN_LEADER_ROLE(3012, "Cannot assign LEADER role. Use transfer leadership instead",
+            HttpStatus.BAD_REQUEST),
+    CANNOT_TRANSFER_TO_YOURSELF(3013, "Cannot transfer leadership to yourself", HttpStatus.BAD_REQUEST),
+    GROUP_NOT_DELETED(3014, "Group is not deleted", HttpStatus.BAD_REQUEST),
 
     // --- 4. CHAT & CONVERSATION DOMAIN (4000 - 4999) ---
     CONVERSATION_NOT_FOUND(4001, "Conversation not found", HttpStatus.NOT_FOUND),
@@ -52,6 +63,12 @@ public enum ErrorCode {
     FILE_TOO_LARGE(5001, "File size exceeds the limit", HttpStatus.BAD_REQUEST),
     UNSUPPORTED_FILE_TYPE(5002, "Unsupported file type", HttpStatus.BAD_REQUEST),
     UPLOAD_FAILED(5003, "File upload failed", HttpStatus.INTERNAL_SERVER_ERROR),
+
+    // --- 6. DATABASE ERRORS (6000 - 6999) ---
+    DATABASE_ERROR(6001, "Database operation failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    CONSTRAINT_VIOLATION(6002, "Database constraint violation", HttpStatus.CONFLICT),
+    DUPLICATE_RESOURCE(6003, "Resource already exists", HttpStatus.CONFLICT),
+    REFERENCED_RESOURCE(6004, "Cannot delete: Resource is being referenced", HttpStatus.CONFLICT),
 
     ;
 

@@ -5,16 +5,17 @@ import com.tripjoy.api.dto.response.location.LocationResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class SuggestLocationResponse {
+public class SuggestLocationResponse extends BaseResponse {
 
     UUID id;
 
@@ -28,6 +29,5 @@ public class SuggestLocationResponse {
 
     String notes;
 
-    @JsonProperty("created_at")
-    LocalDateTime createdAt;
+    // createdAt từ BaseResponse
 }

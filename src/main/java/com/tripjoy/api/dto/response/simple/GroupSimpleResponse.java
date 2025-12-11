@@ -14,4 +14,6 @@ public class GroupSimpleResponse {
     UUID id;
     String name;
     String avatarUrl;
+    Integer chatbotCount;
+    Boolean isPro;
 }

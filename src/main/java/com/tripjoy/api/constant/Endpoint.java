@@ -48,6 +48,7 @@ public class Endpoint {
         // Quản lý thành viên trong group
         public static final String MEMBERS_BASE = ID + "/members";
         public static final String MEMBERS_ID = MEMBERS_BASE + "/{memberId}";
+        public static final String MEMBERS_ME = MEMBERS_BASE + "/me";
 
         // Đề xuất địa điểm trong group
         public static final String LOCATION_SUGGESTIONS = ID + "/location-suggestions";

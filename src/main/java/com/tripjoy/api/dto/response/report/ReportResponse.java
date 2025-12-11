@@ -1,31 +1,23 @@
 package com.tripjoy.api.dto.response.report;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
+import com.tripjoy.api.dto.response.BaseResponse;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 import java.util.UUID;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ReportResponse {
-
-    UUID id; // ID của bảng "Report_to"
-
-    @JsonProperty("report_type")
-    String reportType;
-
+public class ReportResponse extends BaseResponse {
+    UUID id;
+    String reason;
     String status;
-    String description;
-
-    @JsonProperty("content_id")
-    String contentId; // ID của "Report_content" (để admin truy cập)
-
-    @JsonProperty("reported_by")
-    UserSimpleResponse reportedBy; // Join từ "user_id"
-
+    UUID reportedBy;
+    UUID reportedEntityId;
+    String reportedEntityType;
 }

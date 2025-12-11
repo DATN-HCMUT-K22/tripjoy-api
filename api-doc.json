@@ -831,7 +831,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Get group information by ID",
+        "summary": "Get group information by ID - OK",
         "operationId": "getGroupById",
         "parameters": [
           {
@@ -861,7 +861,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Update group information",
+        "summary": "Update group information - OK",
         "operationId": "updateGroup",
         "parameters": [
           {
@@ -901,7 +901,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Delete group",
+        "summary": "Delete group (soft delete with cascade) - Only LEADER",
         "operationId": "deleteGroup",
         "parameters": [
           {
@@ -933,7 +933,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Update member role (Leader/Member)",
+        "summary": "Update member role (Leader/CO_LEADER/Member) - OK",
         "operationId": "updateMemberRole",
         "parameters": [
           {
@@ -982,7 +982,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Remove member from group (Automatically kicks from Chat)",
+        "summary": "Remove member from group (Automatically kicks from Chat) - OK",
         "operationId": "removeMember",
         "parameters": [
           {
@@ -2018,11 +2018,30 @@
       }
     },
     "/api/v1/groups": {
+      "get": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Get my groups list - OK",
+        "operationId": "getMyGroups",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListGroupResponse"
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "Groups"
         ],
-        "summary": "Create a new group (Automatically creates General chat channel)",
+        "summary": "Create a new group (Automatically creates General chat channel) - OK",
         "operationId": "createGroup",
         "requestBody": {
           "content": {
@@ -2048,12 +2067,54 @@
         }
       }
     },
+    "/api/v1/groups/{groupId}/transfer-leadership": {
+      "post": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Transfer leadership to another member - OK",
+        "operationId": "transferLeadership",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferLeadershipRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/groups/{groupId}/members": {
       "get": {
         "tags": [
           "Groups"
         ],
-        "summary": "Get group members list",
+        "summary": "Get group members list - OK",
         "operationId": "getMembers",
         "parameters": [
           {
@@ -2083,7 +2144,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Add member to group (Automatically syncs to Chat)",
+        "summary": "Add member to group (Automatically syncs to Chat) - OK",
         "operationId": "addMember",
         "parameters": [
           {
@@ -2299,7 +2360,7 @@
         "tags": [
           "Conversations (Chat)"
         ],
-        "summary": "Get my conversations list (Inbox)",
+        "summary": "Get my conversations list (Inbox) - OK",
         "operationId": "getMyConversations",
         "responses": {
           "200": {
@@ -2387,7 +2448,7 @@
         "tags": [
           "Conversations (Chat)"
         ],
-        "summary": "Send message to conversation",
+        "summary": "Send message to conversation - OK",
         "operationId": "sendMessage",
         "parameters": [
           {
@@ -2964,16 +3025,16 @@
         }
       }
     },
-    "/api/v1/conversations/{conversationId}/members": {
+    "/api/v1/groups/{groupId}/members/me": {
       "delete": {
         "tags": [
-          "Conversations (Chat)"
+          "Groups"
         ],
-        "summary": "Leave conversation",
-        "operationId": "leaveConversation",
+        "summary": "Leave group (Self-initiated) - OK",
+        "operationId": "leaveGroup",
         "parameters": [
           {
-            "name": "conversationId",
+            "name": "groupId",
             "in": "path",
             "required": true,
             "schema": {
@@ -3128,14 +3189,6 @@
             "type": "integer",
             "format": "int64"
           },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
           "roles": {
             "uniqueItems": true,
             "type": "array",
@@ -3151,6 +3204,22 @@
           },
           "deleted": {
             "type": "boolean"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_by": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },
@@ -3189,7 +3258,7 @@
           "itinerary_id": {
             "type": "string",
             "description": "UUID of the Itinerary this post is linked to (from Create_post table)",
-            "example": "c1d2e3f4-g5h6-7890-1234-567890uvwxyz"
+            "format": "uuid"
           }
         }
       },
@@ -3222,15 +3291,21 @@
           },
           "created_at": {
             "type": "string",
-            "description": "Thời điểm tạo",
-            "format": "date-time"
-          },
-          "updated_at": {
-            "type": "string",
-            "description": "Thời điểm cập nhật",
             "format": "date-time"
           },
           "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_by_user": {
             "$ref": "#/components/schemas/UserSimpleResponse"
           },
           "like_count": {
@@ -3293,16 +3368,24 @@
               "type": "string"
             }
           },
-          "media_url": {
-            "type": "string"
-          },
           "created_at": {
             "type": "string",
             "format": "date-time"
           },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
           "updated_at": {
             "type": "string",
             "format": "date-time"
+          },
+          "updated_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "media_url": {
+            "type": "string"
           },
           "shared_quantity": {
             "type": "integer",
@@ -3311,7 +3394,7 @@
           "itinerary": {
             "$ref": "#/components/schemas/ItinerarySimpleResponse"
           },
-          "created_by": {
+          "created_by_user": {
             "$ref": "#/components/schemas/UserSimpleResponse"
           },
           "like_count": {
@@ -3373,7 +3456,8 @@
           },
           "itinerary_id": {
             "type": "string",
-            "description": "UUID of the itinerary this notebook belongs to"
+            "description": "UUID of the itinerary this notebook belongs to",
+            "format": "uuid"
           }
         }
       },
@@ -3405,12 +3489,24 @@
           "description": {
             "type": "string"
           },
-          "createAt": {
+          "itinerary": {
+            "$ref": "#/components/schemas/ItinerarySimpleResponse"
+          },
+          "created_at": {
             "type": "string",
             "format": "date-time"
           },
-          "itinerary": {
-            "$ref": "#/components/schemas/ItinerarySimpleResponse"
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_by": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },
@@ -3705,7 +3801,7 @@
           "location_id": {
             "type": "string",
             "description": "UUID of the Location for this trip item",
-            "example": "f1g2h3i4-j5k6-7890-1234-567890lmn-op"
+            "format": "uuid"
           }
         }
       },
@@ -3721,6 +3817,124 @@
           },
           "data": {
             "$ref": "#/components/schemas/ItineraryResponse"
+          }
+        }
+      },
+      "ItineraryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "group_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_by_user": {
+            "$ref": "#/components/schemas/UserSimpleResponse"
+          }
+        }
+      },
+      "ApiResponseTripItemResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/TripItemResponse"
+          }
+        }
+      },
+      "TripItemResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "duration": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "note": {
+            "type": "string"
+          },
+          "location": {
+            "$ref": "#/components/schemas/LocationResponse"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "start_time": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ApiResponseExpenseResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ExpenseResponse"
           }
         }
       },
@@ -3749,136 +3963,22 @@
           },
           "user": {
             "$ref": "#/components/schemas/UserSimpleResponse"
-          }
-        }
-      },
-      "GroupSimpleResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
           },
-          "name": {
-            "type": "string"
-          },
-          "avatarUrl": {
-            "type": "string"
-          }
-        }
-      },
-      "ItineraryResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "group": {
-            "$ref": "#/components/schemas/GroupSimpleResponse"
-          },
-          "themes": {
-            "uniqueItems": true,
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "start_date": {
+          "created_at": {
             "type": "string",
             "format": "date-time"
           },
-          "end_date": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "people_quantity": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "budget_estimate": {
-            "type": "number",
-            "format": "double"
-          },
-          "destination": {
-            "type": "string"
-          },
-          "is_favorited": {
-            "type": "boolean"
-          },
-          "trip_items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TripItemResponse"
-            }
-          },
-          "expenses": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ExpenseResponse"
-            }
-          }
-        }
-      },
-      "TripItemResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
+          "created_by": {
             "type": "string",
             "format": "uuid"
           },
-          "duration": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "note": {
-            "type": "string"
-          },
-          "location": {
-            "$ref": "#/components/schemas/LocationResponse"
-          },
-          "start_time": {
+          "updated_at": {
             "type": "string",
             "format": "date-time"
-          }
-        }
-      },
-      "ApiResponseTripItemResponse": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "integer",
-            "format": "int32"
           },
-          "message": {
-            "type": "string"
-          },
-          "data": {
-            "$ref": "#/components/schemas/TripItemResponse"
-          }
-        }
-      },
-      "ApiResponseExpenseResponse": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
-          },
-          "data": {
-            "$ref": "#/components/schemas/ExpenseResponse"
+          "updated_by": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },
@@ -3897,6 +3997,17 @@
             "type": "string",
             "description": "URL of the group's avatar image",
             "example": "https://res.cloudinary.com/tripjoy/image/upload/group_avatar.jpg"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the travel group"
+          },
+          "chatbotCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isPro": {
+            "type": "boolean"
           },
           "theme_color": {
             "type": "string",
@@ -3931,15 +4042,36 @@
       "GroupMemberResponse": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
           "user": {
             "$ref": "#/components/schemas/UserSimpleResponse"
           },
-          "is_leader": {
-            "type": "boolean"
+          "role": {
+            "type": "string",
+            "enum": [
+              "LEADER",
+              "CO_LEADER",
+              "MEMBER"
+            ]
           },
-          "join_at": {
+          "created_at": {
             "type": "string",
             "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_by": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },
@@ -3953,17 +4085,40 @@
           "name": {
             "type": "string"
           },
+          "description": {
+            "type": "string"
+          },
           "avatar": {
             "type": "string"
           },
           "theme": {
             "type": "string"
           },
+          "isDeleted": {
+            "type": "boolean"
+          },
           "members": {
+            "uniqueItems": true,
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/GroupMemberResponse"
             }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_by": {
+            "type": "string",
+            "format": "uuid"
           },
           "theme_color": {
             "type": "string"
@@ -3979,14 +4134,19 @@
       },
       "UpdateMemberRoleRequest": {
         "required": [
-          "is_leader"
+          "role"
         ],
         "type": "object",
         "properties": {
-          "is_leader": {
-            "type": "boolean",
-            "description": "Set the member's leader status",
-            "example": true
+          "role": {
+            "type": "string",
+            "description": "Assign new role to member",
+            "example": "CO_LEADER",
+            "enum": [
+              "LEADER",
+              "CO_LEADER",
+              "MEMBER"
+            ]
           }
         }
       },
@@ -4055,7 +4215,7 @@
             "minLength": 4,
             "type": "string",
             "description": "Username (unique)",
-            "example": "johndoe"
+            "example": "user"
           },
           "email": {
             "type": "string",
@@ -4126,7 +4286,7 @@
           "content_id": {
             "type": "string",
             "description": "ID of the reported content (Post ID, Comment ID, Users ID, etc.)",
-            "example": "a1b2c3d4-..."
+            "format": "uuid"
           },
           "content_type": {
             "type": "string",
@@ -4162,20 +4322,38 @@
             "type": "string",
             "format": "uuid"
           },
+          "reason": {
+            "type": "string"
+          },
           "status": {
             "type": "string"
           },
-          "description": {
+          "reportedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reportedEntityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reportedEntityType": {
             "type": "string"
           },
-          "report_type": {
-            "type": "string"
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
           },
-          "content_id": {
-            "type": "string"
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
           },
-          "reported_by": {
-            "$ref": "#/components/schemas/UserSimpleResponse"
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_by": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },
@@ -4278,17 +4456,36 @@
           }
         }
       },
-      "AddMemberRequest": {
+      "TransferLeadershipRequest": {
         "required": [
-          "member_id"
+          "newLeaderId"
         ],
         "type": "object",
         "properties": {
-          "is_leader": {
-            "type": "boolean",
-            "description": "Set this member as a group leader",
-            "example": false,
-            "default": false
+          "newLeaderId": {
+            "type": "string",
+            "description": "ID of the member to become the new leader",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          }
+        }
+      },
+      "AddMemberRequest": {
+        "required": [
+          "member_id",
+          "role"
+        ],
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "description": "Assign new role to member",
+            "example": "CO_LEADER",
+            "enum": [
+              "LEADER",
+              "CO_LEADER",
+              "MEMBER"
+            ]
           },
           "member_id": {
             "type": "string",
@@ -4307,6 +4504,7 @@
           "location_id": {
             "type": "string",
             "description": "The UUID of the Location being suggested",
+            "format": "uuid",
             "example": "a1b2c3d4-e5f6-7890-1234-567890abcdef"
           },
           "notes": {
@@ -4344,15 +4542,27 @@
           "notes": {
             "type": "string"
           },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_by": {
+            "type": "string",
+            "format": "uuid"
+          },
           "suggested_by": {
             "$ref": "#/components/schemas/UserSimpleResponse"
           },
           "group_id": {
             "type": "string"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
           }
         }
       },
@@ -4403,21 +4613,35 @@
             "type": "string",
             "format": "uuid"
           },
-          "type": {
-            "type": "string"
-          },
           "content": {
             "type": "string"
           },
-          "status": {
+          "rating": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "type": {
             "type": "string"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
           },
           "created_at": {
             "type": "string",
             "format": "date-time"
           },
           "created_by": {
-            "$ref": "#/components/schemas/UserSimpleResponse"
+            "type": "string",
+            "format": "uuid"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_by": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },
@@ -4552,6 +4776,22 @@
               "$ref": "#/components/schemas/UserSimpleResponse"
             }
           },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_by": {
+            "type": "string",
+            "format": "uuid"
+          },
           "group_id": {
             "type": "string",
             "format": "uuid"
@@ -4625,6 +4865,22 @@
           "status": {
             "type": "string"
           },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_by": {
+            "type": "string",
+            "format": "uuid"
+          },
           "message_type": {
             "type": "string"
           },
@@ -4639,10 +4895,6 @@
           },
           "is_bot": {
             "type": "boolean"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
           },
           "sender_id": {
             "type": "string"
@@ -4715,12 +4967,12 @@
           "username": {
             "type": "string",
             "description": "Username for login",
-            "example": "johndoe"
+            "example": "user"
           },
           "password": {
             "type": "string",
             "description": "Users's password",
-            "example": "P@sswd123."
+            "example": "StrongP@ss123"
           }
         }
       },
@@ -4901,6 +5153,12 @@
             "type": "integer",
             "format": "int64"
           },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
           "size": {
             "type": "integer",
             "format": "int32"
@@ -4920,12 +5178,6 @@
             "items": {
               "$ref": "#/components/schemas/SortObject"
             }
-          },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
           },
           "numberOfElements": {
             "type": "integer",
@@ -5014,6 +5266,12 @@
             "type": "integer",
             "format": "int64"
           },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
           "size": {
             "type": "integer",
             "format": "int32"
@@ -5033,12 +5291,6 @@
             "items": {
               "$ref": "#/components/schemas/SortObject"
             }
-          },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
           },
           "numberOfElements": {
             "type": "integer",
@@ -5078,6 +5330,12 @@
             "type": "integer",
             "format": "int64"
           },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
           "size": {
             "type": "integer",
             "format": "int32"
@@ -5097,12 +5355,6 @@
             "items": {
               "$ref": "#/components/schemas/SortObject"
             }
-          },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
           },
           "numberOfElements": {
             "type": "integer",
@@ -5160,6 +5412,12 @@
             "type": "integer",
             "format": "int64"
           },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
           "size": {
             "type": "integer",
             "format": "int32"
@@ -5179,12 +5437,6 @@
             "items": {
               "$ref": "#/components/schemas/SortObject"
             }
-          },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
           },
           "numberOfElements": {
             "type": "integer",
@@ -5252,6 +5504,24 @@
           }
         }
       },
+      "ApiResponseListGroupResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupResponse"
+            }
+          }
+        }
+      },
       "ApiResponseListGroupMemberResponse": {
         "type": "object",
         "properties": {
@@ -5314,6 +5584,12 @@
             "type": "integer",
             "format": "int64"
           },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
           "size": {
             "type": "integer",
             "format": "int32"
@@ -5333,12 +5609,6 @@
             "items": {
               "$ref": "#/components/schemas/SortObject"
             }
-          },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
           },
           "numberOfElements": {
             "type": "integer",
@@ -5396,6 +5666,12 @@
             "type": "integer",
             "format": "int64"
           },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
           "size": {
             "type": "integer",
             "format": "int32"
@@ -5415,12 +5691,6 @@
             "items": {
               "$ref": "#/components/schemas/SortObject"
             }
-          },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
           },
           "numberOfElements": {
             "type": "integer",

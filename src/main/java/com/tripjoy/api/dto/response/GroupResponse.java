@@ -1,22 +1,25 @@
 package com.tripjoy.api.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.tripjoy.api.dto.response.simple.GroupMemberResponse;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class GroupResponse {
+public class GroupResponse extends BaseResponse {
 
     UUID id;
     String name;
+    String description;
     String avatar;
     String theme;
 
@@ -26,9 +29,11 @@ public class GroupResponse {
     @JsonProperty("is_pro")
     Boolean isPro;
 
-    @JsonProperty("chatbot_count") // Map đúng tên cột DB cho dễ hiểu
+    @JsonProperty("chatbot_count")
     Integer chatbotCount;
 
+    Boolean isDeleted;
+
     // Lồng danh sách thành viên
-    List<GroupMemberResponse> members;
+    Set<GroupMemberResponse> members;
 }

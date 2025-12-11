@@ -1,6 +1,7 @@
 package com.tripjoy.api.dto.request.member;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.tripjoy.api.enums.GroupRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -27,13 +28,14 @@ public class AddMemberRequest {
     )
     UUID memberId;
 
+    @NotNull(message = "Role is required")
     @Schema(
-            name = "is_leader",
-            description = "Set this member as a group leader",
-            type = "Boolean",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            defaultValue = "false",
-            example = "false"
+            name = "role",
+            description = "Assign new role to member",
+            type = "string",
+            allowableValues = {"LEADER", "CO_LEADER", "MEMBER"},
+            requiredMode = Schema.RequiredMode.REQUIRED,
+            example = "CO_LEADER"
     )
-    Boolean isLeader = false;
+    GroupRole role = GroupRole.MEMBER;
 }

@@ -1,6 +1,7 @@
 package com.tripjoy.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,13 +15,17 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "groups")
-public class Group extends BaseEntity{
+public class Group extends BaseEntity {
 
     private String name;
+    private String description;
     private Integer chatbotCount;
     private String avatar;
     private String themeColor;
     private Boolean isPro;
+
+    @Embedded
+    private SoftDeleteInfo softDeleteInfo = new SoftDeleteInfo();
 
     @OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnore
@@ -34,4 +39,3 @@ public class Group extends BaseEntity{
     @JsonIgnore
     private Set<Conversation> conversations = new HashSet<>();
 }
-

@@ -71,7 +71,7 @@ public class AuthenticationService implements IAuthenticationService {
         user.setRoles(roles);
 
         // Set các giá trị mặc định khác
-        user.setIsDeleted(false);
+        // SoftDeleteInfo is already initialized by default
         user.setIsLocked(false);
         user.setIsEmailVerified(false); // Mới đăng ký thì chưa verify
         user.setCredits(0L);

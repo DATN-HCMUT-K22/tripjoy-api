@@ -63,7 +63,7 @@ public class ChatMessageService implements IChatMessageService {
         message.setConversation(conversation);
         message.setSender(sender);
         message.setCreatedAt(LocalDateTime.now());
-        message.setIsDeleted(false);
+        // SoftDeleteInfo is already initialized by default
 
         ChatMessage savedMessage = chatMessageRepository.save(message);
 
