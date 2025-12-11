@@ -831,7 +831,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Get group information by ID",
+        "summary": "Get group information by ID - OK",
         "operationId": "getGroupById",
         "parameters": [
           {
@@ -901,7 +901,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Delete group",
+        "summary": "Delete group (soft delete with cascade) - Only LEADER",
         "operationId": "deleteGroup",
         "parameters": [
           {
@@ -4094,6 +4094,9 @@
           "theme": {
             "type": "string"
           },
+          "isDeleted": {
+            "type": "boolean"
+          },
           "members": {
             "uniqueItems": true,
             "type": "array",
@@ -5150,6 +5153,12 @@
             "type": "integer",
             "format": "int64"
           },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
           "size": {
             "type": "integer",
             "format": "int32"
@@ -5169,12 +5178,6 @@
             "items": {
               "$ref": "#/components/schemas/SortObject"
             }
-          },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
           },
           "numberOfElements": {
             "type": "integer",
@@ -5201,9 +5204,6 @@
               "$ref": "#/components/schemas/SortObject"
             }
           },
-          "paged": {
-            "type": "boolean"
-          },
           "pageNumber": {
             "type": "integer",
             "format": "int32"
@@ -5211,6 +5211,9 @@
           "pageSize": {
             "type": "integer",
             "format": "int32"
+          },
+          "paged": {
+            "type": "boolean"
           },
           "unpaged": {
             "type": "boolean"
@@ -5263,6 +5266,12 @@
             "type": "integer",
             "format": "int64"
           },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
           "size": {
             "type": "integer",
             "format": "int32"
@@ -5282,12 +5291,6 @@
             "items": {
               "$ref": "#/components/schemas/SortObject"
             }
-          },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
           },
           "numberOfElements": {
             "type": "integer",
@@ -5327,6 +5330,12 @@
             "type": "integer",
             "format": "int64"
           },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
           "size": {
             "type": "integer",
             "format": "int32"
@@ -5346,12 +5355,6 @@
             "items": {
               "$ref": "#/components/schemas/SortObject"
             }
-          },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
           },
           "numberOfElements": {
             "type": "integer",
@@ -5409,6 +5412,12 @@
             "type": "integer",
             "format": "int64"
           },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
           "size": {
             "type": "integer",
             "format": "int32"
@@ -5428,12 +5437,6 @@
             "items": {
               "$ref": "#/components/schemas/SortObject"
             }
-          },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
           },
           "numberOfElements": {
             "type": "integer",
@@ -5581,6 +5584,12 @@
             "type": "integer",
             "format": "int64"
           },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
           "size": {
             "type": "integer",
             "format": "int32"
@@ -5600,12 +5609,6 @@
             "items": {
               "$ref": "#/components/schemas/SortObject"
             }
-          },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
           },
           "numberOfElements": {
             "type": "integer",
@@ -5663,6 +5666,12 @@
             "type": "integer",
             "format": "int64"
           },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
           "size": {
             "type": "integer",
             "format": "int32"
@@ -5682,12 +5691,6 @@
             "items": {
               "$ref": "#/components/schemas/SortObject"
             }
-          },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
           },
           "numberOfElements": {
             "type": "integer",
