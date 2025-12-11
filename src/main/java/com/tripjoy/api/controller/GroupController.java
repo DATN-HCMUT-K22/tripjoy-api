@@ -67,7 +67,7 @@ public class GroupController {
                         @PathVariable UUID groupId,
                         @Valid @RequestBody GroupRequest request) {
                 UUID currentUserId = SecurityUtils.getCurrentUserId();
-                
+
                 return ApiResponse.<GroupResponse>builder()
                                 .data(groupService.updateGroup(groupId, request, currentUserId))
                                 .build();
@@ -97,11 +97,11 @@ public class GroupController {
                                 .build();
         }
 
-        @Operation(summary = "Get group members list")
+        @Operation(summary = "Get group members list - OK")
         @GetMapping(Endpoint.Group.MEMBERS_BASE)
         public ApiResponse<List<GroupMemberResponse>> getMembers(@PathVariable UUID groupId) {
                 return ApiResponse.<List<GroupMemberResponse>>builder()
-                                // .data(groupService.getMembers(groupId))
+                                .data(groupService.getGroupMembers(groupId))
                                 .build();
         }
 

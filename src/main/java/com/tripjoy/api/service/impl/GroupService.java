@@ -168,4 +168,20 @@ public class GroupService implements IGroupService {
 
         return groupMapper.toGroupResponse(updated);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<GroupMemberResponse> getGroupMembers(UUID groupId) {
+        // Verify group exists
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
+
+        // Get all members from repository
+        List<GroupMember> members = groupMemberRepository.findByGroupOrderByRoleAsc(group);
+
+        // Map to response DTOs
+        return members.stream()
+                .map(groupMapper::toGroupMemberResponse)
+                .toList();
+    }
 }

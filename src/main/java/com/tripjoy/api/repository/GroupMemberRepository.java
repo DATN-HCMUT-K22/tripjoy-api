@@ -22,4 +22,8 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, UUID> 
             "WHERE gm.group = :group AND gm.user = :user " +
             "AND (gm.role = 'LEADER' OR gm.role = 'CO_LEADER')")
     boolean hasLeadershipRole(@Param("group") Group group, @Param("user") User user);
+
+    // Get all members of a group, sorted by role (LEADER first, then CO_LEADER,
+    // then MEMBER)
+    List<GroupMember> findByGroupOrderByRoleAsc(Group group);
 }

@@ -17,4 +17,6 @@ public interface IGroupService {
     List<GroupResponse> getMyGroups(UUID userId);
 
     GroupResponse updateGroup(UUID groupId, GroupRequest request, UUID currentUserId);
+
+    List<GroupMemberResponse> getGroupMembers(UUID groupId);
 }
