@@ -2,6 +2,7 @@ package com.tripjoy.api.listener;
 
 import com.tripjoy.api.dto.event.GroupCreatedEvent;
 import com.tripjoy.api.dto.event.MemberJoinedGroupEvent;
+import com.tripjoy.api.dto.event.MemberRemovedFromGroupEvent;
 import com.tripjoy.api.entity.Conversation;
 import com.tripjoy.api.entity.ConversationMember;
 import com.tripjoy.api.entity.User;
@@ -13,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -70,7 +73,6 @@ public class GroupEventListener {
     public void handleMemberJoinedGroup(MemberJoinedGroupEvent event) {
         try {
 
-
             // 1. Lấy thông tin User và Group từ Event
             User user = event.getUser();
             UUID groupId = event.getGroup().getId();
@@ -89,7 +91,8 @@ public class GroupEventListener {
             int count = 0;
             for (Conversation conversation : conversations) {
                 // Kiểm tra xem đã tồn tại chưa để tránh lỗi Duplicate Key
-                boolean exists = conversationMemberRepository.existsByConversationIdAndUserId(conversation.getId(), user.getId());
+                boolean exists = conversationMemberRepository.existsByConversationIdAndUserId(conversation.getId(),
+                        user.getId());
 
                 if (!exists) {
                     ConversationMember newMember = ConversationMember.builder()
@@ -107,6 +110,45 @@ public class GroupEventListener {
             log.info("-> Successfully added User {} to {} conversations", user.getId(), count);
         } catch (Exception e) {
             log.error("CRITICAL ERROR in handleMemberJoinedGroup: ", e);
+        }
+    }
+
+    /**
+     * CASE 3: Khi remove thành viên khỏi Group -> Kick khỏi tất cả conversations
+     * của Group
+     */
+    @Async
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleMemberRemovedFromGroup(MemberRemovedFromGroupEvent event) {
+        try {
+            // 1. Lấy thông tin từ Event
+            User removedUser = event.getRemovedUser();
+            UUID groupId = event.getGroup().getId();
+
+            log.info("EVENT: KICK FROM CHAT -> User {} removed from Group {}", removedUser.getId(), groupId);
+
+            // 2. Lấy tất cả Conversation của Group đó
+            List<Conversation> conversations = conversationRepository.findByGroup_Id(groupId);
+
+            if (conversations.isEmpty()) {
+                log.warn("Group {} has no conversations to kick from", groupId);
+                return;
+            }
+
+            // 3. Remove User khỏi từng Conversation
+            int count = 0;
+            for (Conversation conversation : conversations) {
+                // Delete ConversationMember record
+                conversationMemberRepository.deleteByConversationIdAndUserId(
+                        conversation.getId(),
+                        removedUser.getId());
+                count++;
+            }
+
+            log.info("-> Successfully kicked User {} from {} conversations", removedUser.getId(), count);
+        } catch (Exception e) {
+            log.error("CRITICAL ERROR in handleMemberRemovedFromGroup: ", e);
         }
     }
 }

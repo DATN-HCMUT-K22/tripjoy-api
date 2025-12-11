@@ -105,13 +105,26 @@ public class GroupController {
                                 .build();
         }
 
-        @Operation(summary = "Remove member from group (Automatically kicks from Chat)")
+        @Operation(summary = "Remove member from group (Automatically kicks from Chat) - OK")
         @DeleteMapping(Endpoint.Group.MEMBERS_ID)
         public ApiResponse<Void> removeMember(
                         @PathVariable UUID groupId,
                         @PathVariable UUID memberId) {
-                // groupService.removeMember(groupId, memberId);
-                return ApiResponse.<Void>builder().message("Member removed successfully").build();
+                UUID currentUserId = SecurityUtils.getCurrentUserId();
+                groupService.removeMemberFromGroup(groupId, memberId, currentUserId);
+                return ApiResponse.<Void>builder()
+                                .message("Member removed successfully and kicked from chat")
+                                .build();
+        }
+
+        @Operation(summary = "Leave group (Self-initiated) - OK")
+        @DeleteMapping(Endpoint.Group.MEMBERS_ME)
+        public ApiResponse<Void> leaveGroup(@PathVariable UUID groupId) {
+                UUID currentUserId = SecurityUtils.getCurrentUserId();
+                groupService.leaveGroup(groupId, currentUserId);
+                return ApiResponse.<Void>builder()
+                                .message("You have left the group successfully")
+                                .build();
         }
 
         @Operation(summary = "Update member role (Leader/Member)")

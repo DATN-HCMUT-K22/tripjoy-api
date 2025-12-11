@@ -9,4 +9,7 @@ import java.util.UUID;
 
 public interface ConversationMemberRepository extends JpaRepository<ConversationMember, UUID> {
     boolean existsByConversationIdAndUserId(UUID conversationId, UUID userId);
+
+    // Delete conversation member when removing from group
+    void deleteByConversationIdAndUserId(UUID conversationId, UUID userId);
 }

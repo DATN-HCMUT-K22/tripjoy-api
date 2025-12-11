@@ -19,4 +19,8 @@ public interface IGroupService {
     GroupResponse updateGroup(UUID groupId, GroupRequest request, UUID currentUserId);
 
     List<GroupMemberResponse> getGroupMembers(UUID groupId);
+
+    void removeMemberFromGroup(UUID groupId, UUID memberId, UUID currentUserId);
+
+    void leaveGroup(UUID groupId, UUID currentUserId);
 }

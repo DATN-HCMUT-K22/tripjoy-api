@@ -42,6 +42,10 @@ public enum ErrorCode {
     ONLY_LEADER_ALLOWED(3004, "Only group leader can perform this action", HttpStatus.FORBIDDEN),
     GROUP_FULL(3005, "Group has reached maximum capacity", HttpStatus.BAD_REQUEST),
     CANNOT_DELETE_GROUP(3006, "Cannot delete group with active members or itineraries", HttpStatus.BAD_REQUEST),
+    MEMBER_NOT_FOUND(3007, "Member not found in this group", HttpStatus.NOT_FOUND),
+    CANNOT_REMOVE_YOURSELF(3008, "You cannot remove yourself from the group", HttpStatus.BAD_REQUEST),
+    CANNOT_REMOVE_LEADER(3009, "Cannot remove the group leader", HttpStatus.FORBIDDEN),
+    LEADER_CANNOT_LEAVE(3010, "Leader cannot leave group. Transfer leadership first", HttpStatus.BAD_REQUEST),
 
     // --- 4. CHAT & CONVERSATION DOMAIN (4000 - 4999) ---
     CONVERSATION_NOT_FOUND(4001, "Conversation not found", HttpStatus.NOT_FOUND),

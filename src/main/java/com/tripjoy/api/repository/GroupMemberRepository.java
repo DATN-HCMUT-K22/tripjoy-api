@@ -26,4 +26,7 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, UUID> 
     // Get all members of a group, sorted by role (LEADER first, then CO_LEADER,
     // then MEMBER)
     List<GroupMember> findByGroupOrderByRoleAsc(Group group);
+
+    // Find specific member in a group
+    java.util.Optional<GroupMember> findByGroupAndUser(Group group, User user);
 }

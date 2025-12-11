@@ -2,6 +2,7 @@ package com.tripjoy.api.service.impl;
 
 import com.tripjoy.api.dto.event.GroupCreatedEvent;
 import com.tripjoy.api.dto.event.MemberJoinedGroupEvent;
+import com.tripjoy.api.dto.event.MemberRemovedFromGroupEvent;
 import com.tripjoy.api.dto.request.GroupRequest;
 import com.tripjoy.api.dto.response.GroupResponse;
 import com.tripjoy.api.dto.response.GroupMemberResponse;
@@ -183,5 +184,71 @@ public class GroupService implements IGroupService {
         return members.stream()
                 .map(groupMapper::toGroupMemberResponse)
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public void removeMemberFromGroup(UUID groupId, UUID memberId, UUID currentUserId) {
+        // 1. Validate Group & Permissions (Giữ nguyên code của bạn)
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
+
+        User currentUser = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        if (!groupMemberRepository.hasLeadershipRole(group, currentUser)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        // 2. Find member (Giữ nguyên)
+        GroupMember memberToRemove = groupMemberRepository.findById(memberId)
+                .orElseThrow(() -> new AppException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 3. Validations (Giữ nguyên)
+        if (memberToRemove.getUser().getId().equals(currentUserId)) {
+            throw new AppException(ErrorCode.CANNOT_REMOVE_YOURSELF);
+        }
+        if (memberToRemove.getRole() == GroupRole.LEADER) {
+            throw new AppException(ErrorCode.CANNOT_REMOVE_LEADER);
+        }
+
+        groupMemberRepository.delete(memberToRemove);
+
+        // 4. Publish event (Giữ nguyên)
+        eventPublisher.publishEvent(new MemberRemovedFromGroupEvent(
+                group,
+                memberToRemove.getUser(),
+                currentUser));
+    }
+
+    @Override
+    @Transactional
+    public void leaveGroup(UUID groupId, UUID currentUserId) {
+        // 1. Validate Group exists
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
+
+        // 2. Find current user's membership
+        User currentUser = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        // 3. Find member record
+        GroupMember memberToLeave = groupMemberRepository.findByGroupAndUser(group, currentUser)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_IN_GROUP));
+
+        // 4. Business Rule: LEADER cannot leave (must transfer leadership first)
+        if (memberToLeave.getRole() == GroupRole.LEADER) {
+            throw new AppException(ErrorCode.LEADER_CANNOT_LEAVE);
+        }
+
+        // 5. Delete membership
+        groupMemberRepository.delete(memberToLeave);
+
+        // 6. Publish event for chat synchronization (same as remove)
+        eventPublisher.publishEvent(new MemberRemovedFromGroupEvent(
+                group,
+                currentUser,
+                currentUser  // Self-initiated leave
+        ));
     }
 }
