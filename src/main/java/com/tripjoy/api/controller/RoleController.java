@@ -24,7 +24,7 @@ import java.util.List;
 public class RoleController {
     IRoleService roleService;
 
-    @Operation(summary = "Create a new role")
+    @Operation(summary = "Create a new role - OK")
     @PostMapping
     public ApiResponse<RoleResponse> create(@RequestBody RoleRequest request) {
         return ApiResponse.<RoleResponse>builder()
@@ -32,7 +32,7 @@ public class RoleController {
                 .build();
     }
 
-    @Operation(summary = "Get all roles")
+    @Operation(summary = "Get all roles - OK")
     @GetMapping
     public ApiResponse<List<RoleResponse>> getAll() {
         return ApiResponse.<List<RoleResponse>>builder()
@@ -40,7 +40,7 @@ public class RoleController {
                 .build();
     }
 
-    @Operation(summary = "Delete a role")
+    @Operation(summary = "Delete a role - OK")
     @DeleteMapping(Endpoint.Role.ID)
     public ApiResponse<Void> delete(@PathVariable String roleId) {
         roleService.delete(roleId);

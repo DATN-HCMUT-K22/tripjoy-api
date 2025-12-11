@@ -24,7 +24,7 @@ import java.util.List;
 public class PermissionController {
     IPermissionService permissionService;
 
-    @Operation(summary = "Create a new permission")
+    @Operation(summary = "Create a new permission - OK")
     @PostMapping
     public ApiResponse<PermissionResponse> create(@RequestBody PermissionRequest request) {
         return ApiResponse.<PermissionResponse>builder()
@@ -32,7 +32,7 @@ public class PermissionController {
                 .build();
     }
 
-    @Operation(summary = "Get all available permissions")
+    @Operation(summary = "Get all available permissions - OK")
     @GetMapping
     public ApiResponse<List<PermissionResponse>> getAll() {
         return ApiResponse.<List<PermissionResponse>>builder()
@@ -40,7 +40,7 @@ public class PermissionController {
                 .build();
     }
 
-    @Operation(summary = "Delete a permission by ID")
+    @Operation(summary = "Delete a permission by ID - OK")
     @DeleteMapping(Endpoint.Permission.ID)
     public ApiResponse<Void> delete(@PathVariable String permissionId) {
         permissionService.delete(permissionId);
