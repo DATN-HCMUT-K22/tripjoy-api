@@ -17,6 +17,7 @@ import java.util.Set;
 public class Group extends BaseEntity{
 
     private String name;
+    private String description;
     private Integer chatbotCount;
     private String avatar;
     private String themeColor;
