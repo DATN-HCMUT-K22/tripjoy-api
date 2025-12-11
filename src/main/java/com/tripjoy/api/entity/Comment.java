@@ -1,6 +1,7 @@
 package com.tripjoy.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,7 +14,7 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Comment extends BaseEntity{
+public class Comment extends BaseEntity {
 
     private String content;
     private Boolean isDeleted;
@@ -35,10 +36,6 @@ public class Comment extends BaseEntity{
     private Post post;
 
     @ManyToMany
-    @JoinTable(
-            name = "like_comment",
-            joinColumns = @JoinColumn(name = "comment_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
+    @JoinTable(name = "like_comment", joinColumns = @JoinColumn(name = "comment_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<User> likeUsers = new HashSet<>();
 }

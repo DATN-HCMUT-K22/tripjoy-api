@@ -1,6 +1,7 @@
 package com.tripjoy.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,14 +9,13 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-
 @Getter
 @Setter
 @Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Itinerary extends BaseEntity{
+public class Itinerary extends BaseEntity {
 
     private String name;
     private String description;
@@ -25,6 +25,9 @@ public class Itinerary extends BaseEntity{
     private Long budgetEstimate;
     private String status;
     private String destination;
+
+    @Embedded
+    private SoftDeleteInfo softDeleteInfo = new SoftDeleteInfo();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id")
@@ -43,10 +46,6 @@ public class Itinerary extends BaseEntity{
     private Set<Expense> expenses = new HashSet<>();
 
     @ManyToMany
-    @JoinTable(
-            name = "favourite_itinerary",
-            joinColumns = @JoinColumn(name = "itinerary_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
+    @JoinTable(name = "favourite_itinerary", joinColumns = @JoinColumn(name = "itinerary_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<User> favouriteUsers = new HashSet<>();
 }

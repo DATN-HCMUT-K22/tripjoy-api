@@ -54,7 +54,7 @@ public class GroupController {
                                 .build();
         }
 
-        @Operation(summary = "Get group information by ID")
+        @Operation(summary = "Get group information by ID - OK")
         @GetMapping(Endpoint.Group.ID)
         public ApiResponse<GroupResponse> getGroupById(@PathVariable UUID groupId) {
                 return ApiResponse.<GroupResponse>builder()

@@ -1,5 +1,6 @@
 package com.tripjoy.api.entity;
 
+import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -30,4 +31,7 @@ public class ConversationMember extends BaseEntity {
     private Boolean isPinned = false;
 
     private UUID lastReadMessageId;
+
+    @Embedded
+    private SoftDeleteInfo softDeleteInfo = new SoftDeleteInfo();
 }

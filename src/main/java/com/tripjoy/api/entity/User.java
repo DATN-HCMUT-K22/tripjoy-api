@@ -1,6 +1,7 @@
 package com.tripjoy.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,15 +28,14 @@ public class User extends BaseEntity {
     private String avatarUrl;
     private LocalDateTime dateOfBirth;
     private Long credits;
-    private Boolean isDeleted = false;
+
+    @Embedded
+    private SoftDeleteInfo softDeleteInfo = new SoftDeleteInfo();
+
     private Boolean isLocked = false;
 
     @ManyToMany
-    @JoinTable(
-            name = "user_role",
-            joinColumns = @JoinColumn(name = "users_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
+    @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "users_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
 
     @ManyToMany(mappedBy = "favouriteUsers")

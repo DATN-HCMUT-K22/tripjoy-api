@@ -1,5 +1,6 @@
 package com.tripjoy.api.entity;
 
+import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,7 +13,7 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChatMessage extends BaseEntity{
+public class ChatMessage extends BaseEntity {
 
     private String messageType;
     private String messageContent;
@@ -20,7 +21,9 @@ public class ChatMessage extends BaseEntity{
     private String sharedPostUrl;
     private Boolean isBot;
     private String status;
-    private Boolean isDeleted;
+
+    @Embedded
+    private SoftDeleteInfo softDeleteInfo = new SoftDeleteInfo();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_message_id", referencedColumnName = "id")
@@ -38,10 +41,6 @@ public class ChatMessage extends BaseEntity{
     private Conversation conversation; // Mỗi tin nhắn thuộc về 1 conversation
 
     @ManyToMany
-    @JoinTable(
-            name = "like_chat_message",
-            joinColumns = @JoinColumn(name = "chat_message_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
+    @JoinTable(name = "like_chat_message", joinColumns = @JoinColumn(name = "chat_message_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<User> likeUsers = new HashSet<>();
 }
