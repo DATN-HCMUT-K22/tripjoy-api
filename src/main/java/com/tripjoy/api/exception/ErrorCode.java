@@ -50,6 +50,7 @@ public enum ErrorCode {
     CANNOT_ASSIGN_LEADER_ROLE(3012, "Cannot assign LEADER role. Use transfer leadership instead",
             HttpStatus.BAD_REQUEST),
     CANNOT_TRANSFER_TO_YOURSELF(3013, "Cannot transfer leadership to yourself", HttpStatus.BAD_REQUEST),
+    GROUP_NOT_DELETED(3014, "Group is not deleted", HttpStatus.BAD_REQUEST),
 
     // --- 4. CHAT & CONVERSATION DOMAIN (4000 - 4999) ---
     CONVERSATION_NOT_FOUND(4001, "Conversation not found", HttpStatus.NOT_FOUND),

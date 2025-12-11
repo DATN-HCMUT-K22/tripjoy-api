@@ -74,10 +74,11 @@ public class GroupController {
                                 .build();
         }
 
-        @Operation(summary = "Delete group")
+        @Operation(summary = "Delete group (soft delete with cascade) - Only LEADER - OK")
         @DeleteMapping(Endpoint.Group.ID)
         public ApiResponse<Void> deleteGroup(@PathVariable UUID groupId) {
-                // groupService.deleteGroup(groupId);
+                UUID currentUserId = SecurityUtils.getCurrentUserId();
+                groupService.deleteGroup(groupId, currentUserId);
                 return ApiResponse.<Void>builder().message("Group deleted successfully").build();
         }
 

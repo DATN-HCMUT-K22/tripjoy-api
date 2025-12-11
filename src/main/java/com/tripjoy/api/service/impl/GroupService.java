@@ -25,6 +25,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -36,6 +37,9 @@ public class GroupService implements IGroupService {
 
     GroupRepository groupRepository;
     GroupMemberRepository groupMemberRepository;
+    ItineraryRepository itineraryRepository;
+    ConversationRepository conversationRepository;
+    ConversationMemberRepository conversationMemberRepository;
     UserRepository userRepository;
     ApplicationEventPublisher eventPublisher;
     @PersistenceContext
@@ -46,7 +50,7 @@ public class GroupService implements IGroupService {
 
     @Transactional(readOnly = true)
     public GroupResponse getGroupById(UUID groupId) {
-        return groupRepository.findById(groupId)
+        return groupRepository.findByIdAndNotDeleted(groupId)
                 .map(groupMapper::toGroupResponse)
                 .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
     }
@@ -56,7 +60,9 @@ public class GroupService implements IGroupService {
         List<GroupMember> memberRecords = groupMemberRepository.findByUserId(userId);
 
         return memberRecords.stream()
+                .filter(member -> !member.getSoftDeleteInfo().isDeleted()) // Filter deleted members
                 .map(GroupMember::getGroup)
+                .filter(group -> !group.getSoftDeleteInfo().isDeleted()) // Filter deleted groups
                 .map(groupMapper::toGroupResponse)
                 .toList();
     }
@@ -334,5 +340,74 @@ public class GroupService implements IGroupService {
         // New member -> LEADER
         newLeader.setRole(GroupRole.LEADER);
         groupMemberRepository.save(newLeader);
+    }
+
+    // === CASCADE SOFT DELETE METHODS ===
+
+    @Override
+    @Transactional
+    public void deleteGroup(UUID groupId, UUID currentUserId) {
+        // 1. Validate Group exists
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
+
+        // 2. Verify current user is LEADER
+        User currentUser = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        GroupMember currentLeader = groupMemberRepository.findByGroupAndUser(group, currentUser)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_IN_GROUP));
+
+        if (currentLeader.getRole() != GroupRole.LEADER) {
+            throw new AppException(ErrorCode.ONLY_LEADER_ALLOWED);
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        String deletedBy = currentUserId.toString();
+
+        // 3. Soft delete Group
+        group.getSoftDeleteInfo().markAsDeleted(deletedBy);
+        groupRepository.save(group);
+
+        // 4. Cascade soft delete all related entities
+        groupMemberRepository.softDeleteByGroupId(groupId, now, deletedBy);
+        itineraryRepository.softDeleteByGroupId(groupId, now, deletedBy);
+        conversationRepository.softDeleteByGroupId(groupId, now, deletedBy);
+        conversationMemberRepository.softDeleteByGroupConversations(groupId, now, deletedBy);
+    }
+
+    @Override
+    @Transactional
+    public void restoreGroup(UUID groupId, UUID currentUserId) {
+        // 1. Validate Group exists (even if deleted)
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
+
+        // 2. Check if group is actually deleted
+        if (!group.getSoftDeleteInfo().isDeleted()) {
+            throw new AppException(ErrorCode.GROUP_NOT_DELETED);
+        }
+
+        // 3. Verify current user was a member (check in soft deleted members)
+        User currentUser = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        GroupMember currentMember = groupMemberRepository.findByGroupAndUser(group, currentUser)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_IN_GROUP));
+
+        // Only LEADER can restore
+        if (currentMember.getRole() != GroupRole.LEADER) {
+            throw new AppException(ErrorCode.ONLY_LEADER_ALLOWED);
+        }
+
+        // 4. Restore Group
+        group.getSoftDeleteInfo().restore();
+        groupRepository.save(group);
+
+        // 5. Cascade restore all related entities
+        groupMemberRepository.restoreByGroupId(groupId);
+        itineraryRepository.restoreByGroupId(groupId);
+        conversationRepository.restoreByGroupId(groupId);
+        conversationMemberRepository.restoreByGroupConversations(groupId);
     }
 }

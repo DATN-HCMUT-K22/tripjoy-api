@@ -5,9 +5,11 @@ import com.tripjoy.api.entity.GroupMember;
 import com.tripjoy.api.entity.User;
 import com.tripjoy.api.enums.GroupRole;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,4 +31,42 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, UUID> 
 
     // Find specific member in a group
     java.util.Optional<GroupMember> findByGroupAndUser(Group group, User user);
+
+    // === FILTER DELETED RECORDS ===
+
+    @Query("SELECT gm FROM GroupMember gm WHERE gm.group = :group AND gm.softDeleteInfo.isDeleted = false ORDER BY gm.role ASC")
+    List<GroupMember> findByGroupAndNotDeletedOrderByRoleAsc(@Param("group") Group group);
+
+    @Query("SELECT gm FROM GroupMember gm WHERE gm.user.id = :userId AND gm.softDeleteInfo.isDeleted = false")
+    List<GroupMember> findByUserIdAndNotDeleted(@Param("userId") UUID userId);
+
+    @Query("SELECT gm FROM GroupMember gm WHERE gm.group = :group AND gm.user = :user AND gm.softDeleteInfo.isDeleted = false")
+    java.util.Optional<GroupMember> findByGroupAndUserAndNotDeleted(@Param("group") Group group,
+            @Param("user") User user);
+
+    // === SOFT DELETE CASCADE METHODS ===
+
+    /**
+     * Bulk soft delete all members of a group
+     */
+    @Modifying
+    @Query("UPDATE GroupMember gm " +
+            "SET gm.softDeleteInfo.isDeleted = true, " +
+            "    gm.softDeleteInfo.deletedAt = :deletedAt, " +
+            "    gm.softDeleteInfo.deletedBy = :deletedBy " +
+            "WHERE gm.group.id = :groupId")
+    int softDeleteByGroupId(@Param("groupId") UUID groupId,
+            @Param("deletedAt") LocalDateTime deletedAt,
+            @Param("deletedBy") String deletedBy);
+
+    /**
+     * Bulk restore all members of a group
+     */
+    @Modifying
+    @Query("UPDATE GroupMember gm " +
+            "SET gm.softDeleteInfo.isDeleted = false, " +
+            "    gm.softDeleteInfo.deletedAt = null, " +
+            "    gm.softDeleteInfo.deletedBy = null " +
+            "WHERE gm.group.id = :groupId")
+    int restoreByGroupId(@Param("groupId") UUID groupId);
 }

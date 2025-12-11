@@ -30,4 +30,10 @@ public interface IGroupService {
             UUID currentUserId);
 
     void transferLeadership(UUID groupId, TransferLeadershipRequest request, UUID currentUserId);
+
+    // === SOFT DELETE CASCADE METHODS ===
+
+    void deleteGroup(UUID groupId, UUID currentUserId);
+
+    void restoreGroup(UUID groupId, UUID currentUserId);
 }
