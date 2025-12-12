@@ -1,0 +1,69 @@
+package com.tripjoy.api.controller;
+
+import com.tripjoy.api.constant.Endpoint;
+import com.tripjoy.api.dto.request.SuggestLocationRequest;
+import com.tripjoy.api.dto.response.ApiResponse;
+import com.tripjoy.api.dto.response.SuggestLocationResponse;
+import com.tripjoy.api.service.ISuggestLocationService;
+import com.tripjoy.api.utils.SecurityUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+
+@Slf4j
+@RestController
+@RequestMapping
+@RequiredArgsConstructor
+@Tag(name = "Location Suggestions", description = "APIs for managing location suggestions in groups")
+public class SuggestLocationController {
+
+    private final ISuggestLocationService suggestLocationService;
+
+    @Operation(summary = "Get all location suggestions for a group - Member+")
+    @GetMapping(Endpoint.Group.LOCATION_SUGGESTIONS)
+    public ApiResponse<List<SuggestLocationResponse>> getGroupSuggestions(
+            @PathVariable UUID groupId) {
+
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+        List<SuggestLocationResponse> suggestions = suggestLocationService.getSuggestionsByGroup(groupId,
+                currentUserId);
+
+        return ApiResponse.<List<SuggestLocationResponse>>builder()
+                .data(suggestions)
+                .build();
+    }
+
+    @Operation(summary = "Suggest a location for the group - Member+")
+    @PostMapping(Endpoint.Group.LOCATION_SUGGESTIONS)
+    public ApiResponse<SuggestLocationResponse> createSuggestion(
+            @PathVariable UUID groupId,
+            @RequestBody @Valid SuggestLocationRequest request) {
+
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+        SuggestLocationResponse response = suggestLocationService.createSuggestion(groupId, request, currentUserId);
+
+        return ApiResponse.<SuggestLocationResponse>builder()
+                .data(response)
+                .build();
+    }
+
+    @Operation(summary = "Delete a suggestion - Owner or Leader/Co-Leader")
+    @DeleteMapping(Endpoint.Group.LOCATION_SUGGESTIONS_ID)
+    public ApiResponse<Void> deleteSuggestion(
+            @PathVariable UUID groupId,
+            @PathVariable UUID suggestionId) {
+
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+        suggestLocationService.deleteSuggestion(groupId, suggestionId, currentUserId);
+
+        return ApiResponse.<Void>builder()
+                .message("Suggestion deleted successfully")
+                .build();
+    }
+}

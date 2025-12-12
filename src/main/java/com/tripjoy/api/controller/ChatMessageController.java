@@ -25,7 +25,7 @@ public class ChatMessageController {
 
     IChatMessageService messageService;
 
-    @Operation(summary = "Like / Unlike message (Toggle)")
+    @Operation(summary = "Like / Unlike message (Toggle) - OK")
     @PostMapping(Endpoint.Message.LIKES)
     public ApiResponse<Void> toggleLikeMessage(@PathVariable UUID messageId) {
 
