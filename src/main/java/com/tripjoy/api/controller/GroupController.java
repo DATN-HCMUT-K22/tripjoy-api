@@ -152,24 +152,4 @@ public class GroupController {
                                 .message("Leadership transferred successfully")
                                 .build();
         }
-
-        // --- LOCATION SUGGESTIONS ---
-
-        @Operation(summary = "Suggest location for group")
-        @PostMapping(Endpoint.Group.LOCATION_SUGGESTIONS)
-        public ApiResponse<SuggestLocationResponse> suggestLocation(
-                        @PathVariable UUID groupId,
-                        @Valid @RequestBody SuggestLocationRequest request) {
-                return ApiResponse.<SuggestLocationResponse>builder()
-                                // .data(groupService.suggestLocation(groupId, request))
-                                .build();
-        }
-
-        @Operation(summary = "Get list of suggested locations")
-        @GetMapping(Endpoint.Group.LOCATION_SUGGESTIONS)
-        public ApiResponse<List<SuggestLocationResponse>> getSuggestedLocations(@PathVariable UUID groupId) {
-                return ApiResponse.<List<SuggestLocationResponse>>builder()
-                                // .data(groupService.getSuggestedLocations(groupId))
-                                .build();
-        }
 }
