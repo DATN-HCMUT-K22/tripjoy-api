@@ -3,8 +3,7 @@ package com.tripjoy.api.constant;
 public class Endpoint {
     public static final String API_PREFIX = "/api/v1";
 
-
-    public static final class Auth{
+    public static final class Auth {
         public static final String BASE = API_PREFIX + "/auth";
         public static final String LOGIN = "/login";
         public static final String REGISTER = "/register";
@@ -52,20 +51,21 @@ public class Endpoint {
 
         // Đề xuất địa điểm trong group
         public static final String LOCATION_SUGGESTIONS = ID + "/location-suggestions";
+        public static final String LOCATION_SUGGESTIONS_ID = LOCATION_SUGGESTIONS + "/{suggestionId}";
     }
 
 //    public static final class Chat {
 //        public static final String BASE = API_PREFIX + "/chat"; // -> /api/v1/chat
-//
+    //
 //        // --- Endpoints cho Tin nhắn (Message) ---
 //        public static final String MESSAGES = "/messages";
 //        public static final String MESSAGE_ID = MESSAGES + "/{messageId}"; // -> /api/v1/chat/messages/{messageId}
 //        public static final String MESSAGE_LIKES = MESSAGE_ID + "/likes"; // -> .../{messageId}/likes
-//
+    //
 //        // --- Endpoints cho Chat 1-1 (Direct) ---
 //        public static final String DIRECT_BASE = "/direct/{userId}"; // -> /api/v1/chat/direct/{userId}
 //        public static final String DIRECT_MESSAGES = DIRECT_BASE + "/messages"; // -> .../direct/{userId}/messages
-//
+    //
 //        // --- Endpoints cho Chat Nhóm (Groups) ---
 //        public static final String GROUP_BASE = "/groups/{groupId}"; // -> /api/v1/chat/groups/{groupId}
 //        public static final String GROUP_MESSAGES = GROUP_BASE + "/messages"; // -> .../groups/{groupId}/messages
