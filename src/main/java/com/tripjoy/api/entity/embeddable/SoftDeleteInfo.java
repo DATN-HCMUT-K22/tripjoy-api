@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 @Setter
 public class SoftDeleteInfo {
 
-    @Column(name = "is_deleted", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
     @Column(name = "deleted_at")

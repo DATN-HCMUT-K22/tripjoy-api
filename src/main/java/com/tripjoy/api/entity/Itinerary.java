@@ -27,6 +27,7 @@ public class Itinerary extends BaseEntity {
     private String destination;
 
     @Embedded
+    @Builder.Default
     private SoftDeleteInfo softDeleteInfo = new SoftDeleteInfo();
 
     @ManyToOne(fetch = FetchType.LAZY)

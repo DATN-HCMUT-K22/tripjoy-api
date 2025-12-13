@@ -1,62 +1,54 @@
 version: '3.8'
 
 services:
-  # PostgreSQL 17 + PostGIS 3.5
-  postgres-postgis:
-    image: postgis/postgis:17-3.5
-    container_name: tripjoy-postgis
+  # 1. PostgreSQL Service
+  db:
+    image: postgis/postgis:${POSTGRES_VERSION:-17-3.5}
+    container_name: tripjoy-db-postgis
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "5432:5432"
+      # Map port từ .env (DB_PORT) vào port mặc định của container (5432)
+      - "${DB_PORT}:5432"
     volumes:
-      - postgis_data:/var/lib/postgresql/data
+      - ${POSTGRES_VOLUME:-tripjoy_postgis_data}:/var/lib/postgresql/data
+      - ./scripts/init-postgis.sh:/docker-entrypoint-initdb.d/01-init-postgis.sh
     networks:
-      - tripjoy-network
+      - tripjoy-backend
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER}" ]
-      interval: 10s
-      timeout: 5s
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}" ]
+      interval: 5s
+      timeout: 3s
       retries: 5
+      start_period: 10s
 
-  # Redis 7.2
-  redis:
+  # 2. Redis Service
+  cache:
     image: redis:${REDIS_VERSION:-7.2-alpine}
-    container_name: tripjoy-redis
+    container_name: tripjoy-cache-redis
     command: >
-      redis-server /usr/local/etc/redis/redis.conf --requirepass ${REDIS_PASSWORD} --port ${REDIS_PORT} --maxmemory ${REDIS_MAX_MEMORY:-512mb}
+      redis-server --requirepass ${REDIS_PASSWORD} --port 6379
     ports:
-      - "${REDIS_PORT}:${REDIS_PORT}"
+      # Map port từ .env (REDIS_PORT) vào port mặc định của container (6379)
+      - "${REDIS_PORT}:6379"
     volumes:
-      - ./redis.conf:/usr/local/etc/redis/redis.conf
-      - redis_data:/data
+      - ${REDIS_VOLUME:-tripjoy_redis_data}:/data
     networks:
-      - tripjoy-network
+      - tripjoy-backend
     restart: unless-stopped
-    sysctls:
-      - net.core.somaxconn=1024
     healthcheck:
       test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping" ]
-      interval: 10s
-      timeout: 5s
+      interval: 5s
+      timeout: 3s
       retries: 5
 
 networks:
-  tripjoy-network:
+  tripjoy-backend:
     driver: bridge
 
 volumes:
-  postgis_data:
-  redis_data:
-
-# # Start all
-# docker-compose up -d
-# # Verify
-# docker ps
-# docker exec -it tripjoy-redis redis-cli -a TripJoySecurePass2025 ping
-# docker exec -it tripjoy-postgis psql -U postgres -d tripjoy
-# # Stop all
-# docker-compose down
+  tripjoy_postgis_data:
+  tripjoy_redis_data:

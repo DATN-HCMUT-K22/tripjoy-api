@@ -23,6 +23,7 @@ public class ChatMessage extends BaseEntity {
     private String status;
 
     @Embedded
+    @Builder.Default
     private SoftDeleteInfo softDeleteInfo = new SoftDeleteInfo();
 
     @ManyToOne(fetch = FetchType.LAZY)

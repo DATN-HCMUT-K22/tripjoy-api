@@ -13,7 +13,7 @@ public interface SuggestLocationRepository extends JpaRepository<SuggestLocation
 
     List<SuggestLocation> findByGroupIdOrderByCreatedAtDesc(UUID groupId);
 
-    boolean existsByIdAndUserId(UUID id, UUID userId);
+    boolean existsByIdAndSuggestedById(UUID id, UUID suggestedById);
 
     Optional<SuggestLocation> findByIdAndGroupId(UUID id, UUID groupId);
 }

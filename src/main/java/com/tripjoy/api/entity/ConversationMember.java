@@ -33,5 +33,6 @@ public class ConversationMember extends BaseEntity {
     private UUID lastReadMessageId;
 
     @Embedded
+    @Builder.Default
     private SoftDeleteInfo softDeleteInfo = new SoftDeleteInfo();
 }

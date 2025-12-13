@@ -33,7 +33,7 @@ public interface LocationMapper {
     @Mapping(target = "coordinates", expression = "java(createPoint(request.getLongitude(), request.getLatitude()))")
     @Mapping(source = "provider", target = "provider", qualifiedByName = "stringToMapProvider")
     @Mapping(source = "operationalStatus", target = "operationalStatus", qualifiedByName = "stringToOperationalStatus")
-    @Mapping(source = "rawMapResponse", target = "rawResponse")
+    @Mapping(source = "rawMapResponse", target = "rawResponse", qualifiedByName = "validateJson")
     Location toEntity(LocationCreateRequest request);
 
     AddressComponentsDto toAddressComponentsDto(AddressComponents addressComponents);
@@ -90,5 +90,26 @@ public interface LocationMapper {
     @Named("extractLongitude")
     default Double extractLongitude(Point point) {
         return point != null ? point.getX() : null;
+    }
+
+    // ==================== JSON Validation ====================
+
+    /**
+     * Validate JSON string - return null if invalid or just literal "string"
+     * This prevents PostgreSQL JSONB errors from test data
+     */
+    @Named("validateJson")
+    default String validateJson(String json) {
+        if (json == null || json.trim().isEmpty() || json.trim().equals("string")) {
+            return null;
+        }
+
+        // Check if it's valid JSON (starts with { or [)
+        String trimmed = json.trim();
+        if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) {
+            return null;
+        }
+
+        return json;
     }
 }

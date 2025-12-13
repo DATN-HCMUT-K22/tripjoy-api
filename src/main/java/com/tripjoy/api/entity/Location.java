@@ -6,6 +6,8 @@ import com.tripjoy.api.entity.embeddable.AddressComponents;
 import com.tripjoy.api.entity.enums.MapProvider;
 import com.tripjoy.api.entity.enums.OperationalStatus;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.*;
 import org.locationtech.jts.geom.Point;
 
@@ -104,6 +106,7 @@ public class Location extends BaseEntity {
     private Boolean wheelchairAccessible; // Wheelchair accessibility information
 
     @Column(name = "raw_response", columnDefinition = "JSONB")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String rawResponse; // Raw JSON response from map provider (for backup/debugging)
     // Stored as JSONB in PostgreSQL for queryability
 
