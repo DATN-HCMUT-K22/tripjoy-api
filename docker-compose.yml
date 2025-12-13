@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 17 + PostGIS 3.5
+  postgres-postgis:
+    image: postgis/postgis:17-3.5
+    container_name: tripjoy-postgis
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+    networks:
+      - tripjoy-network
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis 7.2
+  redis:
+    image: redis:${REDIS_VERSION:-7.2-alpine}
+    container_name: tripjoy-redis
+    command: >
+      redis-server /usr/local/etc/redis/redis.conf --requirepass ${REDIS_PASSWORD} --port ${REDIS_PORT} --maxmemory ${REDIS_MAX_MEMORY:-512mb}
+    ports:
+      - "${REDIS_PORT}:${REDIS_PORT}"
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+      - redis_data:/data
+    networks:
+      - tripjoy-network
+    restart: unless-stopped
+    sysctls:
+      - net.core.somaxconn=1024
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  tripjoy-network:
+    driver: bridge
+
+volumes:
+  postgis_data:
+  redis_data:
+
+# # Start all
+# docker-compose up -d
+# # Verify
+# docker ps
+# docker exec -it tripjoy-redis redis-cli -a TripJoySecurePass2025 ping
+# docker exec -it tripjoy-postgis psql -U postgres -d tripjoy
+# # Stop all
+# docker-compose down
