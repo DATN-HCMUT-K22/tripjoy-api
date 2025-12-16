@@ -31,14 +31,10 @@ public class LocationService implements ILocationService {
     LocationRepository locationRepository;
     LocationMapper locationMapper;
 
-    /**
-     * Create location with duplicate prevention
-     * Priority: 1. Check providerId, 2. Check coordinates proximity (<50m)
-     */
     @Override
     @Transactional
-    public LocationResponse createLocation(LocationCreateRequest request) {
-        log.info("Creating location: {}", request.getName());
+    public LocationResponse getOrCreateLocation(LocationCreateRequest request) {
+        log.info("Getting or creating location: {}", request.getName());
 
         // 1. Check duplicate by providerId (from Map API)
         if (request.getProviderId() != null && !request.getProviderId().trim().isEmpty()) {
@@ -55,8 +51,8 @@ public class LocationService implements ILocationService {
 
         if (!nearbyLocations.isEmpty()) {
             Location existing = nearbyLocations.get(0);
-            log.info("Location already exists at similar coordinates: {} ({}m away)",
-                    existing.getName(), "< 50");
+            log.info("Location already exists at similar coordinates: {} (<50m away)",
+                    existing.getName());
             return locationMapper.toResponse(existing);
         }
 
@@ -70,20 +66,6 @@ public class LocationService implements ILocationService {
         return locationMapper.toResponse(saved);
     }
 
-    /**
-     * Get or create location (helper for SuggestLocation service)
-     * Reuses createLocation logic for duplicate prevention
-     */
-    @Override
-    @Transactional
-    public LocationResponse getOrCreateLocation(LocationCreateRequest request) {
-        // This delegates to createLocation which handles duplicate check
-        return createLocation(request);
-    }
-
-    /**
-     * Get location by ID
-     */
     @Override
     @Transactional(readOnly = true)
     public LocationResponse getLocationById(UUID locationId) {
@@ -95,11 +77,6 @@ public class LocationService implements ILocationService {
         return locationMapper.toResponse(location);
     }
 
-    /**
-     * Update location (restricted fields only)
-     * Cannot update: providerId, coordinates, address_components (Map API sourced)
-     * Can update: name, operational_status, hotline, wheelchair_accessible
-     */
     @Override
     @Transactional
     public LocationResponse updateLocation(UUID locationId, LocationCreateRequest request) {
@@ -132,10 +109,6 @@ public class LocationService implements ILocationService {
         return locationMapper.toResponse(updated);
     }
 
-    /**
-     * Delete location (soft delete with reference check)
-     * Prevents deletion if location is referenced by SuggestLocation
-     */
     @Override
     @Transactional
     public void deleteLocation(UUID locationId) {
@@ -155,9 +128,6 @@ public class LocationService implements ILocationService {
         log.info("Deleted location: {}", location.getName());
     }
 
-    /**
-     * Get all locations (paginated)
-     */
     @Override
     @Transactional(readOnly = true)
     public Page<LocationResponse> getAllLocations(Pageable pageable) {
@@ -166,6 +136,105 @@ public class LocationService implements ILocationService {
 
         Page<Location> locations = locationRepository.findAll(pageable);
 
+        return locations.map(locationMapper::toResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<LocationResponse> getNearbyLocations(
+            Double latitude,
+            Double longitude,
+            Integer radiusMeters,
+            List<String> categories,
+            Integer limit) {
+
+        log.info("Finding nearby locations: lat={}, lng={}, radius={}m, categories={}, limit={}",
+                latitude, longitude, radiusMeters, categories, limit);
+
+        // Validation
+        if (latitude == null || longitude == null) {
+            throw new AppException(ErrorCode.INVALID_COORDINATES);
+        }
+        if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+            throw new AppException(ErrorCode.INVALID_COORDINATES);
+        }
+
+        // Apply defaults
+        int radius = (radiusMeters != null) ? radiusMeters : 5000; // Default 5km
+        int maxResults = (limit != null) ? limit : 50; // Default 50
+
+        // Enforce limits
+        if (radius > 50000)
+            radius = 50000; // Max 50km
+        if (maxResults > 100)
+            maxResults = 100; // Max 100 results
+
+        // Create search point
+        Point searchPoint = locationMapper.createPoint(longitude, latitude);
+
+        // Query repository
+        List<Location> nearbyLocations = locationRepository.findWithinDistance(searchPoint, radius);
+
+        // Filter by categories if provided (post-query filtering since native query
+        // complex)
+        if (categories != null && !categories.isEmpty()) {
+            nearbyLocations = nearbyLocations.stream()
+                    .filter(location -> {
+                        if (location.getPoiCategories() == null)
+                            return false;
+                        return location.getPoiCategories().stream()
+                                .anyMatch(categories::contains);
+                    })
+                    .limit(maxResults)
+                    .toList();
+        } else {
+            nearbyLocations = nearbyLocations.stream()
+                    .limit(maxResults)
+                    .toList();
+        }
+
+        log.info("Found {} nearby locations", nearbyLocations.size());
+        return nearbyLocations.stream()
+                .map(locationMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<LocationResponse> searchLocations(
+            String query,
+            String city,
+            String district,
+            List<String> categories,
+            Pageable pageable) {
+
+        log.info("Searching locations: query='{}', city='{}', district='{}', categories={}, page={}",
+                query, city, district, categories, pageable.getPageNumber());
+
+        // Query repository (without category filter - will apply post-query)
+        Page<Location> locations = locationRepository.searchLocations(
+                query, city, district, pageable);
+
+        // Apply category filter if provided (post-query)
+        if (categories != null && !categories.isEmpty()) {
+            List<Location> filtered = locations.getContent().stream()
+                    .filter(location -> {
+                        if (location.getPoiCategories() == null)
+                            return false;
+                        return location.getPoiCategories().stream()
+                                .anyMatch(categories::contains);
+                    })
+                    .toList();
+
+            log.info("Found {} locations (filtered by categories from {})",
+                    filtered.size(), locations.getTotalElements());
+
+            // Note: Page count may be inaccurate after filtering
+            // For production, consider implementing category filter in query
+            return locations.map(locationMapper::toResponse);
+        }
+
+        log.info("Found {} locations", locations.getTotalElements());
         return locations.map(locationMapper::toResponse);
     }
 }
