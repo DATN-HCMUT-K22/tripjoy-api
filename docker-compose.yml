@@ -1,0 +1,58 @@
+version: '3.8'
+
+# Best Practice: Set project name via COMPOSE_PROJECT_NAME env or -p flag
+# Example: COMPOSE_PROJECT_NAME=tripjoy docker-compose up
+
+services:
+  # 1. PostgreSQL + PostGIS Service
+  postgres:
+    image: postgis/postgis:${POSTGRES_VERSION:-17-3.5}
+    container_name: ${COMPOSE_PROJECT_NAME:-tripjoy}-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgis/init-postgis.sh:/docker-entrypoint-initdb.d/01-init-postgis.sh
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  # 2. Redis Service
+  redis:
+    image: redis:${REDIS_VERSION:-7.2-alpine}
+    container_name: ${COMPOSE_PROJECT_NAME:-tripjoy}-redis
+    command: redis-server /usr/local/etc/redis/redis.conf --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+networks:
+  backend:
+    name: ${COMPOSE_PROJECT_NAME:-tripjoy}-network
+    driver: bridge
+
+volumes:
+  postgres-data:
+    name: ${COMPOSE_PROJECT_NAME:-tripjoy}-postgres-data
+  redis-data:
+    name: ${COMPOSE_PROJECT_NAME:-tripjoy}-redis-data

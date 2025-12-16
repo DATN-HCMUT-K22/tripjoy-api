@@ -22,7 +22,7 @@ public class SuggestLocationResponse extends BaseResponse {
     LocationResponse location;
 
     @JsonProperty("suggested_by")
-    UserSimpleResponse user;
+    UserSimpleResponse suggestedBy;
 
     @JsonProperty("group_id")
     String groupId;

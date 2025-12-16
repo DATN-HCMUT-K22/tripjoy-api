@@ -27,5 +27,6 @@ public class GroupMember extends BaseEntity {
     private User user;
 
     @Embedded
+    @Builder.Default
     private SoftDeleteInfo softDeleteInfo = new SoftDeleteInfo();
 }

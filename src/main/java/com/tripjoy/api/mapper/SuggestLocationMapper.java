@@ -12,7 +12,7 @@ import java.util.List;
 public interface SuggestLocationMapper {
 
     @Mapping(source = "group.id", target = "groupId")
-    @Mapping(source = "user", target = "user")
+    @Mapping(source = "suggestedBy", target = "suggestedBy")
     @Mapping(source = "location", target = "location")
     SuggestLocationResponse toResponse(SuggestLocation entity);
 

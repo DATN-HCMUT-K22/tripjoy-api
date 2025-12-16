@@ -21,6 +21,7 @@ public class User extends BaseEntity {
     private String username;
     private String password;
     private String email;
+    @Builder.Default
     private Boolean isEmailVerified = false;
     private String phoneNumber;
     private String fullName;
@@ -30,8 +31,10 @@ public class User extends BaseEntity {
     private Long credits;
 
     @Embedded
+    @Builder.Default
     private SoftDeleteInfo softDeleteInfo = new SoftDeleteInfo();
 
+    @Builder.Default
     private Boolean isLocked = false;
 
     @ManyToMany

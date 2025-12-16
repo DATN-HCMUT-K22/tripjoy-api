@@ -25,6 +25,7 @@ public class Group extends BaseEntity {
     private Boolean isPro;
 
     @Embedded
+    @Builder.Default
     private SoftDeleteInfo softDeleteInfo = new SoftDeleteInfo();
 
     @OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL)

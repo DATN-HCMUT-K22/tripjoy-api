@@ -72,6 +72,14 @@ public enum ErrorCode {
     DUPLICATE_RESOURCE(6003, "Resource already exists", HttpStatus.CONFLICT),
     REFERENCED_RESOURCE(6004, "Cannot delete: Resource is being referenced", HttpStatus.CONFLICT),
 
+    // --- 7. LOCATION DOMAIN (7000 - 7999) ---
+    LOCATION_NOT_FOUND(7001, "Location not found", HttpStatus.NOT_FOUND),
+    LOCATION_IN_USE(7002, "Cannot delete location: It is being used in group suggestions", HttpStatus.CONFLICT),
+    INVALID_COORDINATES(7003, "Invalid latitude or longitude", HttpStatus.BAD_REQUEST),
+    MAPBOX_API_ERROR(7004, "Mapbox API request failed", HttpStatus.BAD_GATEWAY),
+    INVALID_LOCATION_INPUT(7005, "Must provide either location_id OR location_data, but not both",
+            HttpStatus.BAD_REQUEST),
+
     ;
 
     private final int code;

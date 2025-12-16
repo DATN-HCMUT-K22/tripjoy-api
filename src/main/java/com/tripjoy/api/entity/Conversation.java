@@ -42,5 +42,6 @@ public class Conversation extends BaseEntity {
     private Set<ConversationMember> members;
 
     @Embedded
+    @Builder.Default
     private SoftDeleteInfo softDeleteInfo = new SoftDeleteInfo();
 }
