@@ -3,6 +3,7 @@ package com.tripjoy.api.dto.request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -34,4 +35,17 @@ public class SuggestLocationRequest {
 
         @Schema(description = "Optional notes about why this location is suggested", example = "This place looks great for our first day!", maxLength = 1000)
         String notes;
+
+        /**
+         * Validation: Must provide exactly ONE of locationId OR locationData, not both,
+         * not neither
+         */
+        @AssertTrue(message = "INVALID_LOCATION_INPUT")
+        private boolean isValidLocationInput() {
+                boolean hasLocationId = locationId != null;
+                boolean hasLocationData = locationData != null;
+
+                // XOR: exactly one must be true
+                return hasLocationId ^ hasLocationData;
+        }
 }

@@ -11,9 +11,9 @@ import java.util.UUID;
 @Repository
 public interface SuggestLocationRepository extends JpaRepository<SuggestLocation, UUID> {
 
-    List<SuggestLocation> findByGroupIdOrderByCreatedAtDesc(UUID groupId);
+        List<SuggestLocation> findByGroupIdOrderByCreatedAtDesc(UUID groupId);
 
-    boolean existsByIdAndSuggestedById(UUID id, UUID suggestedById);
+        boolean existsByIdAndSuggestedById(UUID id, UUID suggestedById);
 
-    Optional<SuggestLocation> findByIdAndGroupId(UUID id, UUID groupId);
+        Optional<SuggestLocation> findByIdAndGroupId(UUID id, UUID groupId);
 }

@@ -77,6 +77,8 @@ public enum ErrorCode {
     LOCATION_IN_USE(7002, "Cannot delete location: It is being used in group suggestions", HttpStatus.CONFLICT),
     INVALID_COORDINATES(7003, "Invalid latitude or longitude", HttpStatus.BAD_REQUEST),
     MAPBOX_API_ERROR(7004, "Mapbox API request failed", HttpStatus.BAD_GATEWAY),
+    INVALID_LOCATION_INPUT(7005, "Must provide either location_id OR location_data, but not both",
+            HttpStatus.BAD_REQUEST),
 
     ;
 

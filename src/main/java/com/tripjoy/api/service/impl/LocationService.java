@@ -51,7 +51,7 @@ public class LocationService implements ILocationService {
 
         // 2. Check duplicate by coordinates (within 50m radius)
         Point searchPoint = locationMapper.createPoint(request.getLongitude(), request.getLatitude());
-        List<Location> nearbyLocations = locationRepository.findWithin50Meters(searchPoint);
+        List<Location> nearbyLocations = locationRepository.findWithinDistance(searchPoint, 50.0);
 
         if (!nearbyLocations.isEmpty()) {
             Location existing = nearbyLocations.get(0);

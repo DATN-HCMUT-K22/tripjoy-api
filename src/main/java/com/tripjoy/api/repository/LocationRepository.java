@@ -27,6 +27,19 @@ public interface LocationRepository extends JpaRepository<Location, UUID> {
             """, nativeQuery = true)
     List<Location> findWithin50Meters(@Param("point") Point point);
 
+    @Query(value = """
+        SELECT * FROM location
+        WHERE ST_DWithin(
+          coordinates::geography,
+          CAST(:point AS geography),
+          :meters
+        )
+        """, nativeQuery = true)
+    List<Location> findWithinDistance(
+            @Param("point") Point point,
+            @Param("meters") double meters
+    );
+
     @Query("SELECT COUNT(sl) FROM SuggestLocation sl WHERE sl.location.id = :locationId")
     Long countSuggestLocationsByLocationId(@Param("locationId") UUID locationId);
 }
