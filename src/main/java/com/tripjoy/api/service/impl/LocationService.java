@@ -229,8 +229,6 @@ public class LocationService implements ILocationService {
             log.info("Found {} locations (filtered by categories from {})",
                     filtered.size(), locations.getTotalElements());
 
-            // Note: Page count may be inaccurate after filtering
-            // For production, consider implementing category filter in query
             return locations.map(locationMapper::toResponse);
         }
 

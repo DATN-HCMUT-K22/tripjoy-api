@@ -5,6 +5,7 @@ import com.tripjoy.api.dto.request.LocationCreateRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.location.LocationResponse;
 import com.tripjoy.api.service.ILocationService;
+import com.tripjoy.api.utils.PageableUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -107,9 +108,10 @@ public class LocationController {
             @RequestParam(required = false) String district,
             @RequestParam(required = false) List<String> categories,
             Pageable pageable) {
-
+        // Convert pageable field to use snake_case for SQL Native query in Repository
+        Pageable sqlPageable = PageableUtils.toSnakeCase(pageable);
         Page<LocationResponse> results = locationService.searchLocations(
-                query, city, district, categories, pageable);
+                query, city, district, categories, sqlPageable);
 
         return ApiResponse.<Page<LocationResponse>>builder()
                 .data(results)

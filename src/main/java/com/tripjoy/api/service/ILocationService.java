@@ -27,15 +27,6 @@ public interface ILocationService {
 
     Page<LocationResponse> getAllLocations(Pageable pageable);
 
-    /**
-     * Find locations near a given point (Phase 2 - Nearby Search)
-     * 
-     * @param latitude     Current latitude
-     * @param longitude    Current longitude
-     * @param radiusMeters Search radius in meters (default: 5000, max: 50000)
-     * @param categories   Optional POI categories filter
-     * @param limit        Max results (default: 50, max: 100)
-     */
     List<LocationResponse> getNearbyLocations(
             Double latitude,
             Double longitude,
@@ -43,15 +34,6 @@ public interface ILocationService {
             List<String> categories,
             Integer limit);
 
-    /**
-     * Search locations by text query with filters (Phase 2 - Text Search)
-     * 
-     * @param query      Search text (searches in name and address)
-     * @param city       Filter by city name
-     * @param district   Filter by district name
-     * @param categories Filter by POI categories
-     * @param pageable   Pagination parameters
-     */
     Page<LocationResponse> searchLocations(
             String query,
             String city,
