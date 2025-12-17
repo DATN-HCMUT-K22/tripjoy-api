@@ -132,4 +132,18 @@ public class SocketService implements ISocketService {
             log.error("Failed to broadcast like update: {}", e.getMessage());
         }
     }
+
+    /**
+     * Send notification to a specific user
+     * Broadcasts to user's personal room: "user_{userId}"
+     */
+    public void sendNotification(UUID userId, Object notification) {
+        try {
+            String roomName = "user_" + userId;
+            server.getRoomOperations(roomName).sendEvent("notification", notification);
+            log.info("Notification broadcasted to user: userId={}", userId);
+        } catch (Exception e) {
+            log.error("Failed to broadcast notification: userId={}, error={}", userId, e.getMessage());
+        }
+    }
 }

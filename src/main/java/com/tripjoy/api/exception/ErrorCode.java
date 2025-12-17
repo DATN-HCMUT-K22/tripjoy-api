@@ -80,6 +80,9 @@ public enum ErrorCode {
     INVALID_LOCATION_INPUT(7005, "Must provide either location_id OR location_data, but not both",
             HttpStatus.BAD_REQUEST),
 
+    // --- 8. NOTIFICATION DOMAIN (8000 - 8999) ---
+    NOTIF_NOT_FOUND(8001, "Notification not found", HttpStatus.NOT_FOUND),
+
     ;
 
     private final int code;

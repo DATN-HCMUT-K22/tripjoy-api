@@ -144,6 +144,15 @@ public class Endpoint {
         public static final String ID = "/{reportId}";
     }
 
+    public static final class Notification {
+        public static final String BASE = API_PREFIX + "/notifications";
+        public static final String ID = "/{notificationId}";
+        public static final String UNREAD_COUNT = "/unread-count";
+        public static final String MARK_READ = ID + "/read";
+        public static final String MARK_ALL_READ = "/mark-all-read";
+        public static final String ARCHIVE = ID + "/archive";
+    }
+
     public static final class Admin {
         public static final String BASE = API_PREFIX + "/admin";
     }
