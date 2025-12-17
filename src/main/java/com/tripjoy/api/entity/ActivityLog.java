@@ -13,7 +13,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @Table(name = "activity_logs", indexes = {
         @Index(name = "idx_user_action", columnList = "user_id, action, created_at"),
-        @Index(name = "idx_entity", columnList = "entity_type, entity_id"),
+        @Index(name = "idx_activity_entity", columnList = "entity_type, entity_id"),
         @Index(name = "idx_created_at", columnList = "created_at")
 })
 public class ActivityLog extends BaseEntity {
@@ -46,6 +46,6 @@ public class ActivityLog extends BaseEntity {
     @Column(name = "user_agent", columnDefinition = "TEXT")
     private String userAgent;
 
-    // NOTE: No inverse relationship from User to ActivityLog
+    // No inverse relationship from User to ActivityLog
     // This keeps User domain clean and ActivityLog as pure audit trail
 }

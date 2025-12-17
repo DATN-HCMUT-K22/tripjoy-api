@@ -362,7 +362,6 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
     
     // CLEANUP
     int archiveOldReadNotifications(LocalDateTime threshold, LocalDateTime now);
-}
 ```
 
 ---
