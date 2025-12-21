@@ -1,4 +1,4 @@
-package com.tripjoy.api.entity.enums;
+package com.tripjoy.api.enums;
 
 
 public enum OperationalStatus {
