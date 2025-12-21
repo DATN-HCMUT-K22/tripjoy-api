@@ -95,6 +95,7 @@ public class Endpoint {
         public static final String ID = "/{messageId}";
 
         public static final String LIKES = ID + "/likes";
+        public static final String PIN = ID + "/pin";
     }
 
     public static final class Itinerary {

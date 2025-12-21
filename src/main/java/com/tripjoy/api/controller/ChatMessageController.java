@@ -9,10 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -20,21 +17,56 @@ import java.util.UUID;
 @RequestMapping(Endpoint.Message.BASE)
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Tag(name = "Messages", description = "Actions on specific messages (Like, Revoke...)")
+@Tag(name = "Messages", description = "Actions on specific messages (Like, Unlike...)")
 public class ChatMessageController {
 
     IChatMessageService messageService;
 
-    @Operation(summary = "Like / Unlike message (Toggle) - OK")
+    @Operation(summary = "Like a message")
     @PostMapping(Endpoint.Message.LIKES)
-    public ApiResponse<Void> toggleLikeMessage(@PathVariable UUID messageId) {
-
+    public ApiResponse<Void> likeMessage(@PathVariable UUID messageId) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
-
-        messageService.toggleLikeMessage(messageId, currentUserId);
+        messageService.likeMessage(messageId, currentUserId);
 
         return ApiResponse.<Void>builder()
-                .message("Success")
+                .message("Message liked")
+                .build();
+    }
+
+    @Operation(summary = "Unlike a message")
+    @DeleteMapping(Endpoint.Message.LIKES)
+    public ApiResponse<Void> unlikeMessage(@PathVariable UUID messageId) {
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+        messageService.unlikeMessage(messageId, currentUserId);
+
+        return ApiResponse.<Void>builder()
+                .message("Message unliked")
+                .build();
+    }
+
+    @Operation(summary = "Pin a message in conversation")
+    @PostMapping(Endpoint.Message.PIN)
+    public ApiResponse<Void> pinMessage(
+            @PathVariable UUID messageId,
+            @RequestParam UUID conversationId) {
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+        messageService.pinMessage(conversationId, messageId, currentUserId);
+
+        return ApiResponse.<Void>builder()
+                .message("Message pinned successfully")
+                .build();
+    }
+
+    @Operation(summary = "Unpin a message from conversation")
+    @DeleteMapping(Endpoint.Message.PIN)
+    public ApiResponse<Void> unpinMessage(
+            @PathVariable UUID messageId,
+            @RequestParam UUID conversationId) {
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+        messageService.unpinMessage(conversationId, messageId, currentUserId);
+
+        return ApiResponse.<Void>builder()
+                .message("Message unpinned successfully")
                 .build();
     }
 }
