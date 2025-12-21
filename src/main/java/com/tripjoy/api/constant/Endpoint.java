@@ -84,6 +84,9 @@ public class Endpoint {
 
         // Quản lý thành viên (Thêm, Xóa, Rời nhóm, Mute)
         public static final String MEMBERS = ID + "/members";
+
+        // Get all pinned messages
+        public static final String PINNED_MESSAGES = ID + "/pinned-messages";
     }
 
     // Class này để xử lý hành động trên 1 tin nhắn cụ thể (Global ID)
