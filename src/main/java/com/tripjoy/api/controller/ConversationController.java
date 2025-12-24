@@ -1,7 +1,8 @@
-package com.tripjoy.api.controller;
+        package com.tripjoy.api.controller;
 
 import com.tripjoy.api.constant.Endpoint;
 import com.tripjoy.api.dto.request.chat.ChatMessageRequest;
+import com.tripjoy.api.dto.request.chat.ConversationUpdateRequest;
 import com.tripjoy.api.dto.request.chat.DirectConversationCreationRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.ChatMessageResponse;
@@ -69,6 +70,19 @@ public class ConversationController {
                                 .build();
         }
 
+        @Operation(summary = "Update conversation settings (name for group chats, isPinned)")
+        @PutMapping(Endpoint.Conversation.ID)
+        public ApiResponse<ConversationResponse> updateConversation(
+                        @PathVariable UUID conversationId,
+                        @Valid @RequestBody ConversationUpdateRequest request) {
+
+                UUID currentUserId = SecurityUtils.getCurrentUserId();
+
+                return ApiResponse.<ConversationResponse>builder()
+                                .data(conversationService.updateConversation(conversationId, request, currentUserId))
+                                .build();
+        }
+
         // --- QUẢN LÝ TIN NHẮN (MESSAGES) ---
 
         @Operation(summary = "Send message to conversation - OK")
@@ -97,16 +111,28 @@ public class ConversationController {
                                 .build();
         }
 
+        @Operation(summary = "Get all pinned messages in conversation")
+        @GetMapping(Endpoint.Conversation.PINNED_MESSAGES)
+        public ApiResponse<List<ChatMessageResponse>> getPinnedMessages(@PathVariable UUID conversationId) {
+                UUID currentUserId = SecurityUtils.getCurrentUserId();
+
+                return ApiResponse.<List<ChatMessageResponse>>builder()
+                                .data(messageService.getPinnedMessages(conversationId, currentUserId))
+                                .build();
+        }
+
         // --- SETTING CÁ NHÂN (MEMBERS) ---
 
-//        @Operation(summary = "Leave conversation) -- Roi conversation dong nghia voi roi group -> /api/v1/groups/{groupId}/members/me
-//        @DeleteMapping(Endpoint.Conversation.MEMBERS)
-//        public ApiResponse<Void> leaveConversation(@PathVariable UUID conversationId) {
-//
-//                UUID currentUserId = SecurityUtils.getCurrentUserId();
-//
-//                // conversationService.leaveConversation(conversationId, currentUserId);
-//
-//                return ApiResponse.<Void>builder().message("Left conversation").build();
-//        }
+        // @Operation(summary = "Leave conversation) -- Roi conversation dong nghia voi
+        // roi group -> /api/v1/groups/{groupId}/members/me
+        // @DeleteMapping(Endpoint.Conversation.MEMBERS)
+        // public ApiResponse<Void> leaveConversation(@PathVariable UUID conversationId)
+        // {
+        //
+        // UUID currentUserId = SecurityUtils.getCurrentUserId();
+        //
+        // // conversationService.leaveConversation(conversationId, currentUserId);
+        //
+        // return ApiResponse.<Void>builder().message("Left conversation").build();
+        // }
 }

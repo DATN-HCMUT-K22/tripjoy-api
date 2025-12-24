@@ -60,6 +60,13 @@ public enum ErrorCode {
     USER_NOT_IN_CONVERSATION(4003, "User is not a participant of this conversation", HttpStatus.FORBIDDEN),
     CANNOT_MESSAGE_STRANGER(4004, "Cannot send message to stranger directly", HttpStatus.FORBIDDEN),
     SOCKET_ERROR(4005, "Real-time service error", HttpStatus.INTERNAL_SERVER_ERROR),
+    MESSAGE_ALREADY_LIKED(4006, "You have already liked this message", HttpStatus.BAD_REQUEST),
+    MESSAGE_NOT_LIKED(4007, "You have not liked this message", HttpStatus.BAD_REQUEST),
+    CANNOT_UPDATE_DIRECT_CHAT_NAME(4008, "Cannot update name of direct conversation", HttpStatus.BAD_REQUEST),
+    MESSAGE_ALREADY_PINNED(4009, "Message is already pinned", HttpStatus.BAD_REQUEST),
+    MESSAGE_NOT_PINNED(4010, "Message is not pinned", HttpStatus.BAD_REQUEST),
+    PIN_LIMIT_EXCEEDED(4011, "Cannot pin more than 50 messages in a conversation", HttpStatus.BAD_REQUEST),
+    MESSAGE_NOT_IN_CONVERSATION(4012, "Message does not belong to this conversation", HttpStatus.BAD_REQUEST),
 
     // --- 5. FILE & MEDIA (5000 - 5999) ---
     FILE_TOO_LARGE(5001, "File size exceeds the limit", HttpStatus.BAD_REQUEST),
@@ -79,6 +86,9 @@ public enum ErrorCode {
     MAPBOX_API_ERROR(7004, "Mapbox API request failed", HttpStatus.BAD_GATEWAY),
     INVALID_LOCATION_INPUT(7005, "Must provide either location_id OR location_data, but not both",
             HttpStatus.BAD_REQUEST),
+
+    // --- 8. NOTIFICATION DOMAIN (8000 - 8999) ---
+    NOTIF_NOT_FOUND(8001, "Notification not found", HttpStatus.NOT_FOUND),
 
     ;
 

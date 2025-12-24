@@ -1,5 +1,6 @@
 package com.tripjoy.api.service;
 
+import com.tripjoy.api.dto.request.chat.ConversationUpdateRequest;
 import com.tripjoy.api.dto.response.ConversationResponse;
 
 import java.util.List;
@@ -9,4 +10,6 @@ public interface IConversationService {
     List<ConversationResponse> getUserConversations(UUID userId);
 
     ConversationResponse getConversationDetail(UUID conversationId, UUID currentUserId);
+
+    ConversationResponse updateConversation(UUID conversationId, ConversationUpdateRequest request, UUID currentUserId);
 }
