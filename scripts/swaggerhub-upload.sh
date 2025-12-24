@@ -1,0 +1,1 @@
+mvn swaggerhub:upload -Dswaggerhub.api.key=KEY_HIEN_TAI_CUA_BAN

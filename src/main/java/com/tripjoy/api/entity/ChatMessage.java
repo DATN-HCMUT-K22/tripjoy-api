@@ -22,6 +22,10 @@ public class ChatMessage extends BaseEntity {
     private Boolean isBot;
     private String status;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean isPinned = false;
+
     @Embedded
     @Builder.Default
     private SoftDeleteInfo softDeleteInfo = new SoftDeleteInfo();

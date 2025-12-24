@@ -32,11 +32,6 @@ public class Conversation extends BaseEntity {
     @JsonIgnore
     private Set<ChatMessage> messages;
 
-    // pin tin nhan
-    @OneToOne
-    @JoinColumn(name = "pinned_message_id")
-    private ChatMessage pinnedMessage;
-
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private Set<ConversationMember> members;
