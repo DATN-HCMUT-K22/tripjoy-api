@@ -54,6 +54,56 @@ A RESTful API backend for the TripJoy travel planning application, built with Sp
 - **Spotless** for code formatting
 - **Docker Compose** for containerized development environment
 
+## 🏗️ System Architecture
+
+TripJoy follows a **Layered Architecture** pattern combined with **Event-Driven Architecture** for scalable and maintainable design. The system consists of multiple layers, each with specific responsibilities.
+
+![TripJoy System Architecture](docs/images/tripjoy-Architectural_Design.drawio.png)
+
+The architecture consists of four main layers:
+
+1. **Client Layer**: Admin web application (Next.js) and end-user mobile application (React Native/Ionic) communicating via HTTP REST API and Socket.IO WebSocket connections.
+
+2. **Backend Server**: 
+   - **Presentation Layer**: REST controllers with security filter chain (JWT authentication, RBAC authorization, rate limiting)
+   - **Business Logic Layer**: Services with transactional support, business audit, and application event publisher
+   - **Event-Driven Layer**: Transactional event listeners with message broker for asynchronous processing
+   - **Data Access Layer**: JPA repositories with Hibernate ORM for database operations
+
+3. **Infrastructure Layer**: 
+   - PostgreSQL 17 + PostGIS 3.5 for spatial database operations
+   - Redis 7.2 for distributed caching and pub/sub messaging
+   - Socket.IO server for real-time WebSocket communication
+   - Cloudinary CDN for media storage and delivery
+
+4. **External Services**: Mapbox API for maps and geolocation, Email service for notifications, and AI Service (FastAPI) with ChatGPT integration for intelligent trip planning.
+
+### Key Components
+
+- **REST API**: Stateless HTTP endpoints for all CRUD operations
+- **Socket.IO Server**: WebSocket connections for real-time chat and notifications
+- **Redis Cache**: Distributed caching layer with event-driven invalidation
+- **PostGIS**: Spatial database for location-based queries and geofencing
+- **Event Bus**: Asynchronous event processing for notifications and activity logs
+- **Security Layer**: JWT authentication with RBAC authorization
+
+### External Integrations
+
+- **Mapbox API**: Geocoding, routing, and map visualization
+- **Cloudinary CDN**: Media upload, optimization, and delivery
+- **AI Service (FastAPI)**: ChatGPT integration for trip planning assistance
+- **Email Service**: Transactional and notification emails
+
+### Design Patterns
+
+- **Layered Architecture**: Separation of concerns by layers
+- **Repository Pattern**: Data access abstraction
+- **Service Pattern**: Business logic encapsulation
+- **DTO Pattern**: API request/response transformation
+- **Event-Driven**: Loose coupling via application events
+- **Filter Chain**: Security and logging filters
+
+
 ## 📋 Prerequisites
 
 Before running this project, ensure you have:
@@ -400,6 +450,7 @@ This project is part of a graduation thesis (DATN - Đồ Án Tốt Nghiệp) at
 
 For detailed documentation on specific features:
 
+- **System Architecture** (Vietnamese): See `docs/ARCHITECTURE_VI.md`
 - **Socket.IO Implementation**: See `docs/SOCKET_IO_README_VI.md`
 - **Location API Guide**: See `docs/LOCATION_MAP_API_GUIDE.md`
 - **Technical Report**: See `docs/TECHNICAL_REPORT_SOCKET_IO.md`
