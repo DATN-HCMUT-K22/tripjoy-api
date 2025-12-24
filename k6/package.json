@@ -1,0 +1,13 @@
+{
+  "name": "tripjoy-k6-tests",
+  "version": "1.0.0",
+  "description": "k6 load testing suite for TripJoy API",
+  "scripts": {
+    "test:smoke": "k6 run scenarios/smoke-test.js",
+    "test:load": "k6 run scenarios/load-test.js",
+    "test:stress": "k6 run scenarios/stress-test.js",
+    "test:auth": "k6 run tests/auth-test.js"
+  },
+  "keywords": ["k6", "load-testing", "stress-testing", "api-testing"],
+  "author": "TripJoy Team"
+}
