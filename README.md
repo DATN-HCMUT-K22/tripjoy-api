@@ -254,14 +254,11 @@ tripjoy-api/
 │   ├── utils/                        # Utility classes
 │   └── validator/                    # Custom validators
 ├── src/main/resources/
-│   └── application.properties        # Application configuration
+│   └── application.yml               # Application configuration
 ├── docker/                           # Docker configuration files
 │   ├── postgis/                      # PostgreSQL + PostGIS initialization
 │   └── redis/                        # Redis configuration
 ├── docs/                             # Documentation
-│   ├── SOCKET_IO_README_VI.md       # Socket.IO implementation guide (Vietnamese)
-│   ├── TECHNICAL_REPORT_SOCKET_IO.md # Technical report on Socket.IO
-│   └── LOCATION_MAP_API_GUIDE.md    # Location and Map API guide
 ├── scripts/                          # Utility scripts
 ├── .env.example                      # Example environment configuration
 ├── docker-compose.yml                # Docker Compose configuration
