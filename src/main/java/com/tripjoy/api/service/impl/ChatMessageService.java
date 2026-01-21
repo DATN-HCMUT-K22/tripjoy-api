@@ -3,6 +3,7 @@ package com.tripjoy.api.service.impl;
 import com.tripjoy.api.dto.event.MessageSentEvent;
 import com.tripjoy.api.dto.request.chat.ChatMessageRequest;
 import com.tripjoy.api.dto.response.ChatMessageResponse;
+import com.tripjoy.api.dto.response.MessageCursorResponse;
 import com.tripjoy.api.entity.ChatMessage;
 import com.tripjoy.api.entity.Conversation;
 import com.tripjoy.api.entity.User;
@@ -18,10 +19,13 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -173,5 +177,82 @@ public class ChatMessageService implements IChatMessageService {
         return pinnedMessages.stream()
                 .map(chatMessageMapper::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MessageCursorResponse getMessages(
+            UUID conversationId,
+            UUID currentUserId,
+            String before,
+            String after,
+            Integer limit) {
+
+        // 1. Verify user is member
+        boolean isMember = conversationMemberRepository
+                .existsByConversationIdAndUserId(conversationId, currentUserId);
+        if (!isMember) {
+            throw new AppException(ErrorCode.USER_NOT_IN_CONVERSATION);
+        }
+
+        // 2. Set default limit (30 messages)
+        int pageSize = (limit != null && limit > 0 && limit <= 100) ? limit : 30;
+        Pageable pageable = PageRequest.of(0, pageSize + 1); // +1 to check hasMore
+
+        List<ChatMessage> messages;
+
+        // 3. Determine query type
+        if (before != null) {
+            // Load older messages (scroll up)
+            LocalDateTime beforeTime = LocalDateTime.parse(before);
+            messages = chatMessageRepository.findMessagesBefore(
+                    conversationId, beforeTime, pageable);
+        } else if (after != null) {
+            // Load newer messages
+            LocalDateTime afterTime = LocalDateTime.parse(after);
+            messages = chatMessageRepository.findMessagesAfter(
+                    conversationId, afterTime, pageable);
+            Collections.reverse(messages); // Reverse to DESC order
+        } else {
+            // Initial load: latest messages
+            messages = chatMessageRepository.findLatestMessages(
+                    conversationId, pageable);
+        }
+
+        // 4. Check if has more
+        boolean hasMore = messages.size() > pageSize;
+        if (hasMore) {
+            messages = messages.subList(0, pageSize); // Remove extra item
+        }
+
+        // 5. Map to DTOs
+        List<ChatMessageResponse> messageResponses = messages.stream()
+                .map(chatMessageMapper::toResponse)
+                .collect(Collectors.toList());
+
+        // 6. Build cursors
+        MessageCursorResponse.CursorInfo cursors = null;
+        if (!messageResponses.isEmpty()) {
+            String firstTimestamp = messageResponses.get(0).getCreatedAt().toString();
+            String lastTimestamp = messageResponses.get(messageResponses.size() - 1)
+                    .getCreatedAt().toString();
+
+            cursors = MessageCursorResponse.CursorInfo.builder()
+                    .before(firstTimestamp) // Use latest message timestamp
+                    .after(lastTimestamp) // Use oldest message timestamp
+                    .build();
+        }
+
+        // 7. Build hasMore info
+        MessageCursorResponse.HasMore hasMoreInfo = MessageCursorResponse.HasMore.builder()
+                .before(hasMore) // Has older messages
+                .after(false) // Client should use WebSocket for new messages
+                .build();
+
+        return MessageCursorResponse.builder()
+                .messages(messageResponses)
+                .cursors(cursors)
+                .hasMore(hasMoreInfo)
+                .build();
     }
 }
