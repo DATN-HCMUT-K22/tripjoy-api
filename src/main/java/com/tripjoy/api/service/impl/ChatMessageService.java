@@ -4,12 +4,14 @@ import com.tripjoy.api.dto.event.MessageSentEvent;
 import com.tripjoy.api.dto.request.chat.ChatMessageRequest;
 import com.tripjoy.api.dto.response.ChatMessageResponse;
 import com.tripjoy.api.dto.response.MessageCursorResponse;
+import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import com.tripjoy.api.entity.ChatMessage;
 import com.tripjoy.api.entity.Conversation;
 import com.tripjoy.api.entity.User;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
 import com.tripjoy.api.mapper.ChatMessageMapper;
+import com.tripjoy.api.mapper.UserMapper;
 import com.tripjoy.api.repository.ChatMessageRepository;
 import com.tripjoy.api.repository.ConversationRepository;
 import com.tripjoy.api.repository.ConversationMemberRepository;
@@ -40,6 +42,7 @@ public class ChatMessageService implements IChatMessageService {
     ConversationRepository conversationRepository;
     ConversationMemberRepository conversationMemberRepository;
     ChatMessageMapper chatMessageMapper;
+    UserMapper userMapper;
     ApplicationEventPublisher eventPublisher;
 
     @Transactional
@@ -225,9 +228,18 @@ public class ChatMessageService implements IChatMessageService {
             messages = messages.subList(0, pageSize); // Remove extra item
         }
 
-        // 5. Map to DTOs
+        // 5. Map to DTOs and set isLikedByCurrentUser
         List<ChatMessageResponse> messageResponses = messages.stream()
-                .map(chatMessageMapper::toResponse)
+                .map(message -> {
+                    ChatMessageResponse response = chatMessageMapper.toResponse(message);
+
+                    // Set isLikedByCurrentUser
+                    boolean isLiked = message.getLikeUsers().stream()
+                            .anyMatch(user -> user.getId().equals(currentUserId));
+                    response.setIsLikedByCurrentUser(isLiked);
+
+                    return response;
+                })
                 .collect(Collectors.toList());
 
         // 6. Build cursors
@@ -254,5 +266,26 @@ public class ChatMessageService implements IChatMessageService {
                 .cursors(cursors)
                 .hasMore(hasMoreInfo)
                 .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserSimpleResponse> getMessageLikes(UUID messageId, UUID currentUserId) {
+        // 1. Find message (no need for eager fetch since we're returning the likes
+        // anyway)
+        ChatMessage message = chatMessageRepository.findById(messageId)
+                .orElseThrow(() -> new AppException(ErrorCode.MESSAGE_NOT_FOUND));
+
+        // 2. Verify user has access (is member of conversation)
+        boolean isMember = conversationMemberRepository
+                .existsByConversationIdAndUserId(message.getConversation().getId(), currentUserId);
+        if (!isMember) {
+            throw new AppException(ErrorCode.USER_NOT_IN_CONVERSATION);
+        }
+
+        // 3. Map likeUsers to UserSimpleResponse
+        return message.getLikeUsers().stream()
+                .map(userMapper::toUserSimpleResponse)
+                .collect(Collectors.toList());
     }
 }

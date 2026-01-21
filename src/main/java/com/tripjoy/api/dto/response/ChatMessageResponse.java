@@ -55,4 +55,16 @@ public class ChatMessageResponse extends BaseResponse {
     @JsonProperty("parent_message")
     @Schema(description = "Summary information of the message being replied to")
     ChatMessageSimpleResponse parentMessage;
+
+    @JsonProperty("is_pinned")
+    @Schema(description = "Whether this message is pinned in the conversation")
+    Boolean isPinned;
+
+    @JsonProperty("like_count")
+    @Schema(description = "Total number of likes on this message")
+    Integer likeCount;
+
+    @JsonProperty("is_liked_by_current_user")
+    @Schema(description = "Whether the current user has liked this message")
+    Boolean isLikedByCurrentUser;
 }

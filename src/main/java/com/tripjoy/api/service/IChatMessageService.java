@@ -3,6 +3,7 @@ package com.tripjoy.api.service;
 import com.tripjoy.api.dto.request.chat.ChatMessageRequest;
 import com.tripjoy.api.dto.response.ChatMessageResponse;
 import com.tripjoy.api.dto.response.MessageCursorResponse;
+import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 
 import java.util.List;
 import java.util.UUID;
@@ -26,4 +27,6 @@ public interface IChatMessageService {
             String before,
             String after,
             Integer limit);
+
+    List<UserSimpleResponse> getMessageLikes(UUID messageId, UUID currentUserId);
 }

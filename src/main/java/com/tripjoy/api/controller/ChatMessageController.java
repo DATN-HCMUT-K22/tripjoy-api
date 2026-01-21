@@ -2,6 +2,7 @@ package com.tripjoy.api.controller;
 
 import com.tripjoy.api.constant.Endpoint;
 import com.tripjoy.api.dto.response.ApiResponse;
+import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import com.tripjoy.api.service.IChatMessageService;
 import com.tripjoy.api.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -41,6 +43,16 @@ public class ChatMessageController {
 
         return ApiResponse.<Void>builder()
                 .message("Message unliked")
+                .build();
+    }
+
+    @Operation(summary = "Get users who liked a message", description = "Returns a list of users who have liked the specified message")
+    @GetMapping(Endpoint.Message.LIKES)
+    public ApiResponse<List<UserSimpleResponse>> getMessageLikes(@PathVariable UUID messageId) {
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+
+        return ApiResponse.<List<UserSimpleResponse>>builder()
+                .data(messageService.getMessageLikes(messageId, currentUserId))
                 .build();
     }
 
