@@ -24,7 +24,7 @@ public interface ChatMessageMapper {
 
     // Like information mappings
     @Mapping(source = "isPinned", target = "isPinned")
-    @Mapping(target = "likeCount", expression = "java(chatMessage.getLikeUsers().size())")
+    @Mapping(target = "likeCount", expression = "java(chatMessage.getLikeUsers() != null ? chatMessage.getLikeUsers().size() : 0)")
     @Mapping(target = "isLikedByCurrentUser", ignore = true) // Set manually in service
 
     ChatMessageResponse toResponse(ChatMessage chatMessage);

@@ -50,5 +50,6 @@ public class ChatMessage extends BaseEntity {
 
     @ManyToMany
     @JoinTable(name = "like_chat_message", joinColumns = @JoinColumn(name = "chat_message_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @Builder.Default
     private Set<User> likeUsers = new HashSet<>();
 }
