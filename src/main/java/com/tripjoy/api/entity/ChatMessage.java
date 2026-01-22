@@ -13,6 +13,9 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "chat_message", indexes = {
+        @Index(name = "idx_chat_message_cursor", columnList = "conversation_id, created_at DESC")
+})
 public class ChatMessage extends BaseEntity {
 
     private String messageType;

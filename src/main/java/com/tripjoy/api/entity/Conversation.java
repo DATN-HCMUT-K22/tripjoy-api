@@ -15,6 +15,10 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "conversation", indexes = {
+        @Index(name = "idx_conversation_group", columnList = "group_id, is_deleted"),
+        @Index(name = "idx_conversation_timestamp", columnList = "last_message_timestamp DESC")
+})
 public class Conversation extends BaseEntity {
 
     @Enumerated(EnumType.STRING)

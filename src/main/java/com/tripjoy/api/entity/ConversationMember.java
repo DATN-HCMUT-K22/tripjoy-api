@@ -12,6 +12,10 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "conversation_member", indexes = {
+        @Index(name = "idx_conversation_member_lookup", columnList = "conversation_id, user_id"),
+        @Index(name = "idx_user_conversations", columnList = "user_id, is_deleted")
+})
 public class ConversationMember extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

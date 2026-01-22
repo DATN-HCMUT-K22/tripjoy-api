@@ -15,6 +15,9 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "itinerary", indexes = {
+        @Index(name = "idx_itinerary_group", columnList = "group_id, is_deleted")
+})
 public class Itinerary extends BaseEntity {
 
     private String name;
