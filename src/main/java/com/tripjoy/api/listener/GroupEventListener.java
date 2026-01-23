@@ -59,6 +59,27 @@ public class GroupEventListener {
                     .build();
             conversationMemberRepository.save(chatMember);
 
+            // 3. Add INITIAL MEMBERS (added during group creation) to conversation
+            List<User> initialMembers = event.getInitialMembers();
+            if (initialMembers != null && !initialMembers.isEmpty()) {
+                for (User member : initialMembers) {
+                    // Skip creator (already added above)
+                    if (member.getId().equals(event.getCreator().getId())) {
+                        continue;
+                    }
+
+                    ConversationMember memberRecord = ConversationMember.builder()
+                            .conversation(defaultConv)
+                            .user(member)
+                            .isPinned(false)
+                            .isMuted(false)
+                            .unreadCount(0L)
+                            .build();
+                    conversationMemberRepository.save(memberRecord);
+                }
+                log.info("-> Added {} initial members to 'General Chat'", initialMembers.size());
+            }
+
             log.info("-> Created 'General Chat' for Group {}", event.getGroup().getName());
         } catch (Exception e) {
             log.error("ERROR handling GroupCreatedEvent: ", e);
