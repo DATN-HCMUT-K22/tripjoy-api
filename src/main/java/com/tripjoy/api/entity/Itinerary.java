@@ -5,6 +5,7 @@ import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -21,13 +22,20 @@ import java.util.Set;
 public class Itinerary extends BaseEntity {
 
     private String name;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
+
     private LocalDateTime startDate;
+
     private LocalDateTime endDate;
+
     private Integer peopleQuantity;
-    private Long budgetEstimate;
+
+    @Column(name = "budget_estimate", precision = 19, scale = 2)
+    private BigDecimal budgetEstimate;
+
     private String status;
-    private String destination;
 
     @Embedded
     @Builder.Default
@@ -37,19 +45,39 @@ public class Itinerary extends BaseEntity {
     @JoinColumn(name = "group_id")
     private Group group;
 
-    @OneToMany(mappedBy = "itinerary", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonIgnore
-    private Set<ItineraryTheme> itineraryThemes;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @OneToMany(mappedBy = "itinerary", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonIgnore
-    private Set<TripItem> tripItems;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "origin")
+    private Location origin;
 
-    @OneToMany(mappedBy = "itinerary", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "destination")
+    private Location destination;
+
+    @OneToMany(mappedBy = "itinerary", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
+    @Builder.Default
+    private Set<ItineraryTheme> itineraryThemes = new HashSet<>();
+
+    @OneToMany(mappedBy = "itinerary", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    @Builder.Default
+    private Set<TripItem> tripItems = new HashSet<>();
+
+    @OneToMany(mappedBy = "itinerary", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    @Builder.Default
     private Set<Expense> expenses = new HashSet<>();
+
+    @OneToOne(mappedBy = "itinerary", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private TravelNotebook travelNotebook;
 
     @ManyToMany
     @JoinTable(name = "favourite_itinerary", joinColumns = @JoinColumn(name = "itinerary_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @Builder.Default
     private Set<User> favouriteUsers = new HashSet<>();
 }
