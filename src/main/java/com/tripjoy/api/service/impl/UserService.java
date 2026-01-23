@@ -33,7 +33,7 @@ public class UserService implements IUserService {
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
 
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getUsers() {
 
         return userRepository.findAll().stream()

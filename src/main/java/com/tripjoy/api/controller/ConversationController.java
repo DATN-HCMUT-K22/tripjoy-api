@@ -1,4 +1,4 @@
-        package com.tripjoy.api.controller;
+package com.tripjoy.api.controller;
 
 import com.tripjoy.api.constant.Endpoint;
 import com.tripjoy.api.dto.request.chat.ChatMessageRequest;
@@ -7,6 +7,7 @@ import com.tripjoy.api.dto.request.chat.DirectConversationCreationRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.ChatMessageResponse;
 import com.tripjoy.api.dto.response.ConversationResponse;
+import com.tripjoy.api.dto.response.MessageCursorResponse;
 import com.tripjoy.api.service.IConversationService;
 import com.tripjoy.api.service.IChatMessageService;
 import com.tripjoy.api.utils.SecurityUtils;
@@ -16,10 +17,8 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
-import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.UUID;
 
@@ -98,16 +97,24 @@ public class ConversationController {
                                 .build();
         }
 
-        @Operation(summary = "Get message history (Paginated)")
+        @Operation(summary = "Get message history with cursor-based pagination", description = """
+                        Load messages in conversation using cursor-based pagination.
+                        - No params: Load latest 30 messages
+                        - ?before={timestamp}: Load older messages (scroll up)
+                        - ?after={timestamp}: Load newer messages
+                        - ?limit=50: Custom page size (max 100)
+                        """)
         @GetMapping(Endpoint.Conversation.MESSAGES)
-        public ApiResponse<Page<ChatMessageResponse>> getMessages(
+        public ApiResponse<MessageCursorResponse> getMessages(
                         @PathVariable UUID conversationId,
-                        Pageable pageable) { // Spring will auto-inject page, size, sort from URL params
+                        @RequestParam(required = false) String before,
+                        @RequestParam(required = false) String after,
+                        @RequestParam(required = false) Integer limit) {
 
                 UUID currentUserId = SecurityUtils.getCurrentUserId();
 
-                return ApiResponse.<Page<ChatMessageResponse>>builder()
-                                // .data(messageService.getMessages(conversationId, currentUserId, pageable))
+                return ApiResponse.<MessageCursorResponse>builder()
+                                .data(messageService.getMessages(conversationId, currentUserId, before, after, limit))
                                 .build();
         }
 

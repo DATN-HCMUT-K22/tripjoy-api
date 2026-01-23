@@ -35,379 +35,386 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class GroupService implements IGroupService {
 
-    GroupRepository groupRepository;
-    GroupMemberRepository groupMemberRepository;
-    ItineraryRepository itineraryRepository;
-    ConversationRepository conversationRepository;
-    ConversationMemberRepository conversationMemberRepository;
-    UserRepository userRepository;
-    ApplicationEventPublisher eventPublisher;
-    @PersistenceContext
-    EntityManager entityManager;
+        GroupRepository groupRepository;
+        GroupMemberRepository groupMemberRepository;
+        ItineraryRepository itineraryRepository;
+        ConversationRepository conversationRepository;
+        ConversationMemberRepository conversationMemberRepository;
+        UserRepository userRepository;
+        ApplicationEventPublisher eventPublisher;
+        @PersistenceContext
+        EntityManager entityManager;
 
-    // Inject Mapper
-    GroupMapper groupMapper;
+        // Inject Mapper
+        GroupMapper groupMapper;
 
-    @Transactional(readOnly = true)
-    public GroupResponse getGroupById(UUID groupId) {
-        return groupRepository.findByIdAndNotDeleted(groupId)
-                .map(groupMapper::toGroupResponse)
-                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
-    }
-
-    @Transactional(readOnly = true)
-    public List<GroupResponse> getMyGroups(UUID userId) {
-        List<GroupMember> memberRecords = groupMemberRepository.findByUserId(userId);
-
-        return memberRecords.stream()
-                .filter(member -> !member.getSoftDeleteInfo().isDeleted()) // Filter deleted members
-                .map(GroupMember::getGroup)
-                .filter(group -> !group.getSoftDeleteInfo().isDeleted()) // Filter deleted groups
-                .map(groupMapper::toGroupResponse)
-                .toList();
-    }
-
-    @Transactional
-    public GroupResponse createGroup(GroupRequest request, UUID ownerId) {
-        // --- STEP 0: FETCH OWNER ---
-        User owner = userRepository.findById(ownerId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-        // --- STEP 1: MAP REQUEST -> ENTITY ---
-        Group group = groupMapper.toGroup(request);
-
-        // Init collections if null (vì @Builder không init được)
-        if (group.getMembers() == null)
-            group.setMembers(new java.util.HashSet<>());
-        if (group.getItineraries() == null)
-            group.setItineraries(new java.util.HashSet<>());
-        if (group.getConversations() == null)
-            group.setConversations(new java.util.HashSet<>());
-
-        // Set default logic...
-        groupRepository.save(group);
-
-        // --- STEP 2: ADD OWNER (LEADER) ---
-        GroupMember ownerMember = GroupMember.builder()
-                .group(group)
-                .user(owner)
-                .role(GroupRole.LEADER)
-                .build();
-        groupMemberRepository.save(ownerMember);
-
-        // --- STEP 3: HANDLE INITIAL MEMBERS (Mời thêm bạn bè ngay lúc tạo) ---
-        List<User> initialMembers = new ArrayList<>();
-
-        if (request.getMemberIds() != null && !request.getMemberIds().isEmpty()) {
-            // 3.1 Lấy danh sách User từ DB theo List ID
-            initialMembers = userRepository.findAllById(request.getMemberIds());
-
-            // 3.2 Lưu vào bảng GroupMember
-            for (User member : initialMembers) {
-                // Tránh add trùng Owner nếu client lỡ gửi ID của owner lên
-                if (member.getId().equals(owner.getId()))
-                    continue;
-
-                GroupMember groupMember = GroupMember.builder()
-                        .group(group)
-                        .user(member)
-                        .role(GroupRole.MEMBER)
-                        .build();
-                groupMemberRepository.save(groupMember);
-            }
+        @Transactional(readOnly = true)
+        public GroupResponse getGroupById(UUID groupId) {
+                return groupRepository.findByIdAndNotDeleted(groupId)
+                                .map(groupMapper::toGroupResponse)
+                                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
         }
 
-        // [REFRESH] Để lấy lại danh sách member chuẩn từ DB
-        entityManager.flush();
-        entityManager.refresh(group);
+        @Transactional(readOnly = true)
+        public List<GroupResponse> getMyGroups(UUID userId) {
+                // Use NOT DELETED query to filter soft-deleted memberships
+                List<GroupMember> memberRecords = groupMemberRepository.findByUserIdAndNotDeleted(userId);
 
-        // --- STEP 4: FIRE EVENT (Sửa lỗi ở đây) ---
-        // Truyền đủ 3 tham số: group, creator, và list thành viên ban đầu
-        eventPublisher.publishEvent(new GroupCreatedEvent(group, owner, initialMembers));
-
-        // --- STEP 5: MAP ENTITY -> RESPONSE ---
-        return groupMapper.toGroupResponse(group);
-    }
-
-    @Transactional
-    public GroupMemberResponse addMemberToGroup(UUID groupId, UUID userId) {
-        // --- STEP 1: VALIDATION ---
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
-        // Check exists (Optional)
-        if (groupMemberRepository.existsByGroupAndUser(group, user)) {
-            throw new AppException(ErrorCode.USER_ALREADY_IN_GROUP);
+                return memberRecords.stream()
+                                .map(GroupMember::getGroup)
+                                .filter(group -> !group.getSoftDeleteInfo().isDeleted()) // Also filter deleted groups
+                                .map(groupMapper::toGroupResponse)
+                                .toList();
         }
 
-        // --- STEP 2: SAVE MEMBER ---
-        GroupMember gMember = GroupMember.builder()
-                .group(group)
-                .user(user)
-                .role(GroupRole.MEMBER)
-                .build();
+        @Transactional
+        public GroupResponse createGroup(GroupRequest request, UUID ownerId) {
+                // --- STEP 0: FETCH OWNER ---
+                User owner = userRepository.findById(ownerId)
+                                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+                // --- STEP 1: MAP REQUEST -> ENTITY ---
+                Group group = groupMapper.toGroup(request);
 
-        // Lưu xong mới có ID, createdAt...
-        GroupMember savedMember = groupMemberRepository.save(gMember);
+                // Init collections if null (vì @Builder không init được)
+                if (group.getMembers() == null)
+                        group.setMembers(new java.util.HashSet<>());
+                if (group.getItineraries() == null)
+                        group.setItineraries(new java.util.HashSet<>());
+                if (group.getConversations() == null)
+                        group.setConversations(new java.util.HashSet<>());
 
-        // --- STEP 3: FIRE EVENT ---
-        eventPublisher.publishEvent(new MemberJoinedGroupEvent(group, user));
+                // Set default logic...
+                groupRepository.save(group);
 
-        // --- STEP 4: MAP ENTITY -> RESPONSE ---
-        return groupMapper.toGroupMemberResponse(savedMember);
-    }
+                // --- STEP 2: ADD OWNER (LEADER) ---
+                GroupMember ownerMember = GroupMember.builder()
+                                .group(group)
+                                .user(owner)
+                                .role(GroupRole.LEADER)
+                                .build();
+                groupMemberRepository.save(ownerMember);
 
-    @Transactional
-    public GroupResponse updateGroup(UUID groupId, GroupRequest request, UUID currentUserId) {
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
+                // --- STEP 3: HANDLE INITIAL MEMBERS (Mời thêm bạn bè ngay lúc tạo) ---
+                List<User> initialMembers = new ArrayList<>();
 
-        User currentUser = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+                if (request.getMemberIds() != null && !request.getMemberIds().isEmpty()) {
+                        // 3.1 Lấy danh sách User từ DB theo List ID
+                        initialMembers = userRepository.findAllById(request.getMemberIds());
 
-        // Check if user has LEADER or CO_LEADER role
-        if (!groupMemberRepository.hasLeadershipRole(group, currentUser)) {
-            throw new AppException(ErrorCode.UNAUTHORIZED);
+                        // 3.2 Lưu vào bảng GroupMember
+                        for (User member : initialMembers) {
+                                // Tránh add trùng Owner nếu client lỡ gửi ID của owner lên
+                                if (member.getId().equals(owner.getId()))
+                                        continue;
+
+                                GroupMember groupMember = GroupMember.builder()
+                                                .group(group)
+                                                .user(member)
+                                                .role(GroupRole.MEMBER)
+                                                .build();
+                                groupMemberRepository.save(groupMember);
+                        }
+                }
+
+                // [REFRESH] Để lấy lại danh sách member chuẩn từ DB
+                entityManager.flush();
+                entityManager.refresh(group);
+
+                // --- STEP 4: FIRE EVENT (Sửa lỗi ở đây) ---
+                // Truyền đủ 3 tham số: group, creator, và list thành viên ban đầu
+                eventPublisher.publishEvent(new GroupCreatedEvent(group, owner, initialMembers));
+
+                // --- STEP 5: MAP ENTITY -> RESPONSE ---
+                return groupMapper.toGroupResponse(group);
         }
 
-        // Update group fields using mapper
-        groupMapper.updateGroup(group, request);
-        Group updated = groupRepository.save(group);
+        @Transactional
+        public GroupMemberResponse addMemberToGroup(UUID groupId, UUID userId) {
+                // --- STEP 1: VALIDATION ---
+                Group group = groupRepository.findById(groupId)
+                                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
 
-        return groupMapper.toGroupResponse(updated);
-    }
+                User user = userRepository.findById(userId)
+                                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<GroupMemberResponse> getGroupMembers(UUID groupId) {
-        // Verify group exists
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
+                // Check exists (Optional)
+                if (groupMemberRepository.existsByGroupAndUser(group, user)) {
+                        throw new AppException(ErrorCode.USER_ALREADY_IN_GROUP);
+                }
 
-        // Get all members from repository
-        List<GroupMember> members = groupMemberRepository.findByGroupOrderByRoleAsc(group);
+                // --- STEP 2: SAVE MEMBER ---
+                GroupMember gMember = GroupMember.builder()
+                                .group(group)
+                                .user(user)
+                                .role(GroupRole.MEMBER)
+                                .build();
 
-        // Map to response DTOs
-        return members.stream()
-                .map(groupMapper::toGroupMemberResponse)
-                .toList();
-    }
+                // Lưu xong mới có ID, createdAt...
+                GroupMember savedMember = groupMemberRepository.save(gMember);
 
-    @Override
-    @Transactional
-    public void removeMemberFromGroup(UUID groupId, UUID memberId, UUID currentUserId) {
-        // 1. Validate Group & Permissions (Giữ nguyên code của bạn)
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
+                // --- STEP 3: FIRE EVENT ---
+                eventPublisher.publishEvent(new MemberJoinedGroupEvent(group, user));
 
-        User currentUser = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
-        if (!groupMemberRepository.hasLeadershipRole(group, currentUser)) {
-            throw new AppException(ErrorCode.UNAUTHORIZED);
+                // --- STEP 4: MAP ENTITY -> RESPONSE ---
+                return groupMapper.toGroupMemberResponse(savedMember);
         }
 
-        // 2. Find member (Giữ nguyên)
-        GroupMember memberToRemove = groupMemberRepository.findById(memberId)
-                .orElseThrow(() -> new AppException(ErrorCode.MEMBER_NOT_FOUND));
+        @Transactional
+        public GroupResponse updateGroup(UUID groupId, GroupRequest request, UUID currentUserId) {
+                Group group = groupRepository.findById(groupId)
+                                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
 
-        // 3. Validations (Giữ nguyên)
-        if (memberToRemove.getUser().getId().equals(currentUserId)) {
-            throw new AppException(ErrorCode.CANNOT_REMOVE_YOURSELF);
-        }
-        if (memberToRemove.getRole() == GroupRole.LEADER) {
-            throw new AppException(ErrorCode.CANNOT_REMOVE_LEADER);
-        }
+                User currentUser = userRepository.findById(currentUserId)
+                                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        groupMemberRepository.delete(memberToRemove);
+                // Check if user has LEADER or CO_LEADER role
+                if (!groupMemberRepository.hasLeadershipRole(group, currentUser)) {
+                        throw new AppException(ErrorCode.UNAUTHORIZED);
+                }
 
-        // 4. Publish event (Giữ nguyên)
-        eventPublisher.publishEvent(new MemberRemovedFromGroupEvent(
-                group,
-                memberToRemove.getUser(),
-                currentUser));
-    }
+                // Update group fields using mapper
+                groupMapper.updateGroup(group, request);
+                Group updated = groupRepository.save(group);
 
-    @Override
-    @Transactional
-    public void leaveGroup(UUID groupId, UUID currentUserId) {
-        // 1. Validate Group exists
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
-
-        // 2. Find current user's membership
-        User currentUser = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
-        // 3. Find member record
-        GroupMember memberToLeave = groupMemberRepository.findByGroupAndUser(group, currentUser)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_IN_GROUP));
-
-        // 4. Business Rule: LEADER cannot leave (must transfer leadership first)
-        if (memberToLeave.getRole() == GroupRole.LEADER) {
-            throw new AppException(ErrorCode.LEADER_CANNOT_LEAVE);
+                return groupMapper.toGroupResponse(updated);
         }
 
-        // 5. Delete membership
-        groupMemberRepository.delete(memberToLeave);
+        @Override
+        @Transactional(readOnly = true)
+        public List<GroupMemberResponse> getGroupMembers(UUID groupId) {
+                // Verify group exists
+                Group group = groupRepository.findById(groupId)
+                                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
 
-        // 6. Publish event for chat synchronization (same as remove)
-        eventPublisher.publishEvent(new MemberRemovedFromGroupEvent(
-                group,
-                currentUser,
-                currentUser // Self-initiated leave
-        ));
-    }
+                // Get all members from repository
+                List<GroupMember> members = groupMemberRepository.findByGroupOrderByRoleAsc(group);
 
-    @Override
-    @Transactional
-    public GroupMemberResponse updateMemberRole(UUID groupId, UUID memberId, UpdateMemberRoleRequest request,
-            UUID currentUserId) {
-        // 1. Validate Group exists
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
-
-        // 2. Verify current user is LEADER
-        User currentUser = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
-        GroupMember currentMember = groupMemberRepository.findByGroupAndUser(group, currentUser)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_IN_GROUP));
-
-        if (currentMember.getRole() != GroupRole.LEADER) {
-            throw new AppException(ErrorCode.ONLY_LEADER_ALLOWED);
+                // Map to response DTOs
+                return members.stream()
+                                .map(groupMapper::toGroupMemberResponse)
+                                .toList();
         }
 
-        // 3. Find member to update
-        GroupMember memberToUpdate = groupMemberRepository.findById(memberId)
-                .orElseThrow(() -> new AppException(ErrorCode.MEMBER_NOT_FOUND));
+        @Override
+        @Transactional
+        public void removeMemberFromGroup(UUID groupId, UUID memberId, UUID currentUserId) {
+                // 1. Validate Group & Permissions (Giữ nguyên code của bạn)
+                Group group = groupRepository.findById(groupId)
+                                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
 
-        // 4. Business Rules
-        // Cannot change LEADER role
-        if (memberToUpdate.getRole() == GroupRole.LEADER) {
-            throw new AppException(ErrorCode.CANNOT_CHANGE_LEADER_ROLE);
+                User currentUser = userRepository.findById(currentUserId)
+                                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+                if (!groupMemberRepository.hasLeadershipRole(group, currentUser)) {
+                        throw new AppException(ErrorCode.UNAUTHORIZED);
+                }
+
+                // 2. Find member (Giữ nguyên)
+                GroupMember memberToRemove = groupMemberRepository.findById(memberId)
+                                .orElseThrow(() -> new AppException(ErrorCode.MEMBER_NOT_FOUND));
+
+                // 3. Validations (Giữ nguyên)
+                if (memberToRemove.getUser().getId().equals(currentUserId)) {
+                        throw new AppException(ErrorCode.CANNOT_REMOVE_YOURSELF);
+                }
+                if (memberToRemove.getRole() == GroupRole.LEADER) {
+                        throw new AppException(ErrorCode.CANNOT_REMOVE_LEADER);
+                }
+
+                groupMemberRepository.delete(memberToRemove);
+
+                // 4. Publish event (Giữ nguyên)
+                eventPublisher.publishEvent(new MemberRemovedFromGroupEvent(
+                                group,
+                                memberToRemove.getUser(),
+                                currentUser));
         }
 
-        // Cannot assign LEADER role (use transfer leadership instead)
-        if (request.getRole() == GroupRole.LEADER) {
-            throw new AppException(ErrorCode.CANNOT_ASSIGN_LEADER_ROLE);
+        @Override
+        @Transactional
+        public void leaveGroup(UUID groupId, UUID currentUserId) {
+                // 1. Validate Group exists
+                Group group = groupRepository.findById(groupId)
+                                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
+
+                // 2. Find current user's membership
+                User currentUser = userRepository.findById(currentUserId)
+                                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+                // 3. Find member record
+                GroupMember memberToLeave = groupMemberRepository.findByGroupAndUser(group, currentUser)
+                                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_IN_GROUP));
+
+                // 4. Business Rule: LEADER cannot leave (must transfer leadership first)
+                if (memberToLeave.getRole() == GroupRole.LEADER) {
+                        throw new AppException(ErrorCode.LEADER_CANNOT_LEAVE);
+                }
+
+                // 5. Delete membership
+                groupMemberRepository.delete(memberToLeave);
+
+                // 6. Publish event for chat synchronization (same as remove)
+                eventPublisher.publishEvent(new MemberRemovedFromGroupEvent(
+                                group,
+                                currentUser,
+                                currentUser // Self-initiated leave
+                ));
         }
 
-        // 5. Update role
-        memberToUpdate.setRole(request.getRole());
-        GroupMember updated = groupMemberRepository.save(memberToUpdate);
+        @Override
+        @Transactional
+        public GroupMemberResponse updateMemberRole(UUID groupId, UUID memberId, UpdateMemberRoleRequest request,
+                        UUID currentUserId) {
+                // 1. Validate Group exists
+                Group group = groupRepository.findById(groupId)
+                                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
 
-        return groupMapper.toGroupMemberResponse(updated);
-    }
+                // 2. Verify current user is LEADER
+                User currentUser = userRepository.findById(currentUserId)
+                                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-    @Override
-    @Transactional
-    public void transferLeadership(UUID groupId, TransferLeadershipRequest request, UUID currentUserId) {
-        // 1. Validate Group exists
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
+                GroupMember currentMember = groupMemberRepository.findByGroupAndUser(group, currentUser)
+                                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_IN_GROUP));
 
-        // 2. Verify current user is LEADER
-        User currentUser = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+                if (currentMember.getRole() != GroupRole.LEADER) {
+                        throw new AppException(ErrorCode.ONLY_LEADER_ALLOWED);
+                }
 
-        GroupMember currentLeader = groupMemberRepository.findByGroupAndUser(group, currentUser)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_IN_GROUP));
+                // 3. Find member to update
+                GroupMember memberToUpdate = groupMemberRepository.findById(memberId)
+                                .orElseThrow(() -> new AppException(ErrorCode.MEMBER_NOT_FOUND));
 
-        if (currentLeader.getRole() != GroupRole.LEADER) {
-            throw new AppException(ErrorCode.ONLY_LEADER_ALLOWED);
+                // 4. Business Rules
+                // Cannot change LEADER role
+                if (memberToUpdate.getRole() == GroupRole.LEADER) {
+                        throw new AppException(ErrorCode.CANNOT_CHANGE_LEADER_ROLE);
+                }
+
+                // Cannot assign LEADER role (use transfer leadership instead)
+                if (request.getRole() == GroupRole.LEADER) {
+                        throw new AppException(ErrorCode.CANNOT_ASSIGN_LEADER_ROLE);
+                }
+
+                // 5. Update role
+                memberToUpdate.setRole(request.getRole());
+                GroupMember updated = groupMemberRepository.save(memberToUpdate);
+
+                return groupMapper.toGroupMemberResponse(updated);
         }
 
-        // 3. Validate new leader exists and is a member
-        User newLeaderUser = userRepository.findById(request.getNewLeaderId())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        @Override
+        @Transactional
+        public void transferLeadership(UUID groupId, TransferLeadershipRequest request, UUID currentUserId) {
+                // 1. Validate Group exists
+                Group group = groupRepository.findById(groupId)
+                                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
 
-        GroupMember newLeader = groupMemberRepository.findByGroupAndUser(group, newLeaderUser)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_IN_GROUP));
+                // 2. Verify current user is LEADER
+                User currentUser = userRepository.findById(currentUserId)
+                                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        // 4. Cannot transfer to yourself
-        if (currentUserId.equals(request.getNewLeaderId())) {
-            throw new AppException(ErrorCode.CANNOT_TRANSFER_TO_YOURSELF);
+                GroupMember currentLeader = groupMemberRepository.findByGroupAndUser(group, currentUser)
+                                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_IN_GROUP));
+
+                if (currentLeader.getRole() != GroupRole.LEADER) {
+                        throw new AppException(ErrorCode.ONLY_LEADER_ALLOWED);
+                }
+
+                // 3. Validate new leader exists and is a member
+                User newLeaderUser = userRepository.findById(request.getNewLeaderId())
+                                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+                GroupMember newLeader = groupMemberRepository.findByGroupAndUser(group, newLeaderUser)
+                                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_IN_GROUP));
+
+                // 4. Cannot transfer to yourself
+                if (currentUserId.equals(request.getNewLeaderId())) {
+                        throw new AppException(ErrorCode.CANNOT_TRANSFER_TO_YOURSELF);
+                }
+
+                // 5. Swap roles
+                // Old LEADER -> CO_LEADER
+                currentLeader.setRole(GroupRole.CO_LEADER);
+                groupMemberRepository.save(currentLeader);
+
+                // New member -> LEADER
+                newLeader.setRole(GroupRole.LEADER);
+                groupMemberRepository.save(newLeader);
         }
 
-        // 5. Swap roles
-        // Old LEADER -> CO_LEADER
-        currentLeader.setRole(GroupRole.CO_LEADER);
-        groupMemberRepository.save(currentLeader);
+        // === CASCADE SOFT DELETE METHODS ===
 
-        // New member -> LEADER
-        newLeader.setRole(GroupRole.LEADER);
-        groupMemberRepository.save(newLeader);
-    }
+        @Override
+        @Transactional
+        public void deleteGroup(UUID groupId, UUID currentUserId) {
+                // 1. Validate Group exists
+                Group group = groupRepository.findById(groupId)
+                                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
 
-    // === CASCADE SOFT DELETE METHODS ===
+                // 2. Verify current user is LEADER
+                User currentUser = userRepository.findById(currentUserId)
+                                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-    @Override
-    @Transactional
-    public void deleteGroup(UUID groupId, UUID currentUserId) {
-        // 1. Validate Group exists
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
+                GroupMember currentLeader = groupMemberRepository.findByGroupAndUser(group, currentUser)
+                                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_IN_GROUP));
 
-        // 2. Verify current user is LEADER
-        User currentUser = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+                if (currentLeader.getRole() != GroupRole.LEADER) {
+                        throw new AppException(ErrorCode.ONLY_LEADER_ALLOWED);
+                }
 
-        GroupMember currentLeader = groupMemberRepository.findByGroupAndUser(group, currentUser)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_IN_GROUP));
+                LocalDateTime now = LocalDateTime.now();
+                String deletedBy = currentUserId.toString();
 
-        if (currentLeader.getRole() != GroupRole.LEADER) {
-            throw new AppException(ErrorCode.ONLY_LEADER_ALLOWED);
+                // 3. Soft delete Group
+                group.getSoftDeleteInfo().markAsDeleted(deletedBy);
+                groupRepository.save(group);
+
+                // 4. Cascade delete related entities
+                // Soft delete: GroupMember, Itinerary (keeping travel history)
+                groupMemberRepository.softDeleteByGroupId(groupId, now, deletedBy);
+                itineraryRepository.softDeleteByGroupId(groupId, now, deletedBy);
+
+                // HARD DELETE: Conversations & Messages (no history needed)
+                // JPA cascade with orphanRemoval=true will auto-delete:
+                // - ConversationMember (via Conversation.members)
+                // - ChatMessage (via Conversation.messages)
+                List<Conversation> conversations = conversationRepository.findByGroup_Id(groupId);
+                conversationRepository.deleteAll(conversations);
         }
 
-        LocalDateTime now = LocalDateTime.now();
-        String deletedBy = currentUserId.toString();
+        @Override
+        @Transactional
+        public void restoreGroup(UUID groupId, UUID currentUserId) {
+                // 1. Validate Group exists (even if deleted)
+                Group group = groupRepository.findById(groupId)
+                                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
 
-        // 3. Soft delete Group
-        group.getSoftDeleteInfo().markAsDeleted(deletedBy);
-        groupRepository.save(group);
+                // 2. Check if group is actually deleted
+                if (!group.getSoftDeleteInfo().isDeleted()) {
+                        throw new AppException(ErrorCode.GROUP_NOT_DELETED);
+                }
 
-        // 4. Cascade soft delete all related entities
-        groupMemberRepository.softDeleteByGroupId(groupId, now, deletedBy);
-        itineraryRepository.softDeleteByGroupId(groupId, now, deletedBy);
-        conversationRepository.softDeleteByGroupId(groupId, now, deletedBy);
-        conversationMemberRepository.softDeleteByGroupConversations(groupId, now, deletedBy);
-    }
+                // 3. Verify current user was a member (check in soft deleted members)
+                User currentUser = userRepository.findById(currentUserId)
+                                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-    @Override
-    @Transactional
-    public void restoreGroup(UUID groupId, UUID currentUserId) {
-        // 1. Validate Group exists (even if deleted)
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
+                GroupMember currentMember = groupMemberRepository.findByGroupAndUser(group, currentUser)
+                                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_IN_GROUP));
 
-        // 2. Check if group is actually deleted
-        if (!group.getSoftDeleteInfo().isDeleted()) {
-            throw new AppException(ErrorCode.GROUP_NOT_DELETED);
+                // Only LEADER can restore
+                if (currentMember.getRole() != GroupRole.LEADER) {
+                        throw new AppException(ErrorCode.ONLY_LEADER_ALLOWED);
+                }
+
+                // 4. Restore Group
+                group.getSoftDeleteInfo().restore();
+                groupRepository.save(group);
+
+                // 5. Cascade restore travel-related entities
+                groupMemberRepository.restoreByGroupId(groupId);
+                itineraryRepository.restoreByGroupId(groupId);
+
+                // Note: Conversations were HARD DELETED - cannot restore
+                // Group restoration will NOT bring back old chats
         }
-
-        // 3. Verify current user was a member (check in soft deleted members)
-        User currentUser = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
-        GroupMember currentMember = groupMemberRepository.findByGroupAndUser(group, currentUser)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_IN_GROUP));
-
-        // Only LEADER can restore
-        if (currentMember.getRole() != GroupRole.LEADER) {
-            throw new AppException(ErrorCode.ONLY_LEADER_ALLOWED);
-        }
-
-        // 4. Restore Group
-        group.getSoftDeleteInfo().restore();
-        groupRepository.save(group);
-
-        // 5. Cascade restore all related entities
-        groupMemberRepository.restoreByGroupId(groupId);
-        itineraryRepository.restoreByGroupId(groupId);
-        conversationRepository.restoreByGroupId(groupId);
-        conversationMemberRepository.restoreByGroupConversations(groupId);
-    }
 }

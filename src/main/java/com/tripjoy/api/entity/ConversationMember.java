@@ -1,6 +1,5 @@
 package com.tripjoy.api.entity;
 
-import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,6 +11,10 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "conversation_member", indexes = {
+        @Index(name = "idx_conversation_member_lookup", columnList = "conversation_id, user_id"),
+        @Index(name = "idx_user_conversations", columnList = "user_id")
+})
 public class ConversationMember extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -32,7 +35,4 @@ public class ConversationMember extends BaseEntity {
 
     private UUID lastReadMessageId;
 
-    @Embedded
-    @Builder.Default
-    private SoftDeleteInfo softDeleteInfo = new SoftDeleteInfo();
 }

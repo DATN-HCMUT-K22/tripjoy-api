@@ -9,6 +9,9 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "suggest_location", indexes = {
+        @Index(name = "idx_suggest_location", columnList = "location_id")
+})
 public class SuggestLocation extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

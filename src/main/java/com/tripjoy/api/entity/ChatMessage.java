@@ -1,6 +1,5 @@
 package com.tripjoy.api.entity;
 
-import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,6 +12,9 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "chat_message", indexes = {
+        @Index(name = "idx_chat_message_cursor", columnList = "conversation_id, created_at DESC")
+})
 public class ChatMessage extends BaseEntity {
 
     private String messageType;
@@ -25,10 +27,6 @@ public class ChatMessage extends BaseEntity {
     @Column(nullable = false)
     @Builder.Default
     private Boolean isPinned = false;
-
-    @Embedded
-    @Builder.Default
-    private SoftDeleteInfo softDeleteInfo = new SoftDeleteInfo();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_message_id", referencedColumnName = "id")
@@ -47,5 +45,6 @@ public class ChatMessage extends BaseEntity {
 
     @ManyToMany
     @JoinTable(name = "like_chat_message", joinColumns = @JoinColumn(name = "chat_message_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @Builder.Default
     private Set<User> likeUsers = new HashSet<>();
 }

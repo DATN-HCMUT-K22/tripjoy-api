@@ -2,8 +2,10 @@ package com.tripjoy.api.service.impl;
 
 import com.tripjoy.api.dto.request.chat.ConversationUpdateRequest;
 import com.tripjoy.api.dto.response.ConversationResponse;
+import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import com.tripjoy.api.entity.Conversation;
 import com.tripjoy.api.entity.ConversationMember;
+import com.tripjoy.api.entity.User;
 import com.tripjoy.api.enums.ConversationType;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
@@ -12,12 +14,15 @@ import com.tripjoy.api.repository.ConversationMemberRepository;
 import com.tripjoy.api.repository.ConversationRepository;
 import com.tripjoy.api.service.IConversationService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ConversationService implements IConversationService {
@@ -27,13 +32,79 @@ public class ConversationService implements IConversationService {
     private final ConversationMapper conversationMapper; // Inject Mapper
 
     public List<ConversationResponse> getUserConversations(UUID userId) {
-        // 1. Lấy danh sách conversation từ DB
+        // Get conversations (only filter Group soft delete, not conversation)
         List<Conversation> conversations = conversationRepository.findAllByUserId(userId);
 
-        // 2. Map sang Response, truyền userId vào làm Context
         return conversations.stream()
-                .map(conv -> conversationMapper.toResponse(conv, userId)) // Truyền userId vào đây
-                .toList();
+                .map(conv -> {
+                    ConversationResponse response = conversationMapper.toResponse(conv, userId);
+                    enrichConversationResponse(response, conv, userId);
+                    return response;
+                })
+                .collect(Collectors.toList());
+    }
+
+    // Manually enrich response (because MapStruct @AfterMapping doesn't execute)
+    private void enrichConversationResponse(ConversationResponse response, Conversation conversation,
+            UUID currentUserId) {
+        // 1. Set name and avatar based on type
+        if (conversation.getType() == ConversationType.GROUP) {
+            // For GROUP: use conversation name if set, otherwise group name
+            if (conversation.getName() != null && !conversation.getName().trim().isEmpty()) {
+                response.setName(conversation.getName());
+            } else if (conversation.getGroup() != null) {
+                response.setName(conversation.getGroup().getName());
+            }
+
+            // Set avatar from group
+            if (conversation.getGroup() != null) {
+                response.setAvatar(conversation.getGroup().getAvatar());
+            }
+        } else {
+            // For DIRECT: get partner info
+            User partner = conversation.getMembers().stream()
+                    .map(ConversationMember::getUser)
+                    .filter(user -> !user.getId().equals(currentUserId))
+                    .findFirst()
+                    .orElse(null);
+
+            if (partner != null) {
+                response.setName(partner.getFullName());
+                response.setAvatar(partner.getAvatarUrl());
+            } else {
+                response.setName("Unknown User");
+            }
+        }
+
+        // 2. Map members
+        if (conversation.getMembers() != null && !conversation.getMembers().isEmpty()) {
+            List<UserSimpleResponse> memberList = conversation.getMembers().stream()
+                    .map(cm -> {
+                        User user = cm.getUser();
+                        if (user == null)
+                            return null;
+                        return UserSimpleResponse.builder()
+                                .id(user.getId())
+                                .username(user.getUsername())
+                                .fullName(user.getFullName())
+                                .avatarUrl(user.getAvatarUrl())
+                                .build();
+                    })
+                    .filter(u -> u != null)
+                    .collect(Collectors.toList());
+            response.setMembers(memberList);
+        }
+
+        // 3. Set user-specific fields (unread count, pinned)
+        ConversationMember myMemberInfo = conversation.getMembers().stream()
+                .filter(m -> m.getUser() != null && m.getUser().getId().equals(currentUserId))
+                .findFirst()
+                .orElse(null);
+
+        if (myMemberInfo != null) {
+            response.setUnreadCount(myMemberInfo.getUnreadCount());
+            response.setIsPinned(myMemberInfo.getIsPinned());
+        }
     }
 
     public ConversationResponse getConversationDetail(UUID conversationId, UUID currentUserId) {
@@ -41,7 +112,9 @@ public class ConversationService implements IConversationService {
                 .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_FOUND));
 
         // Truyền currentUserId để mapper biết đường lấy tên/avatar đối phương
-        return conversationMapper.toResponse(conv, currentUserId);
+        ConversationResponse response = conversationMapper.toResponse(conv, currentUserId);
+        enrichConversationResponse(response, conv, currentUserId);
+        return response;
     }
 
     @Transactional
@@ -72,6 +145,8 @@ public class ConversationService implements IConversationService {
         }
 
         // 5. Return updated conversation
-        return conversationMapper.toResponse(conversation, currentUserId);
+        ConversationResponse response = conversationMapper.toResponse(conversation, currentUserId);
+        enrichConversationResponse(response, conversation, currentUserId);
+        return response;
     }
 }

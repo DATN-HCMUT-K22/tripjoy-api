@@ -13,6 +13,10 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "group_member", indexes = {
+        @Index(name = "idx_group_member_lookup", columnList = "group_id, user_id"),
+        @Index(name = "idx_user_groups", columnList = "user_id, is_deleted")
+})
 public class GroupMember extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

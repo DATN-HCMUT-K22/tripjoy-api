@@ -28,7 +28,7 @@ public class UserController {
 
     @GetMapping
     @Operation(summary = "Get all users", description = "Retrieves a list of all registered users.")
-    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
+//    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     // @PreAuthorize("hasAuthority('APPROVE_POST')")
     public ApiResponse<List<UserResponse>> getUsers() {
 
