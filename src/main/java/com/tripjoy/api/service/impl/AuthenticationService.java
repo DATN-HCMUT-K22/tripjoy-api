@@ -89,12 +89,14 @@ public class AuthenticationService implements IAuthenticationService {
         if (!isAuthenticated)
             throw new AppException(ErrorCode.UNAUTHENTICATED);
 
-        // Gọi JwtUtils để tạo token
-        var token = jwtUtils.generateToken(user);
+        var accessToken = jwtUtils.generateToken(user);
+        var refreshToken = jwtUtils.generateRefreshToken(user);
 
         return AuthenticationResponse.builder()
-                .token(token)
-                .isAuthenticated(isAuthenticated)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .expiresIn(3600L)
+                .isAuthenticated(true)
                 .build();
     }
 
@@ -133,14 +135,17 @@ public class AuthenticationService implements IAuthenticationService {
 
     public AuthenticationResponse refreshToken(RefreshRequest request)
             throws ParseException, JOSEException {
-        // Gọi JwtProvider verify token cũ
         var signedToken = jwtUtils.verifyToken(request.getToken(), true);
+
+        String tokenType = signedToken.getJWTClaimsSet().getStringClaim("type");
+        if (!"refresh".equals(tokenType)) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
 
         var jti = signedToken.getJWTClaimsSet().getJWTID();
         UUID jtiUuid = UUID.fromString(jti);
         var expiresAt = signedToken.getJWTClaimsSet().getExpirationTime();
 
-        // Logout token cũ
         InvalidatedToken invalidatedToken = InvalidatedToken.builder()
                 .id(jtiUuid)
                 .expiresAt(expiresAt)
@@ -148,14 +153,16 @@ public class AuthenticationService implements IAuthenticationService {
         invalidatedTokenRepository.save(invalidatedToken);
 
         var username = signedToken.getJWTClaimsSet().getSubject();
-        var user = userRepository.findByUsername(username)
+        var user = userRepository.findById(UUID.fromString(username))
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        // Tạo token mới
-        var newToken = jwtUtils.generateToken(user);
+        var newAccessToken = jwtUtils.generateToken(user);
+        var newRefreshToken = jwtUtils.generateRefreshToken(user);
 
         return AuthenticationResponse.builder()
-                .token(newToken)
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshToken)
+                .expiresIn(3600L)
                 .isAuthenticated(true)
                 .build();
     }
