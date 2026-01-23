@@ -1,6 +1,5 @@
 package com.tripjoy.api.entity;
 
-import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,10 +27,6 @@ public class ChatMessage extends BaseEntity {
     @Column(nullable = false)
     @Builder.Default
     private Boolean isPinned = false;
-
-    @Embedded
-    @Builder.Default
-    private SoftDeleteInfo softDeleteInfo = new SoftDeleteInfo();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_message_id", referencedColumnName = "id")

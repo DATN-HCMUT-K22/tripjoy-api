@@ -27,12 +27,12 @@ public class ConversationService implements IConversationService {
     private final ConversationMapper conversationMapper; // Inject Mapper
 
     public List<ConversationResponse> getUserConversations(UUID userId) {
-        // 1. Lấy danh sách conversation từ DB
+        // Get conversations (only filter Group soft delete, not conversation)
         List<Conversation> conversations = conversationRepository.findAllByUserId(userId);
 
-        // 2. Map sang Response, truyền userId vào làm Context
+        // Map to Response, pass userId as context
         return conversations.stream()
-                .map(conv -> conversationMapper.toResponse(conv, userId)) // Truyền userId vào đây
+                .map(conv -> conversationMapper.toResponse(conv, userId))
                 .toList();
     }
 

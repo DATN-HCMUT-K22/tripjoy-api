@@ -1,7 +1,6 @@
 package com.tripjoy.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 import com.tripjoy.api.enums.ConversationType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -16,7 +15,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "conversation", indexes = {
-        @Index(name = "idx_conversation_group", columnList = "group_id, is_deleted"),
+        @Index(name = "idx_conversation_group", columnList = "group_id"),
         @Index(name = "idx_conversation_timestamp", columnList = "last_message_timestamp DESC")
 })
 public class Conversation extends BaseEntity {
@@ -32,15 +31,12 @@ public class Conversation extends BaseEntity {
 
     private LocalDateTime lastMessageTimestamp;
 
-    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore
     private Set<ChatMessage> messages;
 
-    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore
     private Set<ConversationMember> members;
 
-    @Embedded
-    @Builder.Default
-    private SoftDeleteInfo softDeleteInfo = new SoftDeleteInfo();
 }
