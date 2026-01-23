@@ -80,7 +80,7 @@ public class GroupEventListener {
                 log.info("-> Added {} initial members to 'General Chat'", initialMembers.size());
             }
 
-            log.info("-> Created 'General Chat' for Group {}", event.getGroup().getName());
+            log.info("Created 'General Chat' for Group {}", event.getGroup().getName());
         } catch (Exception e) {
             log.error("ERROR handling GroupCreatedEvent: ", e);
         }
