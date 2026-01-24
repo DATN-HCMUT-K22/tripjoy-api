@@ -101,7 +101,7 @@ public class GroupEventListener {
             log.info("EVENT: SYNC CHAT -> User {} joined Group {}", user.getId(), groupId);
 
             // 2. Lấy tất cả Conversation của Group đó
-            List<Conversation> conversations = conversationRepository.findByGroup_Id(groupId);
+            List<Conversation> conversations = conversationRepository.findByGroup_IdOrderByCreatedAtDesc(groupId);
 
             if (conversations.isEmpty()) {
                 log.warn("Group {} has no conversations to sync", groupId);
@@ -150,7 +150,7 @@ public class GroupEventListener {
             log.info("EVENT: KICK FROM CHAT -> User {} removed from Group {}", removedUser.getId(), groupId);
 
             // 2. Lấy tất cả Conversation của Group đó
-            List<Conversation> conversations = conversationRepository.findByGroup_Id(groupId);
+            List<Conversation> conversations = conversationRepository.findByGroup_IdOrderByCreatedAtDesc(groupId);
 
             if (conversations.isEmpty()) {
                 log.warn("Group {} has no conversations to kick from", groupId);

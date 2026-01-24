@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface ConversationRepository extends JpaRepository<Conversation, UUID> {
 
-        List<Conversation> findByGroup_Id(UUID groupId);
+        List<Conversation> findByGroup_IdOrderByCreatedAtDesc(UUID groupId);
 
         @Query("SELECT DISTINCT c FROM Conversation c " +
                         "LEFT JOIN FETCH c.members m " +
@@ -27,6 +27,7 @@ public interface ConversationRepository extends JpaRepository<Conversation, UUID
                         "  WHERE gm.group.id = g.id " +
                         "  AND gm.user.id = u.id " +
                         "  AND gm.softDeleteInfo.isDeleted = false" +
-                        ")")
+                        ") " +
+                        "ORDER BY c.createdAt DESC")
         List<Conversation> findAllByUserId(@Param("userId") UUID userId);
 }
