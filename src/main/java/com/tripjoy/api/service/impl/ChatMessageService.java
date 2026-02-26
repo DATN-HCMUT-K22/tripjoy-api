@@ -1,6 +1,10 @@
 package com.tripjoy.api.service.impl;
 
+import com.tripjoy.api.dto.event.MessageLikedEvent;
+import com.tripjoy.api.dto.event.MessagePinnedEvent;
 import com.tripjoy.api.dto.event.MessageSentEvent;
+import com.tripjoy.api.dto.event.MessageUnlikedEvent;
+import com.tripjoy.api.dto.event.MessageUnpinnedEvent;
 import com.tripjoy.api.dto.request.chat.ChatMessageRequest;
 import com.tripjoy.api.dto.response.ChatMessageResponse;
 import com.tripjoy.api.dto.response.MessageCursorResponse;
@@ -60,6 +64,14 @@ public class ChatMessageService implements IChatMessageService {
 
         message.getLikeUsers().add(user);
         chatMessageRepository.save(message);
+
+        MessageLikedEvent event = MessageLikedEvent.builder()
+                .conversationId(message.getConversation().getId())
+                .messageId(messageId)
+                .userId(userId)
+                .likeCount(message.getLikeUsers().size())
+                .build();
+        eventPublisher.publishEvent(event);
     }
 
     @Transactional
@@ -77,6 +89,14 @@ public class ChatMessageService implements IChatMessageService {
 
         message.getLikeUsers().remove(user);
         chatMessageRepository.save(message);
+
+        MessageUnlikedEvent event = MessageUnlikedEvent.builder()
+                .conversationId(message.getConversation().getId())
+                .messageId(messageId)
+                .userId(userId)
+                .likeCount(message.getLikeUsers().size())
+                .build();
+        eventPublisher.publishEvent(event);
     }
 
     @Transactional
@@ -141,6 +161,14 @@ public class ChatMessageService implements IChatMessageService {
         // 6. Pin the message
         message.setIsPinned(true);
         chatMessageRepository.save(message);
+
+        MessagePinnedEvent event = MessagePinnedEvent.builder()
+                .conversationId(conversationId)
+                .messageId(messageId)
+                .userId(userId)
+                .pinnedAt(java.time.LocalDateTime.now())
+                .build();
+        eventPublisher.publishEvent(event);
     }
 
     @Transactional
@@ -163,6 +191,13 @@ public class ChatMessageService implements IChatMessageService {
         // 4. Unpin the message
         message.setIsPinned(false);
         chatMessageRepository.save(message);
+
+        MessageUnpinnedEvent event = MessageUnpinnedEvent.builder()
+                .conversationId(conversationId)
+                .messageId(messageId)
+                .userId(userId)
+                .build();
+        eventPublisher.publishEvent(event);
     }
 
     @Transactional(readOnly = true)

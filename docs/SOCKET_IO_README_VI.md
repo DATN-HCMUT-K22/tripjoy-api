@@ -664,6 +664,20 @@ socket.on('receive_message', (message) => {
     displayMessage(message);  // Hiển thị NGAY KHI CÓ
 });
 
+// Lắng nghe event khi có message được like/unlike
+socket.on('update_like', (data) => {
+    console.log('Message like updated:', data);
+    // data = { messageId: '...', userId: '...', isLiked: true/false, likeCount: 5 }
+    updateMessageLikeUI(data);
+});
+
+// Lắng nghe event khi có message được pin/unpin
+socket.on('update_pin', (data) => {
+    console.log('Message pin updated:', data);
+    // data = { messageId: '...', userId: '...', isPinned: true/false }
+    updateMessagePinUI(data);
+});
+
 // ✅ LỢI ÍCH:
 // - Không delay
 // - Server chủ động push
@@ -825,6 +839,16 @@ socket.on('receive_message', (message) => {
     // }
     
     displayMessage(message);  // Hiển thị tin nhắn
+});
+
+socket.on('update_like', (data) => {
+    console.log('Like update:', data);
+    // { messageId: "MSG_ID", userId: "USER_A_ID", isLiked: true, likeCount: 1 }
+});
+
+socket.on('update_pin', (data) => {
+    console.log('Pin update:', data);
+    // { messageId: "MSG_ID", userId: "USER_A_ID", isPinned: true }
 });
 ```
 
