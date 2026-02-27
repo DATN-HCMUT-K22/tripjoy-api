@@ -149,6 +149,13 @@
 			<version>8.7.0</version>
 		</dependency>
 
+		<!-- Cloudinary SDK for media storage -->
+		<dependency>
+			<groupId>com.cloudinary</groupId>
+			<artifactId>cloudinary-http44</artifactId>
+			<version>1.39.0</version>
+		</dependency>
+
 	</dependencies>
 
 	<profiles>

@@ -5,7 +5,9 @@ import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -16,7 +18,12 @@ import java.util.Set;
 @AllArgsConstructor
 public class Post extends BaseEntity {
 
-        private String mediaUrl;
+        @Builder.Default
+        @ElementCollection
+        @CollectionTable(name = "post_media", joinColumns = @JoinColumn(name = "post_id"))
+        @Column(name = "media_url", length = 1024)
+        @OrderColumn(name = "media_order")
+        private List<String> mediaUrls = new ArrayList<>();
 
         @Embedded
         private SoftDeleteInfo softDeleteInfo = new SoftDeleteInfo();

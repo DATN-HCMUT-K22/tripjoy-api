@@ -36,3 +36,4 @@ build/
 
 ### Redis data ###
 /infra/redis/data/
+/docs

@@ -72,6 +72,13 @@ public enum ErrorCode {
     FILE_TOO_LARGE(5001, "File size exceeds the limit", HttpStatus.BAD_REQUEST),
     UNSUPPORTED_FILE_TYPE(5002, "Unsupported file type", HttpStatus.BAD_REQUEST),
     UPLOAD_FAILED(5003, "File upload failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    MEDIA_FILE_EMPTY(5004, "Media file must not be empty", HttpStatus.BAD_REQUEST),
+    MEDIA_UNSUPPORTED_TYPE(5005, "Unsupported media type. Allowed: JPG, PNG, WEBP, GIF, HEIC, MP4, MOV, AVI",
+            HttpStatus.BAD_REQUEST),
+    MEDIA_FILE_TOO_LARGE(5006, "Media file exceeds maximum allowed size", HttpStatus.PAYLOAD_TOO_LARGE),
+    MEDIA_UPLOAD_FAILED(5007, "Failed to upload media to cloud storage", HttpStatus.INTERNAL_SERVER_ERROR),
+    MEDIA_DELETE_FAILED(5008, "Failed to delete media from cloud storage", HttpStatus.INTERNAL_SERVER_ERROR),
+    INVALID_MEDIA_PUBLIC_ID(5009, "Invalid media public ID", HttpStatus.BAD_REQUEST),
 
     // --- 6. DATABASE ERRORS (6000 - 6999) ---
     DATABASE_ERROR(6001, "Database operation failed", HttpStatus.INTERNAL_SERVER_ERROR),
