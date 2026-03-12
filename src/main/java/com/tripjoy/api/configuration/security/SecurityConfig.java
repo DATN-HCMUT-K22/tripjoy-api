@@ -1,9 +1,6 @@
 package com.tripjoy.api.configuration.security;
 
-import com.tripjoy.api.constant.Endpoint;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.filter.CorsFilter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -13,34 +10,28 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import javax.crypto.spec.SecretKeySpec;
+import com.tripjoy.api.constant.Endpoint;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
     private static final String[] PUBLIC_ENDPOINTS = {
-            Endpoint.Auth.BASE + Endpoint.Auth.REGISTER,
-            Endpoint.Auth.BASE + Endpoint.Auth.LOGIN,
-            Endpoint.Auth.BASE + Endpoint.Auth.INTROSPECT,
-            Endpoint.Auth.BASE + Endpoint.Auth.LOGOUT,
-            Endpoint.Auth.BASE + Endpoint.Auth.REFRESH
+        Endpoint.Auth.BASE + Endpoint.Auth.REGISTER,
+        Endpoint.Auth.BASE + Endpoint.Auth.LOGIN,
+        Endpoint.Auth.BASE + Endpoint.Auth.INTROSPECT,
+        Endpoint.Auth.BASE + Endpoint.Auth.LOGOUT,
+        Endpoint.Auth.BASE + Endpoint.Auth.REFRESH
     };
 
     private static final String[] SWAGGER_WHITELIST = {
-            "/v3/api-docs/**",
-            "/v3/api-docs.yaml",
-            "/swagger-ui/**",
-            "/swagger-ui.html"
+        "/v3/api-docs/**", "/v3/api-docs.yaml", "/swagger-ui/**", "/swagger-ui.html"
     };
 
     @Autowired
@@ -48,19 +39,17 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity
-                .authorizeHttpRequests(authorize ->
-                        authorize.requestMatchers(SWAGGER_WHITELIST).permitAll()
-                                .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
-                                .anyRequest().authenticated()
-                );
+        httpSecurity.authorizeHttpRequests(authorize -> authorize
+                .requestMatchers(SWAGGER_WHITELIST)
+                .permitAll()
+                .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
+                .permitAll()
+                .anyRequest()
+                .authenticated());
 
-        httpSecurity.oauth2ResourceServer(oauth2 ->
-                oauth2.jwt(jwtConfigurer ->
-                                jwtConfigurer.decoder(customJwtDecoder)
-                                        .jwtAuthenticationConverter(jwtConverter()))
-                        .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
-        );
+        httpSecurity.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer ->
+                        jwtConfigurer.decoder(customJwtDecoder).jwtAuthenticationConverter(jwtConverter()))
+                .authenticationEntryPoint(new JwtAuthenticationEntryPoint()));
 
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
 
@@ -81,6 +70,7 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", corsConfiguration);
         return source;
     }
+
     @Bean
     JwtAuthenticationConverter jwtConverter() {
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();

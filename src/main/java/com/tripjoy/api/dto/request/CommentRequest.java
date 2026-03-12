@@ -1,13 +1,15 @@
 package com.tripjoy.api.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.util.UUID;
 
 @Data
 @Builder
@@ -22,8 +24,7 @@ public class CommentRequest {
             description = "The text content of the comment",
             type = "String",
             requiredMode = Schema.RequiredMode.REQUIRED,
-            example = "Bài viết này hay quá!"
-    )
+            example = "Bài viết này hay quá!")
     String content;
 
     // Bắt buộc phải biết Comment vào Post nào

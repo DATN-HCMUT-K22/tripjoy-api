@@ -1,14 +1,16 @@
 package com.tripjoy.api.entity;
 
-import com.tripjoy.api.utils.SecurityUtils;
-import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.SuperBuilder;
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import jakarta.persistence.*;
+
+import com.tripjoy.api.utils.SecurityUtils;
+
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+import lombok.extern.slf4j.Slf4j;
 
 @NoArgsConstructor
 @MappedSuperclass
@@ -40,7 +42,8 @@ public abstract class BaseEntity implements Serializable {
             }
             this.updatedBy = currentUserId;
         } else {
-            log.warn("PrePersist: Cannot get current user - createdBy/updatedBy will be null for entity: {}",
+            log.warn(
+                    "PrePersist: Cannot get current user - createdBy/updatedBy will be null for entity: {}",
                     this.getClass().getSimpleName());
         }
     }
@@ -54,7 +57,8 @@ public abstract class BaseEntity implements Serializable {
         if (currentUserId != null) {
             this.updatedBy = currentUserId;
         } else {
-            log.warn("PreUpdate: Cannot get current user - updatedBy will be null for entity: {}",
+            log.warn(
+                    "PreUpdate: Cannot get current user - updatedBy will be null for entity: {}",
                     this.getClass().getSimpleName());
         }
     }

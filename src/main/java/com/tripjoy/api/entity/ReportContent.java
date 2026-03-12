@@ -1,6 +1,7 @@
 package com.tripjoy.api.entity;
 
 import jakarta.persistence.Entity;
+
 import lombok.*;
 
 @Getter
@@ -9,7 +10,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReportContent extends BaseEntity{
+public class ReportContent extends BaseEntity {
 
     private String contentType;
     private String text;

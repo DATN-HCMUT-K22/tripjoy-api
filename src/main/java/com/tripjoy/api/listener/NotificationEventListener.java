@@ -1,5 +1,10 @@
 package com.tripjoy.api.listener;
 
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tripjoy.api.dto.event.NotificationEvent;
 import com.tripjoy.api.entity.Notification;
@@ -9,19 +14,15 @@ import com.tripjoy.api.exception.ErrorCode;
 import com.tripjoy.api.repository.NotificationRepository;
 import com.tripjoy.api.repository.UserRepository;
 import com.tripjoy.api.service.impl.SocketService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 /**
  * Notification Event Listener
  * Handles notification creation and real-time broadcast after transaction
  * commits
- * 
+ *
  * Pattern: @Async + @TransactionalEventListener(AFTER_COMMIT)
  * Same pattern as GroupEventListener and MessageEventListener
  */
@@ -44,11 +45,14 @@ public class NotificationEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleNotificationEvent(NotificationEvent event) {
         try {
-            log.info("EVENT: NotificationEvent received - type={}, recipient={}",
-                    event.getType(), event.getRecipientId());
+            log.info(
+                    "EVENT: NotificationEvent received - type={}, recipient={}",
+                    event.getType(),
+                    event.getRecipientId());
 
             // 1. VALIDATE & FETCH RECIPIENT
-            User recipient = userRepository.findById(event.getRecipientId())
+            User recipient = userRepository
+                    .findById(event.getRecipientId())
                     .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
             // 2. FETCH ACTOR (optional)
@@ -87,25 +91,26 @@ public class NotificationEventListener {
 
             Notification savedNotification = notificationRepository.save(notification);
 
-            log.info("Notification created: id={}, type={}, recipient={}",
+            log.info(
+                    "Notification created: id={}, type={}, recipient={}",
                     savedNotification.getId(),
                     savedNotification.getType(),
                     recipient.getUsername());
 
             // 5. BROADCAST REAL-TIME VIA SOCKET.IO
             try {
-                socketService.sendNotification(
-                        event.getRecipientId(),
-                        savedNotification);
+                socketService.sendNotification(event.getRecipientId(), savedNotification);
             } catch (Exception socketException) {
                 // Log but don't fail the transaction if Socket.IO broadcast fails
-                log.error("Failed to broadcast notification via Socket.IO: notificationId={}, error={}",
+                log.error(
+                        "Failed to broadcast notification via Socket.IO: notificationId={}, error={}",
                         savedNotification.getId(),
                         socketException.getMessage());
             }
 
         } catch (Exception e) {
-            log.error("CRITICAL ERROR handling NotificationEvent: type={}, recipient={}, error={}",
+            log.error(
+                    "CRITICAL ERROR handling NotificationEvent: type={}, recipient={}, error={}",
                     event.getType(),
                     event.getRecipientId(),
                     e.getMessage(),

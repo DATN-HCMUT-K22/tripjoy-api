@@ -1,21 +1,24 @@
 package com.tripjoy.api.controller;
 
+import java.util.List;
+import java.util.UUID;
+
+import jakarta.validation.Valid;
+
+import org.springframework.web.bind.annotation.*;
+
 import com.tripjoy.api.constant.Endpoint;
 import com.tripjoy.api.dto.request.ExpenseRequest;
 import com.tripjoy.api.dto.request.ItineraryRequest;
 import com.tripjoy.api.dto.request.TripItemRequest;
 import com.tripjoy.api.dto.response.*;
 import com.tripjoy.api.service.IItineraryService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping(Endpoint.Itinerary.BASE)
@@ -44,8 +47,8 @@ public class ItineraryController {
 
     @Operation(summary = "Update an itinerary")
     @PutMapping(Endpoint.Itinerary.ID)
-    public ApiResponse<ItineraryResponse> updateItinerary(@PathVariable UUID itineraryId,
-            @Valid @RequestBody ItineraryRequest request) {
+    public ApiResponse<ItineraryResponse> updateItinerary(
+            @PathVariable UUID itineraryId, @Valid @RequestBody ItineraryRequest request) {
         return ApiResponse.<ItineraryResponse>builder()
                 // .data(itineraryService.updateItinerary(itineraryId, request))
                 .build();
@@ -55,7 +58,9 @@ public class ItineraryController {
     @DeleteMapping(Endpoint.Itinerary.ID)
     public ApiResponse<Void> deleteItinerary(@PathVariable UUID itineraryId) {
         // itineraryService.deleteItinerary(itineraryId);
-        return ApiResponse.<Void>builder().message("Itinerary deleted successfully").build();
+        return ApiResponse.<Void>builder()
+                .message("Itinerary deleted successfully")
+                .build();
     }
 
     // --- Favorite Actions ---
@@ -78,8 +83,8 @@ public class ItineraryController {
 
     @Operation(summary = "Add a trip item to an itinerary")
     @PostMapping(Endpoint.Itinerary.ITEMS_BASE)
-    public ApiResponse<TripItemResponse> addTripItem(@PathVariable UUID itineraryId,
-            @Valid @RequestBody TripItemRequest request) {
+    public ApiResponse<TripItemResponse> addTripItem(
+            @PathVariable UUID itineraryId, @Valid @RequestBody TripItemRequest request) {
         return ApiResponse.<TripItemResponse>builder()
                 // .data(itineraryService.addTripItem(itineraryId, request))
                 .build();
@@ -95,7 +100,9 @@ public class ItineraryController {
 
     @Operation(summary = "Update a specific trip item")
     @PutMapping(Endpoint.Itinerary.ITEMS_ID)
-    public ApiResponse<TripItemResponse> updateTripItem(@PathVariable UUID itineraryId, @PathVariable UUID tripItemId,
+    public ApiResponse<TripItemResponse> updateTripItem(
+            @PathVariable UUID itineraryId,
+            @PathVariable UUID tripItemId,
             @Valid @RequestBody TripItemRequest request) {
         return ApiResponse.<TripItemResponse>builder()
                 // .data(itineraryService.updateTripItem(itineraryId, tripItemId, request))
@@ -114,8 +121,7 @@ public class ItineraryController {
     @Operation(summary = "Add an expense to the itinerary")
     @PostMapping(Endpoint.Itinerary.EXPENSES_BASE)
     public ApiResponse<ExpenseResponse> addExpense(
-            @PathVariable UUID itineraryId,
-            @Valid @RequestBody ExpenseRequest request) {
+            @PathVariable UUID itineraryId, @Valid @RequestBody ExpenseRequest request) {
 
         // return ApiResponse.<ItineraryExpenseResponse>builder()
         // .data(itineraryService.addExpense(itineraryId, request))
@@ -125,8 +131,7 @@ public class ItineraryController {
 
     @Operation(summary = "Get all expenses for the itinerary")
     @GetMapping(Endpoint.Itinerary.EXPENSES_BASE)
-    public ApiResponse<List<ExpenseResponse>> getExpenses(
-            @PathVariable UUID itineraryId) {
+    public ApiResponse<List<ExpenseResponse>> getExpenses(@PathVariable UUID itineraryId) {
 
         // return ApiResponse.<List<ItineraryExpenseResponse>>builder()
         // .data(itineraryService.getExpenses(itineraryId))
@@ -150,8 +155,7 @@ public class ItineraryController {
     @Operation(summary = "Remove an expense entry")
     @DeleteMapping(Endpoint.Itinerary.EXPENSES_ID)
     public ApiResponse<Void> removeExpense(
-            @PathVariable UUID itineraryId,
-            @PathVariable UUID expenseId) { // This is the ID from 'Add_expense' table
+            @PathVariable UUID itineraryId, @PathVariable UUID expenseId) { // This is the ID from 'Add_expense' table
 
         // itineraryService.removeExpense(itineraryId, expenseId);
         // return ApiResponse.<Void>builder().message("Expense removed").build();
@@ -162,8 +166,7 @@ public class ItineraryController {
 
     @Operation(summary = "Get all travel notebooks for this itinerary")
     @GetMapping(Endpoint.Itinerary.NOTEBOOKS)
-    public ApiResponse<List<TravelNotebookResponse>> getNotebooksForItinerary(
-            @PathVariable UUID itineraryId) {
+    public ApiResponse<List<TravelNotebookResponse>> getNotebooksForItinerary(@PathVariable UUID itineraryId) {
 
         // return ApiResponse.<List<TravelNotebookResponse>>builder()
         // .data(travelNotebookService.getNotebooksByItinerary(itineraryId))

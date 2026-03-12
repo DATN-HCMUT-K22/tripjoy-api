@@ -1,10 +1,10 @@
 package com.tripjoy.api.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.SuperBuilder;
-
 import java.time.LocalDateTime;
+
+import jakarta.persistence.*;
+
+import lombok.*;
 
 @Getter
 @Setter

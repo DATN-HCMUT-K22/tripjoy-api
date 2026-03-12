@@ -1,25 +1,28 @@
 package com.tripjoy.api.configuration.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tripjoy.api.dto.response.ApiResponse;
-import com.tripjoy.api.exception.ErrorCode;
+import java.io.IOException;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 
-import java.io.IOException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tripjoy.api.dto.response.ApiResponse;
+import com.tripjoy.api.exception.ErrorCode;
 
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
+    public void commence(
+            HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException, ServletException {
         ErrorCode errorCode = ErrorCode.UNAUTHENTICATED;
 
         response.setStatus(errorCode.getStatusCode().value());
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);   // "application/json"
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE); // "application/json"
         ApiResponse<?> apiResponse = ApiResponse.builder()
                 .code(errorCode.getCode())
                 .message(errorCode.getMessage())

@@ -1,12 +1,14 @@
 package com.tripjoy.api.configuration;
 
-import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+
+import lombok.Getter;
+import lombok.Setter;
 
 @Configuration
 @ConfigurationProperties(prefix = "cloudinary")

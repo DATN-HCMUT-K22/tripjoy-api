@@ -1,6 +1,7 @@
 package com.tripjoy.api.entity;
 
 import jakarta.persistence.*;
+
 import lombok.*;
 
 @Getter
@@ -9,9 +10,9 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "suggest_location", indexes = {
-        @Index(name = "idx_suggest_location", columnList = "location_id")
-})
+@Table(
+        name = "suggest_location",
+        indexes = {@Index(name = "idx_suggest_location", columnList = "location_id")})
 public class SuggestLocation extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

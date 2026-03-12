@@ -1,12 +1,14 @@
 package com.tripjoy.api.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.tripjoy.api.enums.ConversationType;
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.time.LocalDateTime;
 import java.util.Set;
+
+import jakarta.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tripjoy.api.enums.ConversationType;
+
+import lombok.*;
 
 @Getter
 @Setter
@@ -14,10 +16,12 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "conversation", indexes = {
-        @Index(name = "idx_conversation_group", columnList = "group_id"),
-        @Index(name = "idx_conversation_timestamp", columnList = "last_message_timestamp DESC")
-})
+@Table(
+        name = "conversation",
+        indexes = {
+            @Index(name = "idx_conversation_group", columnList = "group_id"),
+            @Index(name = "idx_conversation_timestamp", columnList = "last_message_timestamp DESC")
+        })
 public class Conversation extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
@@ -38,5 +42,4 @@ public class Conversation extends BaseEntity {
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore
     private Set<ConversationMember> members;
-
 }

@@ -1,7 +1,8 @@
 package com.tripjoy.api.configuration.security;
 
-import com.nimbusds.jose.JOSEException;
-import com.tripjoy.api.exception.AppException;
+import java.text.ParseException;
+import javax.crypto.spec.SecretKeySpec;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -11,8 +12,8 @@ import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.spec.SecretKeySpec;
-import java.text.ParseException;
+import com.nimbusds.jose.JOSEException;
+import com.tripjoy.api.exception.AppException;
 
 @Component
 public class CustomJwtDecoder implements JwtDecoder {

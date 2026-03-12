@@ -1,15 +1,15 @@
 package com.tripjoy.api.configuration.socketio;
 
-import com.corundumstudio.socketio.SocketIOClient;
+import java.time.Duration;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.springframework.stereotype.Component;
+
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Refill;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-
-import java.time.Duration;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Rate limiter for Socket.IO events to prevent spam and DoS attacks.
@@ -61,7 +61,7 @@ public class SocketRateLimiter {
 
     /**
      * Clean up buckets for disconnected users to free memory.
-     */ 
+     */
     public void cleanup(String userId) {
         messageBuckets.remove(userId);
         typingBuckets.remove(userId);

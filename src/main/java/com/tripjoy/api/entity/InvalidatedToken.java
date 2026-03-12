@@ -1,12 +1,12 @@
 package com.tripjoy.api.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.util.Date;
 import java.util.UUID;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+
+import lombok.*;
 
 @Getter
 @Setter
@@ -18,5 +18,6 @@ public class InvalidatedToken {
 
     @Id
     private UUID id;
+
     private Date expiresAt;
 }

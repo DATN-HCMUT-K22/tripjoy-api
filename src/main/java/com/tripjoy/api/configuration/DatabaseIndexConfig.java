@@ -1,6 +1,5 @@
 package com.tripjoy.api.configuration;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -9,6 +8,7 @@ import org.springframework.stereotype.Component;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Creates advanced PostgreSQL indexes that cannot be defined
@@ -35,19 +35,21 @@ public class DatabaseIndexConfig {
 
         // ── Full-Text Search index on chat_message.message_content ──
         // Uses 'simple' tsvector config (language-agnostic, works with Vietnamese + English)
-        jdbcTemplate.execute("""
-                CREATE INDEX IF NOT EXISTS idx_chat_message_content_fts
-                    ON chat_message
-                    USING GIN (to_tsvector('simple', coalesce(message_content, '')))
-                """);
+        jdbcTemplate.execute(
+                """
+				CREATE INDEX IF NOT EXISTS idx_chat_message_content_fts
+					ON chat_message
+					USING GIN (to_tsvector('simple', coalesce(message_content, '')))
+				""");
 
         // ── Trigram index for ILIKE fuzzy search (pg_trgm) ──
         // Enables fast ILIKE '%keyword%' queries as FTS fallback
-        jdbcTemplate.execute("""
-                CREATE INDEX IF NOT EXISTS idx_chat_message_content_trgm
-                    ON chat_message
-                    USING GIN (message_content gin_trgm_ops)
-                """);
+        jdbcTemplate.execute(
+                """
+				CREATE INDEX IF NOT EXISTS idx_chat_message_content_trgm
+					ON chat_message
+					USING GIN (message_content gin_trgm_ops)
+				""");
 
         log.info("Advanced PostgreSQL indexes created successfully.");
     }

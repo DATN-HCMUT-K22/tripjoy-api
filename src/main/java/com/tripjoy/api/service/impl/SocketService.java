@@ -1,5 +1,9 @@
 package com.tripjoy.api.service.impl;
 
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.annotation.OnConnect;
@@ -8,11 +12,9 @@ import com.corundumstudio.socketio.annotation.OnEvent;
 import com.tripjoy.api.configuration.socketio.SocketRateLimiter;
 import com.tripjoy.api.dto.response.ChatMessageResponse;
 import com.tripjoy.api.service.ISocketService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
-import java.util.UUID;
 
 @Service
 @Slf4j
@@ -85,9 +87,7 @@ public class SocketService implements ISocketService {
 
             String roomName = "conversation_" + conversationId;
 
-            server.getRoomOperations(roomName)
-                    .getClients()
-                    .stream()
+            server.getRoomOperations(roomName).getClients().stream()
                     .filter(c -> !c.getSessionId().equals(client.getSessionId()))
                     .forEach(c -> c.sendEvent("user_typing", userId));
 
@@ -102,9 +102,7 @@ public class SocketService implements ISocketService {
             String userId = client.getHandshakeData().getSingleUrlParam("userId");
             String roomName = "conversation_" + conversationId;
 
-            server.getRoomOperations(roomName)
-                    .getClients()
-                    .stream()
+            server.getRoomOperations(roomName).getClients().stream()
                     .filter(c -> !c.getSessionId().equals(client.getSessionId()))
                     .forEach(c -> c.sendEvent("user_stop_typing", userId));
 
@@ -119,8 +117,11 @@ public class SocketService implements ISocketService {
             server.getRoomOperations(roomName).sendEvent("receive_message", messageResponse);
             log.info("Message broadcasted: messageId={}, conversationId={}", messageResponse.getId(), conversationId);
         } catch (Exception e) {
-            log.error("Failed to broadcast message: conversationId={}, messageId={}", conversationId,
-                    messageResponse.getId(), e);
+            log.error(
+                    "Failed to broadcast message: conversationId={}, messageId={}",
+                    conversationId,
+                    messageResponse.getId(),
+                    e);
         }
     }
 

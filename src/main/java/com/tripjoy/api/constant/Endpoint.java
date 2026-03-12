@@ -7,12 +7,12 @@ public class Endpoint {
         public static final String BASE = API_PREFIX + "/auth";
         public static final String LOGIN = "/login";
         public static final String REGISTER = "/register";
-//        public static final String EMAIL_VERIFICATION_TOKEN = "/email-verification/{token}";
+        //        public static final String EMAIL_VERIFICATION_TOKEN = "/email-verification/{token}";
         public static final String INTROSPECT = "/introspect";
         public static final String REFRESH = "/refresh";
         public static final String RESET_PASSWORD = "/reset-password";
-//        public static final String RESET_PASSWORD_OTP = "/reset-password/{otp}";
-//        public static final String RESET_PASSWORD_EMAIL = "/reset-password/{email}";
+        //        public static final String RESET_PASSWORD_OTP = "/reset-password/{otp}";
+        //        public static final String RESET_PASSWORD_EMAIL = "/reset-password/{email}";
         public static final String LOGOUT = "/logout";
     }
 
@@ -20,8 +20,8 @@ public class Endpoint {
         public static final String BASE = API_PREFIX + "/users";
         public static final String ME = "/me";
         public static final String ID = "/{userId}";
-//        public static final String PASSWORD = "/password";
-//        public static final String RESEND_EMAIL_VERIFICATION = "/resend-email-verification";
+        //        public static final String PASSWORD = "/password";
+        //        public static final String RESEND_EMAIL_VERIFICATION = "/resend-email-verification";
     }
 
     public static final class Role {
@@ -37,7 +37,6 @@ public class Endpoint {
     public static final class Location {
         public static final String BASE = API_PREFIX + "/locations";
         public static final String ID = "/{locationId}";
-
     }
 
     public static final class Group {
@@ -54,22 +53,22 @@ public class Endpoint {
         public static final String LOCATION_SUGGESTIONS_ID = LOCATION_SUGGESTIONS + "/{suggestionId}";
     }
 
-//    public static final class Chat {
-//        public static final String BASE = API_PREFIX + "/chat"; // -> /api/v1/chat
+    //    public static final class Chat {
+    //        public static final String BASE = API_PREFIX + "/chat"; // -> /api/v1/chat
     //
-//        // --- Endpoints cho Tin nhắn (Message) ---
-//        public static final String MESSAGES = "/messages";
-//        public static final String MESSAGE_ID = MESSAGES + "/{messageId}"; // -> /api/v1/chat/messages/{messageId}
-//        public static final String MESSAGE_LIKES = MESSAGE_ID + "/likes"; // -> .../{messageId}/likes
+    //        // --- Endpoints cho Tin nhắn (Message) ---
+    //        public static final String MESSAGES = "/messages";
+    //        public static final String MESSAGE_ID = MESSAGES + "/{messageId}"; // -> /api/v1/chat/messages/{messageId}
+    //        public static final String MESSAGE_LIKES = MESSAGE_ID + "/likes"; // -> .../{messageId}/likes
     //
-//        // --- Endpoints cho Chat 1-1 (Direct) ---
-//        public static final String DIRECT_BASE = "/direct/{userId}"; // -> /api/v1/chat/direct/{userId}
-//        public static final String DIRECT_MESSAGES = DIRECT_BASE + "/messages"; // -> .../direct/{userId}/messages
+    //        // --- Endpoints cho Chat 1-1 (Direct) ---
+    //        public static final String DIRECT_BASE = "/direct/{userId}"; // -> /api/v1/chat/direct/{userId}
+    //        public static final String DIRECT_MESSAGES = DIRECT_BASE + "/messages"; // -> .../direct/{userId}/messages
     //
-//        // --- Endpoints cho Chat Nhóm (Groups) ---
-//        public static final String GROUP_BASE = "/groups/{groupId}"; // -> /api/v1/chat/groups/{groupId}
-//        public static final String GROUP_MESSAGES = GROUP_BASE + "/messages"; // -> .../groups/{groupId}/messages
-//    }
+    //        // --- Endpoints cho Chat Nhóm (Groups) ---
+    //        public static final String GROUP_BASE = "/groups/{groupId}"; // -> /api/v1/chat/groups/{groupId}
+    //        public static final String GROUP_MESSAGES = GROUP_BASE + "/messages"; // -> .../groups/{groupId}/messages
+    //    }
 
     public static final class Conversation {
         public static final String BASE = API_PREFIX + "/conversations";

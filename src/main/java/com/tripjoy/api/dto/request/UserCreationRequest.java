@@ -1,15 +1,13 @@
 package com.tripjoy.api.dto.request;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
-
-import java.time.LocalDate;
-import java.util.Date;
 
 @Data
 @NoArgsConstructor
@@ -25,8 +23,7 @@ public class UserCreationRequest {
             description = "Username (unique)",
             type = "String",
             requiredMode = Schema.RequiredMode.REQUIRED,
-            example = "user"
-    )
+            example = "user")
     String username;
 
     @NotBlank(message = "{not_blank}")
@@ -36,8 +33,7 @@ public class UserCreationRequest {
             description = "Email address (unique)",
             type = "String",
             requiredMode = Schema.RequiredMode.REQUIRED,
-            example = "johndoe@example.com"
-    )
+            example = "johndoe@example.com")
     String email;
 
     @NotBlank(message = "{not_blank}")
@@ -48,8 +44,7 @@ public class UserCreationRequest {
             type = "String",
             format = "password", // Helps hide value in Swagger UI
             requiredMode = Schema.RequiredMode.REQUIRED,
-            example = "StrongP@ss123"
-    )
+            example = "StrongP@ss123")
     String password;
 
     @Schema(
@@ -57,7 +52,6 @@ public class UserCreationRequest {
             description = "Users's full name",
             type = "String",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "John Doe"
-    )
+            example = "John Doe")
     String fullName;
 }

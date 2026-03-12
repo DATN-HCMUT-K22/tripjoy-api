@@ -1,11 +1,11 @@
 package com.tripjoy.api.service;
 
+import java.util.List;
+import java.util.UUID;
+
 import com.tripjoy.api.dto.request.UserCreationRequest;
 import com.tripjoy.api.dto.request.UserUpdateRequest;
 import com.tripjoy.api.dto.response.UserResponse;
-
-import java.util.List;
-import java.util.UUID;
 
 public interface IUserService {
     List<UserResponse> getUsers();

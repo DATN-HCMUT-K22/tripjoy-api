@@ -1,14 +1,16 @@
 package com.tripjoy.api.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+
+import jakarta.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
+
+import lombok.*;
 
 @Getter
 @Setter
@@ -16,9 +18,9 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "itinerary", indexes = {
-        @Index(name = "idx_itinerary_group", columnList = "group_id, is_deleted")
-})
+@Table(
+        name = "itinerary",
+        indexes = {@Index(name = "idx_itinerary_group", columnList = "group_id, is_deleted")})
 public class Itinerary extends BaseEntity {
 
     private String name;
@@ -77,7 +79,10 @@ public class Itinerary extends BaseEntity {
     private TravelNotebook travelNotebook;
 
     @ManyToMany
-    @JoinTable(name = "favourite_itinerary", joinColumns = @JoinColumn(name = "itinerary_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @JoinTable(
+            name = "favourite_itinerary",
+            joinColumns = @JoinColumn(name = "itinerary_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id"))
     @Builder.Default
     private Set<User> favouriteUsers = new HashSet<>();
 }

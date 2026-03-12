@@ -1,9 +1,9 @@
 package com.tripjoy.api.validator;
 
+import java.lang.annotation.*;
+
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-
-import java.lang.annotation.*;
 
 @Target({ElementType.TYPE, ElementType.FIELD, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)

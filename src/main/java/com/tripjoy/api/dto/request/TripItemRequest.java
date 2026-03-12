@@ -1,15 +1,16 @@
 package com.tripjoy.api.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -24,8 +25,7 @@ public class TripItemRequest {
             description = "Start time of this specific trip item (ISO 8601 format)",
             type = "String",
             requiredMode = Schema.RequiredMode.REQUIRED,
-            example = "2026-07-20T10:00:00"
-    )
+            example = "2026-07-20T10:00:00")
     LocalDateTime startTime;
 
     @Schema(
@@ -33,27 +33,25 @@ public class TripItemRequest {
             description = "Duration of the activity in minutes",
             type = "Integer",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "120"
-    )
+            example = "120")
     Integer duration;
-//
-//    @NotNull
-//    @Schema(
-//            name = "day_order",
-//            description = "The day number of the trip this item belongs to (e.g., 1, 2, 3)",
-//            type = "Integer",
-//            requiredMode = Schema.RequiredMode.REQUIRED,
-//            example = "1"
-//    )
-//    Integer dayOrder;
+    //
+    //    @NotNull
+    //    @Schema(
+    //            name = "day_order",
+    //            description = "The day number of the trip this item belongs to (e.g., 1, 2, 3)",
+    //            type = "Integer",
+    //            requiredMode = Schema.RequiredMode.REQUIRED,
+    //            example = "1"
+    //    )
+    //    Integer dayOrder;
 
     @Schema(
             name = "note",
             description = "A note for this trip item",
             type = "String",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "Remember to buy sunscreen."
-    )
+            example = "Remember to buy sunscreen.")
     String note;
 
     @NotNull
@@ -63,7 +61,6 @@ public class TripItemRequest {
             description = "UUID of the Location for this trip item",
             type = "String",
             requiredMode = Schema.RequiredMode.REQUIRED,
-            example = "f1g2h3i4-j5k6-7890-1234-567890lmn-op"
-    )
+            example = "f1g2h3i4-j5k6-7890-1234-567890lmn-op")
     UUID locationId;
 }

@@ -1,9 +1,10 @@
 package com.tripjoy.api.service;
 
-import com.tripjoy.api.dto.response.MediaUploadResponse;
+import java.util.Map;
+
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Map;
+import com.tripjoy.api.dto.response.MediaUploadResponse;
 
 /**
  * Abstraction layer for cloud media storage.

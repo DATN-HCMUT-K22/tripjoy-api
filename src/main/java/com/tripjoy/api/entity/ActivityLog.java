@@ -1,7 +1,9 @@
 package com.tripjoy.api.entity;
 
-import com.tripjoy.api.enums.ActivityAction;
 import jakarta.persistence.*;
+
+import com.tripjoy.api.enums.ActivityAction;
+
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -11,11 +13,13 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "activity_logs", indexes = {
-        @Index(name = "idx_user_action", columnList = "user_id, action, created_at"),
-        @Index(name = "idx_activity_entity", columnList = "entity_type, entity_id"),
-        @Index(name = "idx_created_at", columnList = "created_at")
-})
+@Table(
+        name = "activity_logs",
+        indexes = {
+            @Index(name = "idx_user_action", columnList = "user_id, action, created_at"),
+            @Index(name = "idx_activity_entity", columnList = "entity_type, entity_id"),
+            @Index(name = "idx_created_at", columnList = "created_at")
+        })
 public class ActivityLog extends BaseEntity {
 
     // USER - Who performed this action

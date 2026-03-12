@@ -1,19 +1,22 @@
 package com.tripjoy.api.entity;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import jakarta.persistence.*;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import org.locationtech.jts.geom.Point;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tripjoy.api.converter.StringListConverter;
 import com.tripjoy.api.entity.embeddable.AddressComponents;
 import com.tripjoy.api.enums.MapProvider;
 import com.tripjoy.api.enums.OperationalStatus;
-import jakarta.persistence.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-import lombok.*;
-import org.locationtech.jts.geom.Point;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import lombok.*;
 
 /**
  * Location entity - Stores geographical locations with Map API integration
@@ -26,10 +29,12 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "location", indexes = {
-        @Index(name = "idx_location_provider_id", columnList = "provider_id"),
-        @Index(name = "idx_location_coordinates", columnList = "latitude, longitude")
-})
+@Table(
+        name = "location",
+        indexes = {
+            @Index(name = "idx_location_provider_id", columnList = "provider_id"),
+            @Index(name = "idx_location_coordinates", columnList = "latitude, longitude")
+        })
 public class Location extends BaseEntity {
 
     // ==================== PROVIDER INFO ====================
@@ -48,7 +53,7 @@ public class Location extends BaseEntity {
 
     @Column(name = "full_address", columnDefinition = "TEXT")
     private String fullAddress; // Full formatted address (e.g., "268 Đ. Lý Thường Kiệt, Ho Chi Minh City,
-                                // 72500, Vietnam")
+    // 72500, Vietnam")
 
     @Column(name = "place_formatted", columnDefinition = "TEXT")
     private String placeFormatted; // Place-level formatted address (city, postcode, country)
@@ -74,7 +79,7 @@ public class Location extends BaseEntity {
 
     @Embedded
     private AddressComponents addressComponents; // Structured address components (country, city, district, ward,
-                                                 // street, etc.)
+    // street, etc.)
 
     // ==================== CATEGORIES & UI ====================
     // POI Categories: Point of Interest types from Map API (e.g., "education",

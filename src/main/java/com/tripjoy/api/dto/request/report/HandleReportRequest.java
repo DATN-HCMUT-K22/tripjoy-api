@@ -1,7 +1,8 @@
 package com.tripjoy.api.dto.request.report;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,7 +22,7 @@ public class HandleReportRequest {
             type = "String",
             requiredMode = Schema.RequiredMode.REQUIRED,
             example = "PROCESSED" // e.g., PROCESSED, DISMISSED
-    )
+            )
     String status;
 
     @Schema(
@@ -29,7 +30,6 @@ public class HandleReportRequest {
             description = "Admin's private notes on why this action was taken",
             type = "String",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "Users has been warned. Report closed."
-    )
+            example = "Users has been warned. Report closed.")
     String description;
 }

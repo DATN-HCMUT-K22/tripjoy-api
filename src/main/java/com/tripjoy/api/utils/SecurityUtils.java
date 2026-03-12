@@ -1,20 +1,22 @@
 package com.tripjoy.api.utils;
 
-import com.tripjoy.api.exception.AppException;
-import com.tripjoy.api.exception.ErrorCode;
-import lombok.experimental.UtilityClass;
+import java.util.UUID;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 
-import java.util.UUID;
+import com.tripjoy.api.exception.AppException;
+import com.tripjoy.api.exception.ErrorCode;
+
+import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class SecurityUtils {
 
     /**
      * Get current user ID from SecurityContext
-     * 
+     *
      * @throws AppException if user is not authenticated
      */
     public static UUID getCurrentUserId() {

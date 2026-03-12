@@ -1,5 +1,10 @@
 package com.tripjoy.api.service.impl;
 
+import java.util.HashSet;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.tripjoy.api.dto.request.RoleRequest;
 import com.tripjoy.api.dto.response.RoleResponse;
 import com.tripjoy.api.entity.Permission;
@@ -8,13 +13,10 @@ import com.tripjoy.api.mapper.RoleMapper;
 import com.tripjoy.api.repository.PermissionRepository;
 import com.tripjoy.api.repository.RoleRepository;
 import com.tripjoy.api.service.IRoleService;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.stereotype.Service;
-
-import java.util.HashSet;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -36,9 +38,7 @@ public class RoleService implements IRoleService {
 
     public List<RoleResponse> getAll() {
         var roles = roleRepository.findAll();
-        return roles.stream()
-                .map(mapper::toRoleResponse)
-                .toList();
+        return roles.stream().map(mapper::toRoleResponse).toList();
     }
 
     public void delete(String roleId) {

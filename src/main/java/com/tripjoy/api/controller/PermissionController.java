@@ -1,19 +1,21 @@
 package com.tripjoy.api.controller;
 
+import java.util.List;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
 import com.tripjoy.api.constant.Endpoint;
 import com.tripjoy.api.dto.request.PermissionRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.PermissionResponse;
 import com.tripjoy.api.service.IPermissionService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping(Endpoint.Permission.BASE)
@@ -48,5 +50,4 @@ public class PermissionController {
                 .message("Permission has been deleted")
                 .build();
     }
-
 }

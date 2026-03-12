@@ -1,7 +1,8 @@
 package com.tripjoy.api.dto.request.auth;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -18,8 +19,7 @@ public class AuthenticationRequest {
             description = "Username for login",
             type = "String",
             requiredMode = Schema.RequiredMode.REQUIRED,
-            example = "user"
-    )
+            example = "user")
     String username;
 
     @NotBlank(message = "{not_blank}")
@@ -28,7 +28,6 @@ public class AuthenticationRequest {
             description = "Users's password",
             type = "String",
             requiredMode = Schema.RequiredMode.REQUIRED,
-            example = "StrongP@ss123"
-    )
+            example = "StrongP@ss123")
     String password;
 }

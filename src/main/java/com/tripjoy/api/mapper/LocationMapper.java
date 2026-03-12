@@ -1,5 +1,13 @@
 package com.tripjoy.api.mapper;
 
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
+
 import com.tripjoy.api.configuration.mapper.BaseMapperConfig;
 import com.tripjoy.api.dto.request.LocationCreateRequest;
 import com.tripjoy.api.dto.response.location.AddressComponentsDto;
@@ -8,13 +16,6 @@ import com.tripjoy.api.entity.Location;
 import com.tripjoy.api.entity.embeddable.AddressComponents;
 import com.tripjoy.api.enums.MapProvider;
 import com.tripjoy.api.enums.OperationalStatus;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.PrecisionModel;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 
 @Mapper(config = BaseMapperConfig.class)
 public interface LocationMapper {

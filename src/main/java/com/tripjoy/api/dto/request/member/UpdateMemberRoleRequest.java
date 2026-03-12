@@ -1,8 +1,10 @@
 package com.tripjoy.api.dto.request.member;
 
-import com.tripjoy.api.enums.GroupRole;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
+
+import com.tripjoy.api.enums.GroupRole;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -20,7 +22,6 @@ public class UpdateMemberRoleRequest {
             type = "string",
             allowableValues = {"LEADER", "CO_LEADER", "MEMBER"},
             requiredMode = Schema.RequiredMode.REQUIRED,
-            example = "CO_LEADER"
-    )
+            example = "CO_LEADER")
     GroupRole role;
 }

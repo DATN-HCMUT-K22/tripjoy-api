@@ -1,14 +1,15 @@
 package com.tripjoy.api.dto.response;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import com.tripjoy.api.enums.NotificationType;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Data
 @SuperBuilder

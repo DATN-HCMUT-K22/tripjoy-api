@@ -1,10 +1,10 @@
 package com.tripjoy.api.service;
 
-import com.tripjoy.api.dto.request.SuggestLocationRequest;
-import com.tripjoy.api.dto.response.SuggestLocationResponse;
-
 import java.util.List;
 import java.util.UUID;
+
+import com.tripjoy.api.dto.request.SuggestLocationRequest;
+import com.tripjoy.api.dto.response.SuggestLocationResponse;
 
 public interface ISuggestLocationService {
 

@@ -1,14 +1,15 @@
 package com.tripjoy.api.mapper;
 
-import com.tripjoy.api.configuration.mapper.BaseMapperConfig;
-import com.tripjoy.api.dto.request.GroupRequest;
-import com.tripjoy.api.dto.response.GroupResponse;
-import com.tripjoy.api.dto.response.GroupMemberResponse;
-import com.tripjoy.api.entity.Group;
-import com.tripjoy.api.entity.GroupMember;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+
+import com.tripjoy.api.configuration.mapper.BaseMapperConfig;
+import com.tripjoy.api.dto.request.GroupRequest;
+import com.tripjoy.api.dto.response.GroupMemberResponse;
+import com.tripjoy.api.dto.response.GroupResponse;
+import com.tripjoy.api.entity.Group;
+import com.tripjoy.api.entity.GroupMember;
 
 @Mapper(config = BaseMapperConfig.class)
 public interface GroupMapper {

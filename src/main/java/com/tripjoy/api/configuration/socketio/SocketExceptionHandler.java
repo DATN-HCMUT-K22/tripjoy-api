@@ -1,11 +1,12 @@
 package com.tripjoy.api.configuration.socketio;
 
+import java.util.List;
+
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.listener.DefaultExceptionListener;
+
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
 
 /**
  * Custom exception handler for Socket.IO events.
@@ -19,8 +20,13 @@ public class SocketExceptionHandler extends DefaultExceptionListener {
         String userId = client != null ? client.getHandshakeData().getSingleUrlParam("userId") : "unknown";
         String sessionId = client != null ? client.getSessionId().toString() : "unknown";
 
-        log.error("Socket.IO event exception: userId={}, sessionId={}, args={}, error={}",
-                userId, sessionId, args, e.getMessage(), e);
+        log.error(
+                "Socket.IO event exception: userId={}, sessionId={}, args={}, error={}",
+                userId,
+                sessionId,
+                args,
+                e.getMessage(),
+                e);
 
         if (client != null) {
             client.sendEvent("error", createErrorResponse("Event processing failed", e.getMessage()));

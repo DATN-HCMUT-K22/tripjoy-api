@@ -1,9 +1,10 @@
 package com.tripjoy.api.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.util.UUID;
+
+import jakarta.persistence.*;
+
+import lombok.*;
 
 @Getter
 @Setter
@@ -11,10 +12,12 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "conversation_member", indexes = {
-        @Index(name = "idx_conversation_member_lookup", columnList = "conversation_id, user_id"),
-        @Index(name = "idx_user_conversations", columnList = "user_id")
-})
+@Table(
+        name = "conversation_member",
+        indexes = {
+            @Index(name = "idx_conversation_member_lookup", columnList = "conversation_id, user_id"),
+            @Index(name = "idx_user_conversations", columnList = "user_id")
+        })
 public class ConversationMember extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -34,5 +37,4 @@ public class ConversationMember extends BaseEntity {
     private Boolean isPinned = false;
 
     private UUID lastReadMessageId;
-
 }

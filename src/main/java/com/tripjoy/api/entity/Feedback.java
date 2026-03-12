@@ -1,6 +1,7 @@
 package com.tripjoy.api.entity;
 
 import jakarta.persistence.*;
+
 import lombok.*;
 
 @Getter
@@ -9,7 +10,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Feedback extends  BaseEntity {
+public class Feedback extends BaseEntity {
 
     private String type;
     private String title;

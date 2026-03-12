@@ -1,8 +1,8 @@
 package com.tripjoy.api.entity;
 
 import jakarta.persistence.*;
+
 import lombok.*;
-import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
@@ -10,7 +10,7 @@ import lombok.experimental.SuperBuilder;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ItineraryTheme extends BaseEntity{
+public class ItineraryTheme extends BaseEntity {
 
     private String theme;
 

@@ -1,14 +1,17 @@
 package com.tripjoy.api.mapper;
 
-import com.tripjoy.api.configuration.mapper.BaseMapperConfig;
-import com.tripjoy.api.dto.response.SuggestLocationResponse;
-import com.tripjoy.api.entity.SuggestLocation;
+import java.util.List;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import java.util.List;
+import com.tripjoy.api.configuration.mapper.BaseMapperConfig;
+import com.tripjoy.api.dto.response.SuggestLocationResponse;
+import com.tripjoy.api.entity.SuggestLocation;
 
-@Mapper(config = BaseMapperConfig.class, uses = { LocationMapper.class, UserMapper.class })
+@Mapper(
+        config = BaseMapperConfig.class,
+        uses = {LocationMapper.class, UserMapper.class})
 public interface SuggestLocationMapper {
 
     @Mapping(source = "group.id", target = "groupId")

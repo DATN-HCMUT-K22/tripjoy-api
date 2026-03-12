@@ -1,10 +1,11 @@
 package com.tripjoy.api.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.util.HashSet;
 import java.util.Set;
+
+import jakarta.persistence.*;
+
+import lombok.*;
 
 @Getter
 @Setter
@@ -12,9 +13,9 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "chat_message", indexes = {
-        @Index(name = "idx_chat_message_cursor", columnList = "conversation_id, created_at DESC")
-})
+@Table(
+        name = "chat_message",
+        indexes = {@Index(name = "idx_chat_message_cursor", columnList = "conversation_id, created_at DESC")})
 public class ChatMessage extends BaseEntity {
 
     private String messageType;
@@ -44,7 +45,10 @@ public class ChatMessage extends BaseEntity {
     private Conversation conversation; // Mỗi tin nhắn thuộc về 1 conversation
 
     @ManyToMany
-    @JoinTable(name = "like_chat_message", joinColumns = @JoinColumn(name = "chat_message_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @JoinTable(
+            name = "like_chat_message",
+            joinColumns = @JoinColumn(name = "chat_message_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id"))
     @Builder.Default
     private Set<User> likeUsers = new HashSet<>();
 }

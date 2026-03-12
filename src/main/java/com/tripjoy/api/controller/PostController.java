@@ -1,5 +1,13 @@
 package com.tripjoy.api.controller;
 
+import java.util.UUID;
+
+import jakarta.validation.Valid;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
+
 import com.tripjoy.api.constant.Endpoint;
 import com.tripjoy.api.dto.request.CommentRequest;
 import com.tripjoy.api.dto.request.PostRequest;
@@ -8,17 +16,12 @@ import com.tripjoy.api.dto.response.CommentResponse;
 import com.tripjoy.api.dto.response.PostResponse;
 import com.tripjoy.api.service.ICommentService;
 import com.tripjoy.api.service.IPostService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 
 @RestController
 @RequestMapping(Endpoint.Post.BASE)
@@ -121,8 +124,8 @@ public class PostController {
 
     @Operation(summary = "Create a new root comment on a post")
     @PostMapping(Endpoint.Post.COMMENTS)
-    public ApiResponse<CommentResponse> createComment(@PathVariable UUID postId,
-            @Valid @RequestBody CommentRequest request) {
+    public ApiResponse<CommentResponse> createComment(
+            @PathVariable UUID postId, @Valid @RequestBody CommentRequest request) {
         return ApiResponse.<CommentResponse>builder()
                 // .data(commentService.createRootComment(postId, request)) // <-- Đổi tên
                 // service cho rõ

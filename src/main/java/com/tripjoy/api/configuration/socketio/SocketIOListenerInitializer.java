@@ -1,12 +1,15 @@
 package com.tripjoy.api.configuration.socketio;
 
-import com.corundumstudio.socketio.SocketIOServer;
-import com.tripjoy.api.service.impl.SocketService;
 import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+
+import com.corundumstudio.socketio.SocketIOServer;
+import com.tripjoy.api.service.impl.SocketService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Order(1)

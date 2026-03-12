@@ -1,17 +1,19 @@
 package com.tripjoy.api.service.impl;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.tripjoy.api.dto.request.PermissionRequest;
 import com.tripjoy.api.dto.response.PermissionResponse;
 import com.tripjoy.api.entity.Permission;
 import com.tripjoy.api.mapper.PermissionMapper;
 import com.tripjoy.api.repository.PermissionRepository;
 import com.tripjoy.api.service.IPermissionService;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -29,9 +31,7 @@ public class PermissionService implements IPermissionService {
     public List<PermissionResponse> getAll() {
         var permissions = permissionRepository.findAll();
 
-        return permissions.stream()
-                .map(mapper::toPermissionResponse)
-                .toList();
+        return permissions.stream().map(mapper::toPermissionResponse).toList();
     }
 
     public void delete(String permissionId) {

@@ -1,4 +1,3 @@
 package com.tripjoy.api.service;
 
-public interface IAdminService {
-}
+public interface IAdminService {}
