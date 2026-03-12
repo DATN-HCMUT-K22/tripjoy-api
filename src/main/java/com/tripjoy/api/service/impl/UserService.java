@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.tripjoy.api.dto.request.UserCreationRequest;
 import com.tripjoy.api.dto.request.UserUpdateRequest;
 import com.tripjoy.api.dto.response.UserResponse;
+import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import com.tripjoy.api.entity.Role;
 import com.tripjoy.api.entity.User;
 import com.tripjoy.api.exception.AppException;
@@ -88,5 +89,15 @@ public class UserService implements IUserService {
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteUser(UUID userId) {
         userRepository.deleteById(userId);
+    }
+
+    @Override
+    public List<UserSimpleResponse> searchUsers(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return List.of();
+        }
+        return userRepository.searchByUsernameOrEmail(keyword.trim()).stream()
+                .map(userMapper::toUserSimpleResponse)
+                .toList();
     }
 }

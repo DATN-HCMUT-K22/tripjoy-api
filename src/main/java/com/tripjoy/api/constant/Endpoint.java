@@ -20,6 +20,7 @@ public class Endpoint {
         public static final String BASE = API_PREFIX + "/users";
         public static final String ME = "/me";
         public static final String ID = "/{userId}";
+        public static final String SEARCH = "/search";
         //        public static final String PASSWORD = "/password";
         //        public static final String RESEND_EMAIL_VERIFICATION = "/resend-email-verification";
     }

@@ -27,4 +27,10 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByEmail(String email);
 
     Optional<User> findByUsername(String username);
+
+    @Query("SELECT u FROM User u WHERE "
+            + "(LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+            + "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%'))) "
+            + "AND u.softDeleteInfo.isDeleted = false")
+    List<User> searchByUsernameOrEmail(@Param("keyword") String keyword);
 }

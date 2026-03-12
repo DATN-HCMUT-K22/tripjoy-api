@@ -12,6 +12,7 @@ import com.tripjoy.api.dto.request.UserCreationRequest;
 import com.tripjoy.api.dto.request.UserUpdateRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.UserResponse;
+import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import com.tripjoy.api.service.IUserService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,6 +28,17 @@ import lombok.experimental.FieldDefaults;
 @Tag(name = "Users", description = "Endpoints for managing user accounts")
 public class UserController {
     IUserService userService;
+
+    @Operation(
+            summary = "Search users by username or email",
+            description = "Searches for users whose username or email contains the given keyword. "
+                    + "Uses case-insensitive LIKE matching.")
+    @GetMapping(Endpoint.User.SEARCH)
+    public ApiResponse<List<UserSimpleResponse>> searchUsers(@RequestParam String q) {
+        return ApiResponse.<List<UserSimpleResponse>>builder()
+                .data(userService.searchUsers(q))
+                .build();
+    }
 
     @GetMapping
     @Operation(summary = "Get all users", description = "Retrieves a list of all registered users.")
