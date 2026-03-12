@@ -34,18 +34,23 @@ public class SecurityConfig {
         "/v3/api-docs/**", "/v3/api-docs.yaml", "/swagger-ui/**", "/swagger-ui.html"
     };
 
+    private static final String[] PUBLIC_GET_ENDPOINTS = {
+        Endpoint.Post.BASE,
+        Endpoint.Post.BASE + Endpoint.Post.SEARCH,
+        Endpoint.Post.BASE + Endpoint.Post.ID,
+        Endpoint.Post.BASE + Endpoint.Post.COMMENTS
+    };
+
     @Autowired
     private CustomJwtDecoder customJwtDecoder;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(SWAGGER_WHITELIST)
-                .permitAll()
-                .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
-                .permitAll()
-                .anyRequest()
-                .authenticated());
+                .requestMatchers(SWAGGER_WHITELIST).permitAll()
+                .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
+                .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll()
+                .anyRequest().authenticated());
 
         httpSecurity.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer ->
                         jwtConfigurer.decoder(customJwtDecoder).jwtAuthenticationConverter(jwtConverter()))

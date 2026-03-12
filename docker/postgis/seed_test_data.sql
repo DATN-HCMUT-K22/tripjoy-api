@@ -299,3 +299,67 @@ ORDER BY table_name;
 -- GET /api/v1/conversations/c2222222-2222-2222-2222-222222222222/messages/search?q=resort
 -- GET /api/v1/conversations/c2222222-2222-2222-2222-222222222222/messages/search?q=hải sản
 -- ============================================================
+
+-- ============================================================
+
+-- 9. ITINERARIES (Cho bài test Search Multi-Filters)
+-- ============================================================
+INSERT INTO itinerary (id, name, description, start_date, end_date, people_quantity, budget_estimate, status, group_id, user_id, origin, destination, is_deleted, created_at, created_by, updated_at, updated_by)
+VALUES
+    -- Iti 1: Đà Lạt, 4 ngày, Budget 3tr, 4 người (Link với Group 1)
+    ('f1111111-1111-1111-1111-111111111111', 'Đà Lạt Phượt Cùng Nhau', 'Chuyến đi tránh nóng tháng 4', NOW() + INTERVAL '30 days', NOW() + INTERVAL '34 days', 4, 3000000.00, 'PLANNING', 'a1111111-1111-1111-1111-111111111111', 'fa280274-c0f8-4d29-b4fc-66e3ed3a2745', NULL, NULL, false, NOW(), 'fa280274-c0f8-4d29-b4fc-66e3ed3a2745', NOW(), 'fa280274-c0f8-4d29-b4fc-66e3ed3a2745'),
+    
+    -- Iti 2: Phú Quốc, 3 ngày, Budget 8tr, 2 người
+    ('f2222222-2222-2222-2222-222222222222', 'Phú Quốc Resort Nghỉ Dưỡng', 'Chill hè bãi biển Phú Quốc', NOW() + INTERVAL '45 days', NOW() + INTERVAL '48 days', 2, 8000000.00, 'PLANNING', 'a2222222-2222-2222-2222-222222222222', 'f97b69a4-9d3e-4cee-9019-463037f938d9', NULL, NULL, false, NOW(), 'f97b69a4-9d3e-4cee-9019-463037f938d9', NOW(), 'f97b69a4-9d3e-4cee-9019-463037f938d9'),
+
+    -- Iti 3: Sapa Trekking, 5 ngày, Budget 5tr, 6 người
+    ('f3333333-3333-3333-3333-333333333333', 'Trekking Fansipan', 'Leo núi và ngắm mây Sapa', NOW() + INTERVAL '60 days', NOW() + INTERVAL '65 days', 6, 5000000.00, 'PLANNING', NULL, '7ca4120c-df2c-448c-8bb5-5c9ae3a92b5a', NULL, NULL, false, NOW(), '7ca4120c-df2c-448c-8bb5-5c9ae3a92b5a', NOW(), '7ca4120c-df2c-448c-8bb5-5c9ae3a92b5a')
+ON CONFLICT (id) DO NOTHING;
+
+-- ============================================================
+-- 10. POSTS (Test Full-Text Search và Trigram)
+-- ============================================================
+INSERT INTO post (id, content, share_quantity, itinerary_id, creator_id, is_deleted, created_at, created_by, updated_at, updated_by)
+VALUES
+    -- Post 1 (Có chứa chữ Đà Lạt, phượt, sương mù - Test FTS)
+    ('d1111111-1111-1111-1111-111111111111', 'Tuần trước mình mới đi phượt Đà Lạt về, sương mù siêu lãng mạn luôn các bạn ơi. Thời tiết có chút lạnh nhưng cafe thì đỉnh chóp. Giá rẻ bèo chỉ 3 triệu cho 4 ngày. Ai cần kinh nghiệm thì inbox nha.', 12, 'f1111111-1111-1111-1111-111111111111', 'fa280274-c0f8-4d29-b4fc-66e3ed3a2745', false, NOW() - INTERVAL '3 days', 'fa280274-c0f8-4d29-b4fc-66e3ed3a2745', NOW(), 'fa280274-c0f8-4d29-b4fc-66e3ed3a2745'),
+    
+    -- Post 2 (Có chữ Phú Quốc, biển, resort - Test FTS & Budget Itinerary)
+    ('d2222222-2222-2222-2222-222222222222', 'Review chuyến nghỉ dưỡng Phú Quốc tại JW Marriott. Bãi biển xanh ngát, hải sản ở chợ đêm thì tươi ngon tuyệt vời. Budget lần này hơi cao xíu do mình chọn ở resort, nhưng rất đáng đồng tiền bát gạo.', 45, 'f2222222-2222-2222-2222-222222222222', 'f97b69a4-9d3e-4cee-9019-463037f938d9', false, NOW() - INTERVAL '2 days', 'f97b69a4-9d3e-4cee-9019-463037f938d9', NOW(), 'f97b69a4-9d3e-4cee-9019-463037f938d9'),
+
+    -- Post 3 (Sapa, leo núi, trekking - Test Trigram gõ sai lỗi chính tả sa pa)
+    ('d3333333-3333-3333-3333-333333333333', 'Tìm đồng đội đi Trekking Fansipan Sapa tháng tới đây cả nhà ơi. Lịch trình 5 ngày leo hộc bơ ngắm biển mây rực rỡ. Ai có thể lực tốt thì join cùng team mình nha, chi phí chia đều siêu bình dân.', 5, 'f3333333-3333-3333-3333-333333333333', '7ca4120c-df2c-448c-8bb5-5c9ae3a92b5a', false, NOW() - INTERVAL '1 day', '7ca4120c-df2c-448c-8bb5-5c9ae3a92b5a', NOW(), '7ca4120c-df2c-448c-8bb5-5c9ae3a92b5a')
+ON CONFLICT (id) DO NOTHING;
+
+-- ============================================================
+-- 11. POST HASHTAGS (Để test Exact Match với ILIKE)
+-- ============================================================
+INSERT INTO post_hashtag (id, post_id, hashtag, created_at)
+VALUES
+    (gen_random_uuid(), 'd1111111-1111-1111-1111-111111111111', 'dalat', NOW()),
+    (gen_random_uuid(), 'd1111111-1111-1111-1111-111111111111', 'phuot', NOW()),
+    (gen_random_uuid(), 'd1111111-1111-1111-1111-111111111111', 'review', NOW()),
+    
+    (gen_random_uuid(), 'd2222222-2222-2222-2222-222222222222', 'phuquoc', NOW()),
+    (gen_random_uuid(), 'd2222222-2222-2222-2222-222222222222', 'resort', NOW()),
+    (gen_random_uuid(), 'd2222222-2222-2222-2222-222222222222', 'chill', NOW()),
+
+    (gen_random_uuid(), 'd3333333-3333-3333-3333-333333333333', 'sapa', NOW()),
+    (gen_random_uuid(), 'd3333333-3333-3333-3333-333333333333', 'trekking', NOW()),
+    (gen_random_uuid(), 'd3333333-3333-3333-3333-333333333333', 'fansipan', NOW())
+ON CONFLICT (id) DO NOTHING;
+
+-- ============================================================
+-- 12. SAVE / LIKE POST (Test Context isLiked / isSaved)
+-- ============================================================
+INSERT INTO like_post (post_id, user_id)
+VALUES
+    ('d1111111-1111-1111-1111-111111111111', 'f97b69a4-9d3e-4cee-9019-463037f938d9'),
+    ('d1111111-1111-1111-1111-111111111111', '7ca4120c-df2c-448c-8bb5-5c9ae3a92b5a'),
+    ('d2222222-2222-2222-2222-222222222222', 'fa280274-c0f8-4d29-b4fc-66e3ed3a2745');
+
+INSERT INTO save_post (post_id, user_id)
+VALUES
+    ('d3333333-3333-3333-3333-333333333333', 'fa280274-c0f8-4d29-b4fc-66e3ed3a2745'),
+    ('d1111111-1111-1111-1111-111111111111', 'fa280274-c0f8-4d29-b4fc-66e3ed3a2745');
+    

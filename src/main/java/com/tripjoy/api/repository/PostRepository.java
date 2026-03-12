@@ -1,0 +1,117 @@
+package com.tripjoy.api.repository;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import com.tripjoy.api.entity.Post;
+
+@Repository
+public interface PostRepository extends JpaRepository<Post, UUID> {
+
+    /**
+     * Enterprise Search for Posts
+     * Uses PostgreSQL Full-Text Search (GIN), ILIKE fallback, and B-Tree indexes for Itinerary fields.
+     * All parameters are optional - dynamically skipped if NULL.
+     */
+    @Query(
+            value =
+                    """
+        SELECT p.* FROM post p
+        LEFT JOIN post_hashtag ph ON ph.post_id = p.id
+        LEFT JOIN itinerary i ON p.itinerary_id = i.id
+        WHERE p.is_deleted = false
+        AND (:keyword IS NULL OR (
+            to_tsvector('simple', coalesce(p.content, '')) @@ plainto_tsquery('simple', CAST(:keyword AS text))
+            OR p.content ILIKE '%' || CAST(:keyword AS text) || '%'
+        ))
+        AND (:hashtag IS NULL OR LOWER(ph.hashtag) = LOWER(CAST(:hashtag AS text)))
+        AND (CAST(:creatorId AS uuid) IS NULL OR p.creator_id = CAST(:creatorId AS uuid))
+        AND (CAST(:itineraryId AS uuid) IS NULL OR p.itinerary_id = CAST(:itineraryId AS uuid))
+        AND (CAST(:startDate AS timestamp) IS NULL OR i.start_date >= CAST(:startDate AS timestamp))
+        AND (CAST(:endDate AS timestamp) IS NULL OR i.end_date <= CAST(:endDate AS timestamp))
+        AND (CAST(:minDays AS integer) IS NULL OR EXTRACT(DAY FROM (i.end_date - i.start_date)) >= CAST(:minDays AS integer))
+        AND (CAST(:maxDays AS integer) IS NULL OR EXTRACT(DAY FROM (i.end_date - i.start_date)) <= CAST(:maxDays AS integer))
+        AND (CAST(:minBudget AS numeric) IS NULL OR i.budget_estimate >= CAST(:minBudget AS numeric))
+        AND (CAST(:maxBudget AS numeric) IS NULL OR i.budget_estimate <= CAST(:maxBudget AS numeric))
+        AND (CAST(:minPeople AS integer) IS NULL OR i.people_quantity >= CAST(:minPeople AS integer))
+        AND (CAST(:maxPeople AS integer) IS NULL OR i.people_quantity <= CAST(:maxPeople AS integer))
+        AND (CAST(:originId AS uuid) IS NULL OR i.origin = CAST(:originId AS uuid))
+        AND (CAST(:destinationId AS uuid) IS NULL OR i.destination = CAST(:destinationId AS uuid))
+        GROUP BY p.id
+        ORDER BY
+            CASE WHEN :sortBy = 'relevance' THEN ts_rank(to_tsvector('simple', coalesce(p.content, '')), plainto_tsquery('simple', coalesce(CAST(:keyword AS text), ''))) END DESC,
+            p.created_at DESC
+        LIMIT :limit OFFSET :offset
+        """,
+            nativeQuery = true)
+    List<Post> searchPosts(
+            @Param("keyword") String keyword,
+            @Param("hashtag") String hashtag,
+            @Param("creatorId") UUID creatorId,
+            @Param("itineraryId") UUID itineraryId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            @Param("minDays") Integer minDays,
+            @Param("maxDays") Integer maxDays,
+            @Param("minBudget") BigDecimal minBudget,
+            @Param("maxBudget") BigDecimal maxBudget,
+            @Param("minPeople") Integer minPeople,
+            @Param("maxPeople") Integer maxPeople,
+            @Param("originId") UUID originId,
+            @Param("destinationId") UUID destinationId,
+            @Param("sortBy") String sortBy,
+            @Param("limit") int limit,
+            @Param("offset") int offset);
+
+    /**
+     * Count total search results (for pagination metadata).
+     */
+    @Query(
+            value =
+                    """
+        SELECT COUNT(DISTINCT p.id) FROM post p
+        LEFT JOIN post_hashtag ph ON ph.post_id = p.id
+        LEFT JOIN itinerary i ON p.itinerary_id = i.id
+        WHERE p.is_deleted = false
+        AND (:keyword IS NULL OR (
+            to_tsvector('simple', coalesce(p.content, '')) @@ plainto_tsquery('simple', CAST(:keyword AS text))
+            OR p.content ILIKE '%' || CAST(:keyword AS text) || '%'
+        ))
+        AND (:hashtag IS NULL OR LOWER(ph.hashtag) = LOWER(CAST(:hashtag AS text)))
+        AND (CAST(:creatorId AS uuid) IS NULL OR p.creator_id = CAST(:creatorId AS uuid))
+        AND (CAST(:itineraryId AS uuid) IS NULL OR p.itinerary_id = CAST(:itineraryId AS uuid))
+        AND (CAST(:startDate AS timestamp) IS NULL OR i.start_date >= CAST(:startDate AS timestamp))
+        AND (CAST(:endDate AS timestamp) IS NULL OR i.end_date <= CAST(:endDate AS timestamp))
+        AND (CAST(:minDays AS integer) IS NULL OR EXTRACT(DAY FROM (i.end_date - i.start_date)) >= CAST(:minDays AS integer))
+        AND (CAST(:maxDays AS integer) IS NULL OR EXTRACT(DAY FROM (i.end_date - i.start_date)) <= CAST(:maxDays AS integer))
+        AND (CAST(:minBudget AS numeric) IS NULL OR i.budget_estimate >= CAST(:minBudget AS numeric))
+        AND (CAST(:maxBudget AS numeric) IS NULL OR i.budget_estimate <= CAST(:maxBudget AS numeric))
+        AND (CAST(:minPeople AS integer) IS NULL OR i.people_quantity >= CAST(:minPeople AS integer))
+        AND (CAST(:maxPeople AS integer) IS NULL OR i.people_quantity <= CAST(:maxPeople AS integer))
+        AND (CAST(:originId AS uuid) IS NULL OR i.origin = CAST(:originId AS uuid))
+        AND (CAST(:destinationId AS uuid) IS NULL OR i.destination = CAST(:destinationId AS uuid))
+        """,
+            nativeQuery = true)
+    long countSearchPosts(
+            @Param("keyword") String keyword,
+            @Param("hashtag") String hashtag,
+            @Param("creatorId") UUID creatorId,
+            @Param("itineraryId") UUID itineraryId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            @Param("minDays") Integer minDays,
+            @Param("maxDays") Integer maxDays,
+            @Param("minBudget") BigDecimal minBudget,
+            @Param("maxBudget") BigDecimal maxBudget,
+            @Param("minPeople") Integer minPeople,
+            @Param("maxPeople") Integer maxPeople,
+            @Param("originId") UUID originId,
+            @Param("destinationId") UUID destinationId);
+}

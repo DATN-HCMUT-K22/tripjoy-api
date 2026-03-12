@@ -11,11 +11,13 @@ import org.springframework.web.bind.annotation.*;
 import com.tripjoy.api.constant.Endpoint;
 import com.tripjoy.api.dto.request.CommentRequest;
 import com.tripjoy.api.dto.request.PostRequest;
+import com.tripjoy.api.dto.request.PostSearchRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.CommentResponse;
 import com.tripjoy.api.dto.response.PostResponse;
 import com.tripjoy.api.service.ICommentService;
 import com.tripjoy.api.service.IPostService;
+import com.tripjoy.api.utils.SecurityUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,6 +34,23 @@ public class PostController {
 
     IPostService postService;
     ICommentService commentService; // Used for nested comments
+
+    // --- SEARCH ---
+
+    @Operation(
+            summary = "Search posts",
+            description =
+                    "Search posts by content (Full-Text Search), hashtag, creator, and itinerary filters (budget, people, dates, duration, locations)")
+    @GetMapping(Endpoint.Post.SEARCH)
+    public ApiResponse<Page<PostResponse>> searchPosts(@Valid @ModelAttribute PostSearchRequest request) {
+        UUID currentUserId = SecurityUtils.getCurrentUserIdSafe();
+        
+        return ApiResponse.<Page<PostResponse>>builder()
+                .data(postService.searchPosts(request, currentUserId))
+                .build();
+    }
+
+    // --- POST CRUD ---
 
     @Operation(summary = "Create a new post")
     @PostMapping

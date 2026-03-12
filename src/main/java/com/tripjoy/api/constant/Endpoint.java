@@ -130,6 +130,7 @@ public class Endpoint {
 
     public static final class Post {
         public static final String BASE = API_PREFIX + "/posts";
+        public static final String SEARCH = "/search"; // Global feature-rich search
         public static final String ID = "/{postId}";
         public static final String LIKES = ID + "/likes";
         public static final String SAVES = ID + "/saves";

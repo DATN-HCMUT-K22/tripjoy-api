@@ -51,6 +51,21 @@ public class DatabaseIndexConfig {
 					USING GIN (message_content gin_trgm_ops)
 				""");
 
+        // ── Post Full-Text Search index ──
+        jdbcTemplate.execute(
+                """
+				CREATE INDEX IF NOT EXISTS idx_post_content_fts
+					ON post
+					USING GIN (to_tsvector('simple', coalesce(content, '')))
+				""");
+
+        jdbcTemplate.execute(
+                """
+				CREATE INDEX IF NOT EXISTS idx_post_content_trgm
+					ON post
+					USING GIN (content gin_trgm_ops)
+				""");
+
         log.info("Advanced PostgreSQL indexes created successfully.");
     }
 }
