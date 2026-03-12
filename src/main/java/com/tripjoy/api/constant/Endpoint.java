@@ -43,6 +43,7 @@ public class Endpoint {
     public static final class Group {
         public static final String BASE = API_PREFIX + "/groups";
         public static final String ID = "/{groupId}";
+        public static final String SEARCH = "/search";
 
         // Quản lý thành viên trong group
         public static final String MEMBERS_BASE = ID + "/members";

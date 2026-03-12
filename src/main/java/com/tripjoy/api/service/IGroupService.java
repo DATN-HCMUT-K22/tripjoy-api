@@ -36,4 +36,6 @@ public interface IGroupService {
     void deleteGroup(UUID groupId, UUID currentUserId);
 
     void restoreGroup(UUID groupId, UUID currentUserId);
+
+    List<GroupResponse> searchGroups(String keyword);
 }

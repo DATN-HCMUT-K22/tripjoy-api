@@ -19,4 +19,9 @@ public interface GroupRepository extends JpaRepository<Group, UUID> {
 
     @Query("SELECT g FROM Group g WHERE g.softDeleteInfo.isDeleted = false")
     List<Group> findAllNotDeleted();
+
+    @Query("SELECT g FROM Group g WHERE "
+            + "LOWER(g.name) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+            + "AND g.softDeleteInfo.isDeleted = false")
+    List<Group> searchByName(@Param("keyword") String keyword);
 }

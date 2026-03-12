@@ -408,4 +408,15 @@ public class GroupService implements IGroupService {
         // Note: Conversations were HARD DELETED - cannot restore
         // Group restoration will NOT bring back old chats
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<GroupResponse> searchGroups(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return List.of();
+        }
+        return groupRepository.searchByName(keyword.trim()).stream()
+                .map(groupMapper::toGroupResponse)
+                .toList();
+    }
 }

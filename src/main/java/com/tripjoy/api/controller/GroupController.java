@@ -33,6 +33,18 @@ public class GroupController {
 
     IGroupService groupService;
 
+    // --- SEARCH ---
+
+    @Operation(
+            summary = "Search groups by name",
+            description = "Searches for groups whose name contains the given keyword. Uses case-insensitive LIKE matching.")
+    @GetMapping(Endpoint.Group.SEARCH)
+    public ApiResponse<List<GroupResponse>> searchGroups(@RequestParam String q) {
+        return ApiResponse.<List<GroupResponse>>builder()
+                .data(groupService.searchGroups(q))
+                .build();
+    }
+
     // --- GROUP CRUD ---
 
     @Operation(summary = "Create a new group (Automatically creates General chat channel) - OK")
