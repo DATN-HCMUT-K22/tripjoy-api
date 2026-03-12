@@ -21,8 +21,8 @@ public class PostResponse extends BaseResponse {
 
     UUID id;
 
-    @JsonProperty("media_url")
-    String mediaUrl;
+    @JsonProperty("media_urls")
+    List<String> mediaUrls;
 
     String content;
 

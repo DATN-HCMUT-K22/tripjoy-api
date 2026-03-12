@@ -1,9 +1,6 @@
 package com.tripjoy.api.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Getter
@@ -12,10 +9,24 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TravelNotebook extends BaseEntity{
+public class TravelNotebook extends BaseEntity {
 
     private String name;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
+
+    @Column(name = "weather_forecast", columnDefinition = "TEXT")
+    private String weatherForecast;
+
+    @Column(name = "culture_etiquette", columnDefinition = "TEXT")
+    private String cultureEtiquette;
+
+    @Column(name = "emergency_contacts", columnDefinition = "TEXT")
+    private String emergencyContacts;
+
+    @Column(name = "packing_guide", columnDefinition = "TEXT")
+    private String packingGuide;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "itinerary_id")

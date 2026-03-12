@@ -24,7 +24,7 @@ JWT (JSON Web Token) có 3 phần, phân cách bởi dấu chấm (`.`):
 
 ```
 eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyLWlkIn0.signature
-└─────HEADER─────┘ └──────PAYLOAD──────┘ └─SIGNATURE─┘
+└─────HEADER───────┘ └───────PAYLOAD───────┘ └SIGNATURE┘
 ```
 
 | Part | Content | Example |
@@ -109,7 +109,7 @@ Store authentication info cho current thread:
 
 ```java
 // Get current user
-Authentication auth = Secur ityContextHolder.getContext().getAuthentication();
+Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 String userId = auth.getName();  // User ID from JWT "sub" claim
 Collection<? extends GrantedAuthority> roles = auth.getAuthorities();
 ```

@@ -12,12 +12,15 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TripItem extends BaseEntity{
+@Table(name = "trip_item")
+public class TripItem extends BaseEntity {
 
     private LocalDateTime startTime;
-    private Integer duration;
-    private String note;
 
+    private Integer duration;
+
+    @Column(columnDefinition = "TEXT")
+    private String note;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location_id")

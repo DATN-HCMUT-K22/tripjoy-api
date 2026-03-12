@@ -133,6 +133,15 @@ public class SocketService implements ISocketService {
         }
     }
 
+    public void sendPinUpdate(UUID conversationId, UUID messageId, UUID userId, boolean isPinned) {
+        try {
+            String roomName = "conversation_" + conversationId;
+            server.getRoomOperations(roomName).sendEvent("update_pin", messageId, userId, isPinned);
+        } catch (Exception e) {
+            log.error("Failed to broadcast pin update: {}", e.getMessage());
+        }
+    }
+
     /**
      * Send notification to a specific user
      * Broadcasts to user's personal room: "user_{userId}"

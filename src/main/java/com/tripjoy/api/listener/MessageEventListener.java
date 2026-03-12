@@ -25,4 +25,44 @@ public class MessageEventListener {
             log.error("Failed to broadcast message via Socket.IO: {}", e.getMessage());
         }
     }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleMessageLiked(com.tripjoy.api.dto.event.MessageLikedEvent event) {
+        try {
+            socketService.sendLikeUpdate(event.getConversationId(), event.getMessageId(), event.getUserId(), true);
+        } catch (Exception e) {
+            log.error("Failed to broadcast message like via Socket.IO: {}", e.getMessage());
+        }
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleMessageUnliked(com.tripjoy.api.dto.event.MessageUnlikedEvent event) {
+        try {
+            socketService.sendLikeUpdate(event.getConversationId(), event.getMessageId(), event.getUserId(), false);
+        } catch (Exception e) {
+            log.error("Failed to broadcast message unlike via Socket.IO: {}", e.getMessage());
+        }
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleMessagePinned(com.tripjoy.api.dto.event.MessagePinnedEvent event) {
+        try {
+            socketService.sendPinUpdate(event.getConversationId(), event.getMessageId(), event.getUserId(), true);
+        } catch (Exception e) {
+            log.error("Failed to broadcast message pin via Socket.IO: {}", e.getMessage());
+        }
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleMessageUnpinned(com.tripjoy.api.dto.event.MessageUnpinnedEvent event) {
+        try {
+            socketService.sendPinUpdate(event.getConversationId(), event.getMessageId(), event.getUserId(), false);
+        } catch (Exception e) {
+            log.error("Failed to broadcast message unpin via Socket.IO: {}", e.getMessage());
+        }
+    }
 }

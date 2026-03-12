@@ -21,4 +21,6 @@ public interface ISocketService {
     void sendNewMessage(UUID conversationId, ChatMessageResponse messageResponse);
 
     void sendLikeUpdate(UUID conversationId, UUID messageId, UUID userId, boolean isLiked);
+
+    void sendPinUpdate(UUID conversationId, UUID messageId, UUID userId, boolean isPinned);
 }

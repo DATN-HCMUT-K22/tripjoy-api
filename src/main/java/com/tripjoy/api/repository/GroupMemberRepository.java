@@ -33,7 +33,6 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, UUID> 
         // Find specific member in a group
         Optional<GroupMember> findByGroupAndUser(Group group, User user);
 
-  
         @Query("SELECT gm FROM GroupMember gm WHERE gm.group.id = :groupId AND gm.user.id = :userId")
         Optional<GroupMember> findByGroupIdAndUserId(@Param("groupId") UUID groupId,
                         @Param("userId") UUID userId);
@@ -43,7 +42,7 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, UUID> 
         @Query("SELECT gm FROM GroupMember gm WHERE gm.group = :group AND gm.softDeleteInfo.isDeleted = false ORDER BY gm.role ASC")
         List<GroupMember> findByGroupAndNotDeletedOrderByRoleAsc(@Param("group") Group group);
 
-        @Query("SELECT gm FROM GroupMember gm WHERE gm.user.id = :userId AND gm.softDeleteInfo.isDeleted = false")
+        @Query("SELECT gm FROM GroupMember gm WHERE gm.user.id = :userId AND gm.softDeleteInfo.isDeleted = false ORDER BY gm.group.createdAt DESC")
         List<GroupMember> findByUserIdAndNotDeleted(@Param("userId") UUID userId);
 
         @Query("SELECT gm FROM GroupMember gm WHERE gm.group = :group AND gm.user = :user AND gm.softDeleteInfo.isDeleted = false")

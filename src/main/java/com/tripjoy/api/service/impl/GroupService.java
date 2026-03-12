@@ -378,7 +378,7 @@ public class GroupService implements IGroupService {
                 // JPA cascade with orphanRemoval=true will auto-delete:
                 // - ConversationMember (via Conversation.members)
                 // - ChatMessage (via Conversation.messages)
-                List<Conversation> conversations = conversationRepository.findByGroup_Id(groupId);
+                List<Conversation> conversations = conversationRepository.findByGroup_IdOrderByCreatedAtDesc(groupId);
                 conversationRepository.deleteAll(conversations);
         }
 

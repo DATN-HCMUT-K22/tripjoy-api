@@ -675,7 +675,35 @@ Then:
 
 **Kết quả:** PASS ✓
 
-**Test Case 2: Transaction Rollback**
+**Test Case 2: Like Message Real-time Delivery**
+
+```
+Given: 2 clients (A, B) connected và joined conversation CONV_123
+When: Client A likes a message (POST /messages/{id}/likes)
+Then:
+  - Like được lưu vào PostgreSQL
+  - Client B nhận WebSocket event "update_like"
+  - Event payload chứa messageId, userId, và isLiked = true
+  - Timestamp tolerance < 1s
+```
+
+**Kết quả:** PASS ✓
+
+**Test Case 3: Pin Message Real-time Delivery**
+
+```
+Given: 2 clients (A, B) connected và joined conversation CONV_123
+When: Client A pins a message (POST /messages/{id}/pin)
+Then:
+  - Trạng thái Pin được lưu vào PostgreSQL
+  - Client B nhận WebSocket event "update_pin"
+  - Event payload chứa messageId, userId, và isPinned = true
+  - Timestamp tolerance < 1s
+```
+
+**Kết quả:** PASS ✓
+
+**Test Case 4: Transaction Rollback**
 
 ```
 Given: Client A connected

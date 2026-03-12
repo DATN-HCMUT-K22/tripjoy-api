@@ -160,4 +160,12 @@ public class Endpoint {
     public static final class Admin {
         public static final String BASE = API_PREFIX + "/admin";
     }
+
+    public static final class Media {
+        public static final String BASE = API_PREFIX + "/media";
+        public static final String UPLOAD_IMAGE = "/upload/image";
+        public static final String UPLOAD_VIDEO = "/upload/video";
+        public static final String SIGN = "/sign";
+        public static final String DELETE = "/delete";
+    }
 }
