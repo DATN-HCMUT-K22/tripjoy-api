@@ -8,6 +8,7 @@ import com.tripjoy.api.dto.event.MessageUnpinnedEvent;
 import com.tripjoy.api.dto.request.chat.ChatMessageRequest;
 import com.tripjoy.api.dto.response.ChatMessageResponse;
 import com.tripjoy.api.dto.response.MessageCursorResponse;
+import com.tripjoy.api.dto.response.MessageSearchResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import com.tripjoy.api.entity.ChatMessage;
 import com.tripjoy.api.entity.Conversation;
@@ -321,6 +322,85 @@ public class ChatMessageService implements IChatMessageService {
         // 3. Map likeUsers to UserSimpleResponse
         return message.getLikeUsers().stream()
                 .map(userMapper::toUserSimpleResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MessageSearchResponse> searchMessages(
+            UUID conversationId, UUID currentUserId,
+            String keyword, int page, int size) {
+
+        // 1. Verify user is member of conversation
+        boolean isMember = conversationMemberRepository
+                .existsByConversationIdAndUserId(conversationId, currentUserId);
+        if (!isMember) {
+            throw new AppException(ErrorCode.USER_NOT_IN_CONVERSATION);
+        }
+
+        // 2. Sanitize keyword
+        String sanitizedKeyword = keyword.trim();
+        if (sanitizedKeyword.isEmpty() || sanitizedKeyword.length() > 100) {
+            return Collections.emptyList();
+        }
+
+        // 3. Clamp pagination params
+        int pageSize = Math.min(Math.max(size, 1), 50);
+        int offset = Math.max(page, 0) * pageSize;
+
+        // 4. Search via PostgreSQL Full-Text Search
+        List<ChatMessage> results = chatMessageRepository.searchMessages(
+                conversationId, sanitizedKeyword, pageSize, offset);
+
+        // 5. Map to MessageSearchResponse DTOs
+        return results.stream()
+                .map(msg -> MessageSearchResponse.builder()
+                        .id(msg.getId())
+                        .conversationId(msg.getConversation().getId())
+                        .senderId(msg.getSender().getId())
+                        .sender(userMapper.toUserSimpleResponse(msg.getSender()))
+                        .messageContent(msg.getMessageContent())
+                        .messageType(msg.getMessageType())
+                        .mediaUrl(msg.getMediaUrl())
+                        .isPinned(msg.getIsPinned())
+                        .createdAt(msg.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MessageSearchResponse> searchMessagesGlobal(
+            UUID currentUserId, String keyword, int page, int size) {
+
+        // 1. Sanitize keyword
+        String sanitizedKeyword = keyword.trim();
+        if (sanitizedKeyword.isEmpty() || sanitizedKeyword.length() > 100) {
+            return Collections.emptyList();
+        }
+
+        // 2. Clamp pagination params
+        int pageSize = Math.min(Math.max(size, 1), 50);
+        int offset = Math.max(page, 0) * pageSize;
+
+        // 3. Global search across all user's conversations
+        //    (the query itself filters by conversation_member, so no manual check needed)
+        List<ChatMessage> results = chatMessageRepository.searchMessagesGlobal(
+                currentUserId, sanitizedKeyword, pageSize, offset);
+
+        // 4. Map to DTOs
+        return results.stream()
+                .map(msg -> MessageSearchResponse.builder()
+                        .id(msg.getId())
+                        .conversationId(msg.getConversation().getId())
+                        .senderId(msg.getSender().getId())
+                        .sender(userMapper.toUserSimpleResponse(msg.getSender()))
+                        .messageContent(msg.getMessageContent())
+                        .messageType(msg.getMessageType())
+                        .mediaUrl(msg.getMediaUrl())
+                        .isPinned(msg.getIsPinned())
+                        .createdAt(msg.getCreatedAt())
+                        .build())
                 .collect(Collectors.toList());
     }
 }

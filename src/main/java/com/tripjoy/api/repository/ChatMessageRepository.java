@@ -59,4 +59,92 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> 
                         Pageable pageable);
 
         // Delete CASCADE handled by JPA orphanRemoval on Conversation
+
+        /**
+         * Full-Text Search messages within a conversation.
+         * Uses PostgreSQL to_tsvector/plainto_tsquery with GIN index.
+         * Falls back to ILIKE for partial matches (e.g. very short keywords).
+         * Results sorted by relevance (ts_rank) DESC, then created_at DESC.
+         */
+        @Query(value = """
+                        SELECT cm.* FROM chat_message cm
+                        WHERE cm.conversation_id = :conversationId
+                          AND (
+                              to_tsvector('simple', coalesce(cm.message_content, ''))
+                                  @@ plainto_tsquery('simple', :keyword)
+                              OR cm.message_content ILIKE '%' || :keyword || '%'
+                          )
+                        ORDER BY
+                            ts_rank(to_tsvector('simple', coalesce(cm.message_content, '')),
+                                    plainto_tsquery('simple', :keyword)) DESC,
+                            cm.created_at DESC
+                        LIMIT :limit OFFSET :offset
+                        """, nativeQuery = true)
+        List<ChatMessage> searchMessages(
+                        @Param("conversationId") UUID conversationId,
+                        @Param("keyword") String keyword,
+                        @Param("limit") int limit,
+                        @Param("offset") int offset);
+
+        /**
+         * Count total search results (for pagination metadata).
+         */
+        @Query(value = """
+                        SELECT COUNT(*) FROM chat_message cm
+                        WHERE cm.conversation_id = :conversationId
+                          AND (
+                              to_tsvector('simple', coalesce(cm.message_content, ''))
+                                  @@ plainto_tsquery('simple', :keyword)
+                              OR cm.message_content ILIKE '%' || :keyword || '%'
+                          )
+                        """, nativeQuery = true)
+        long countSearchMessages(
+                        @Param("conversationId") UUID conversationId,
+                        @Param("keyword") String keyword);
+
+        /**
+         * Global Full-Text Search across ALL conversations the user belongs to.
+         * Filters by conversation_member to ensure user can only search their own conversations.
+         */
+        @Query(value = """
+                        SELECT cm.* FROM chat_message cm
+                        WHERE cm.conversation_id IN (
+                            SELECT cmb.conversation_id FROM conversation_member cmb
+                            WHERE cmb.user_id = :userId
+                        )
+                        AND (
+                            to_tsvector('simple', coalesce(cm.message_content, ''))
+                                @@ plainto_tsquery('simple', :keyword)
+                            OR cm.message_content ILIKE '%' || :keyword || '%'
+                        )
+                        ORDER BY
+                            ts_rank(to_tsvector('simple', coalesce(cm.message_content, '')),
+                                    plainto_tsquery('simple', :keyword)) DESC,
+                            cm.created_at DESC
+                        LIMIT :limit OFFSET :offset
+                        """, nativeQuery = true)
+        List<ChatMessage> searchMessagesGlobal(
+                        @Param("userId") UUID userId,
+                        @Param("keyword") String keyword,
+                        @Param("limit") int limit,
+                        @Param("offset") int offset);
+
+        /**
+         * Count total global search results.
+         */
+        @Query(value = """
+                        SELECT COUNT(*) FROM chat_message cm
+                        WHERE cm.conversation_id IN (
+                            SELECT cmb.conversation_id FROM conversation_member cmb
+                            WHERE cmb.user_id = :userId
+                        )
+                        AND (
+                            to_tsvector('simple', coalesce(cm.message_content, ''))
+                                @@ plainto_tsquery('simple', :keyword)
+                            OR cm.message_content ILIKE '%' || :keyword || '%'
+                        )
+                        """, nativeQuery = true)
+        long countSearchMessagesGlobal(
+                        @Param("userId") UUID userId,
+                        @Param("keyword") String keyword);
 }

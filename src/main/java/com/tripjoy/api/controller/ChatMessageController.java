@@ -2,6 +2,7 @@ package com.tripjoy.api.controller;
 
 import com.tripjoy.api.constant.Endpoint;
 import com.tripjoy.api.dto.response.ApiResponse;
+import com.tripjoy.api.dto.response.MessageSearchResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import com.tripjoy.api.service.IChatMessageService;
 import com.tripjoy.api.utils.SecurityUtils;
@@ -19,10 +20,25 @@ import java.util.UUID;
 @RequestMapping(Endpoint.Message.BASE)
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Tag(name = "Messages", description = "Actions on specific messages (Like, Unlike...)")
+@Tag(name = "Messages", description = "Actions on specific messages (Like, Unlike, Search...)")
 public class ChatMessageController {
 
     IChatMessageService messageService;
+
+    @Operation(summary = "Search messages across all conversations",
+                    description = "Full-text search across ALL conversations the current user belongs to. "
+                            + "Results are sorted by relevance and time.")
+    @GetMapping(Endpoint.Message.SEARCH)
+    public ApiResponse<List<MessageSearchResponse>> searchMessagesGlobal(
+            @RequestParam String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+        return ApiResponse.<List<MessageSearchResponse>>builder()
+                .data(messageService.searchMessagesGlobal(currentUserId, q, page, size))
+                .build();
+    }
 
     @Operation(summary = "Like a message")
     @PostMapping(Endpoint.Message.LIKES)

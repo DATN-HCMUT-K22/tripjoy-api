@@ -8,6 +8,7 @@ import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.ChatMessageResponse;
 import com.tripjoy.api.dto.response.ConversationResponse;
 import com.tripjoy.api.dto.response.MessageCursorResponse;
+import com.tripjoy.api.dto.response.MessageSearchResponse;
 import com.tripjoy.api.service.IConversationService;
 import com.tripjoy.api.service.IChatMessageService;
 import com.tripjoy.api.utils.SecurityUtils;
@@ -125,6 +126,23 @@ public class ConversationController {
 
                 return ApiResponse.<List<ChatMessageResponse>>builder()
                                 .data(messageService.getPinnedMessages(conversationId, currentUserId))
+                                .build();
+        }
+
+        @Operation(summary = "Search messages in conversation",
+                        description = "Full-text search messages using PostgreSQL FTS. "
+                                + "Supports partial matching and relevance ranking.")
+        @GetMapping(Endpoint.Conversation.SEARCH_MESSAGES)
+        public ApiResponse<List<MessageSearchResponse>> searchMessages(
+                        @PathVariable UUID conversationId,
+                        @RequestParam String q,
+                        @RequestParam(defaultValue = "0") int page,
+                        @RequestParam(defaultValue = "20") int size) {
+
+                UUID currentUserId = SecurityUtils.getCurrentUserId();
+                return ApiResponse.<List<MessageSearchResponse>>builder()
+                                .data(messageService.searchMessages(
+                                                conversationId, currentUserId, q, page, size))
                                 .build();
         }
 

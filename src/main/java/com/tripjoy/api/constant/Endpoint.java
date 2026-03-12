@@ -87,6 +87,9 @@ public class Endpoint {
 
         // Get all pinned messages
         public static final String PINNED_MESSAGES = ID + "/pinned-messages";
+
+        // Search messages in conversation
+        public static final String SEARCH_MESSAGES = ID + "/messages/search";
     }
 
     // Class này để xử lý hành động trên 1 tin nhắn cụ thể (Global ID)
@@ -96,6 +99,9 @@ public class Endpoint {
 
         public static final String LIKES = ID + "/likes";
         public static final String PIN = ID + "/pin";
+
+        // Global search across all user's conversations
+        public static final String SEARCH = "/search";
     }
 
     public static final class Itinerary {
