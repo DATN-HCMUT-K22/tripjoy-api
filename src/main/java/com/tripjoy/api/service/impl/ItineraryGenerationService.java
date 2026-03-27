@@ -1,5 +1,6 @@
 package com.tripjoy.api.service.impl;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -23,6 +24,7 @@ import com.tripjoy.api.dto.ai.GooglePlaceDetailsDto;
 import com.tripjoy.api.dto.request.GenerateItineraryRequest;
 import com.tripjoy.api.dto.response.ItineraryResponse;
 import com.tripjoy.api.entity.Itinerary;
+import com.tripjoy.api.entity.ItineraryTheme;
 import com.tripjoy.api.entity.Location;
 import com.tripjoy.api.entity.TripItem;
 import com.tripjoy.api.entity.User;
@@ -72,17 +74,28 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .peopleQuantity(request.getPeopleQuantity())
+                .budgetEstimate(request.getBudgetEstimate() != null ? BigDecimal.valueOf(request.getBudgetEstimate()) : null)
                 .status(ItineraryStatus.GENERATING)
                 .user(user)
                 .build();
 
-        itinerary = itineraryRepository.save(itinerary);
+        if (request.getThemes() != null && !request.getThemes().isEmpty()) {
+            Set<ItineraryTheme> themes = request.getThemes().stream()
+                    .map(t -> ItineraryTheme.builder()
+                            .theme(t)
+                            .itinerary(itinerary)
+                            .build())
+                    .collect(Collectors.toSet());
+            itinerary.setItineraryThemes(themes);
+        }
+
+        Itinerary savedItinerary = itineraryRepository.save(itinerary);
 
         // Return bare minimal response with ID so client can poll
         return ItineraryResponse.builder()
-                .id(itinerary.getId())
-                .title(itinerary.getName())
-                .status(itinerary.getStatus())
+                .id(savedItinerary.getId())
+                .title(savedItinerary.getName())
+                .status(savedItinerary.getStatus())
                 .build();
     }
 
