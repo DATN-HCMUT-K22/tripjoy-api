@@ -11,6 +11,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import com.tripjoy.api.enums.ItineraryStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -89,8 +90,8 @@ public class ItineraryRequest {
             description = "Status of the itinerary",
             type = "String",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "PLANNING")
-    String status;
+            example = "DRAFT")
+    ItineraryStatus status;
 
     @JsonProperty("group_id")
     @Schema(

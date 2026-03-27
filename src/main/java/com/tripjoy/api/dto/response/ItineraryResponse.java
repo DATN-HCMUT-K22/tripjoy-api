@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.tripjoy.api.enums.ItineraryStatus;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 
 import lombok.*;
@@ -30,7 +31,7 @@ public class ItineraryResponse extends BaseResponse {
     @JsonProperty("end_date")
     LocalDate endDate;
 
-    String status;
+    ItineraryStatus status;
 
     @JsonProperty("group_id")
     UUID groupId;

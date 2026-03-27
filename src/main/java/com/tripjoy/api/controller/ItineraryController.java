@@ -11,8 +11,12 @@ import com.tripjoy.api.constant.Endpoint;
 import com.tripjoy.api.dto.request.ExpenseRequest;
 import com.tripjoy.api.dto.request.ItineraryRequest;
 import com.tripjoy.api.dto.request.TripItemRequest;
+import com.tripjoy.api.dto.request.GenerateItineraryRequest;
 import com.tripjoy.api.dto.response.*;
 import com.tripjoy.api.service.IItineraryService;
+import com.tripjoy.api.service.IItineraryGenerationService;
+import com.tripjoy.api.utils.SecurityUtils;
+import org.springframework.http.ResponseEntity;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,6 +32,29 @@ import lombok.experimental.FieldDefaults;
 public class ItineraryController {
 
     IItineraryService itineraryService;
+    IItineraryGenerationService itineraryGenerationService;
+
+    @Operation(summary = "Generate AI Itinerary (Async)")
+    @PostMapping("/generate")
+    public ResponseEntity<ApiResponse<ItineraryResponse>> generateItinerary(
+            @Valid @RequestBody GenerateItineraryRequest request) {
+        
+        UUID userId = SecurityUtils.getCurrentUserId();
+        
+        // 1. Save placeholder generating state
+        ItineraryResponse response = itineraryGenerationService.initiateGeneration(request, userId);
+        
+        // 2. Trigger asynchronous processing
+        itineraryGenerationService.processGenerationAsync(response.getId(), request);
+
+        // 3. Return 202 Accepted
+        return ResponseEntity.accepted().body(
+                ApiResponse.<ItineraryResponse>builder()
+                        .message("Itinerary generation has started and will be available shortly")
+                        .data(response)
+                        .build()
+        );
+    }
 
     @Operation(summary = "Create a new itinerary")
     @PostMapping

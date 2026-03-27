@@ -9,6 +9,7 @@ import jakarta.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
+import com.tripjoy.api.enums.ItineraryStatus;
 
 import lombok.*;
 
@@ -37,7 +38,8 @@ public class Itinerary extends BaseEntity {
     @Column(name = "budget_estimate", precision = 19, scale = 2)
     private BigDecimal budgetEstimate;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private ItineraryStatus status;
 
     @Embedded
     @Builder.Default

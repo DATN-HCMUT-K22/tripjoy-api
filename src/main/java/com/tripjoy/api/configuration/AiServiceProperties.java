@@ -12,6 +12,7 @@ import lombok.Setter;
 @ConfigurationProperties(prefix = "ai-service")
 public class AiServiceProperties {
     private String baseUrl;
+    private String apiKey;
     private int timeoutSeconds = 60;
     private int connectTimeoutSeconds = 10;
 }

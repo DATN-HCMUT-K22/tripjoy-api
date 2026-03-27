@@ -19,6 +19,8 @@ public interface LocationRepository extends JpaRepository<Location, UUID> {
 
     Optional<Location> findByProviderId(String providerId);
 
+    List<Location> findByProviderIdIn(java.util.Collection<String> providerIds);
+
     @Query(
             value =
                     """

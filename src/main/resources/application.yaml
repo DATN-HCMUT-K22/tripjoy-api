@@ -57,5 +57,42 @@ cloudinary:
 
 ai-service:
   base-url: ${AI_SERVICE_URL:http://localhost:8000}
+  api-key: ${AI_SERVICE_API_KEY:default_dev_key}
   timeout-seconds: 120
   connect-timeout-seconds: 10
+
+google:
+  places:
+    api-key: ${GOOGLE_PLACES_API_KEY:default_dev_key}
+  timeout-seconds: 120
+  connect-timeout-seconds: 10
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      aiService:
+        registerHealthIndicator: true
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 3
+        permittedNumberOfCallsInHalfOpenState: 2
+        waitDurationInOpenState: 30s
+        failureRateThreshold: 50
+        recordExceptions:
+          - java.util.concurrent.TimeoutException
+          - java.io.IOException
+          - org.springframework.web.reactive.function.client.WebClientRequestException
+          - org.springframework.web.reactive.function.client.WebClientResponseException.ServiceUnavailable
+          - org.springframework.web.reactive.function.client.WebClientResponseException.GatewayTimeout
+          - org.springframework.web.reactive.function.client.WebClientResponseException.BadGateway
+  retry:
+    instances:
+      aiService:
+        maxAttempts: 3
+        waitDuration: 2s
+        retryExceptions:
+          - java.util.concurrent.TimeoutException
+          - java.io.IOException
+          - org.springframework.web.reactive.function.client.WebClientRequestException
+          - org.springframework.web.reactive.function.client.WebClientResponseException.ServiceUnavailable
+          - org.springframework.web.reactive.function.client.WebClientResponseException.GatewayTimeout
+          - org.springframework.web.reactive.function.client.WebClientResponseException.BadGateway
