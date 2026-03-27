@@ -7,13 +7,10 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tripjoy.api.dto.request.ExpenseRequest;
 import com.tripjoy.api.dto.request.ItineraryRequest;
 import com.tripjoy.api.dto.request.TripItemRequest;
-import com.tripjoy.api.dto.response.ExpenseResponse;
 import com.tripjoy.api.dto.response.ItineraryResponse;
 import com.tripjoy.api.dto.response.TripItemResponse;
-import com.tripjoy.api.entity.Expense;
 import com.tripjoy.api.entity.Group;
 import com.tripjoy.api.entity.Itinerary;
 import com.tripjoy.api.entity.Location;
@@ -22,10 +19,8 @@ import com.tripjoy.api.entity.User;
 import com.tripjoy.api.enums.ItineraryStatus;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
-import com.tripjoy.api.mapper.ExpenseMapper;
 import com.tripjoy.api.mapper.ItineraryMapper;
 import com.tripjoy.api.mapper.TripItemMapper;
-import com.tripjoy.api.repository.ExpenseRepository;
 import com.tripjoy.api.repository.GroupRepository;
 import com.tripjoy.api.repository.ItineraryRepository;
 import com.tripjoy.api.repository.LocationRepository;
@@ -46,13 +41,11 @@ public class ItineraryService implements IItineraryService {
 
     ItineraryRepository itineraryRepository;
     TripItemRepository tripItemRepository;
-    ExpenseRepository expenseRepository;
     UserRepository userRepository;
     GroupRepository groupRepository;
     LocationRepository locationRepository;
     ItineraryMapper itineraryMapper;
     TripItemMapper tripItemMapper;
-    ExpenseMapper expenseMapper;
 
     @Override
     public ItineraryResponse createItinerary(ItineraryRequest request) {
@@ -230,71 +223,6 @@ public class ItineraryService implements IItineraryService {
         }
 
         tripItemRepository.delete(tripItem);
-    }
-
-    @Override
-    public ExpenseResponse addExpense(UUID itineraryId, ExpenseRequest request) {
-        Itinerary itinerary = itineraryRepository.findById(itineraryId)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
-
-        validateOwnership(itinerary);
-
-        User user = userRepository.findById(SecurityUtils.getCurrentUserId())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
-        Expense expense = expenseMapper.toExpense(request);
-        expense.setItinerary(itinerary);
-        expense.setUser(user);
-
-        expense = expenseRepository.save(expense);
-        return expenseMapper.toExpenseResponse(expense);
-    }
-
-    @Override
-    public List<ExpenseResponse> getExpenses(UUID itineraryId) {
-        Itinerary itinerary = itineraryRepository.findById(itineraryId)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
-
-        return expenseRepository.findByItineraryId(itineraryId).stream()
-                .map(expenseMapper::toExpenseResponse)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public ExpenseResponse updateExpense(UUID itineraryId, UUID expenseId, ExpenseRequest request) {
-        Itinerary itinerary = itineraryRepository.findById(itineraryId)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
-
-        validateOwnership(itinerary);
-
-        Expense expense = expenseRepository.findById(expenseId)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
-
-        if (!expense.getItinerary().getId().equals(itineraryId)) {
-            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
-        }
-
-        expenseMapper.updateExpense(expense, request);
-
-        expense = expenseRepository.save(expense);
-        return expenseMapper.toExpenseResponse(expense);
-    }
-
-    @Override
-    public void removeExpense(UUID itineraryId, UUID expenseId) {
-        Itinerary itinerary = itineraryRepository.findById(itineraryId)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
-
-        validateOwnership(itinerary);
-
-        Expense expense = expenseRepository.findById(expenseId)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
-
-        if (!expense.getItinerary().getId().equals(itineraryId)) {
-            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
-        }
-
-        expenseRepository.delete(expense);
     }
 
     private void validateOwnership(Itinerary itinerary) {
