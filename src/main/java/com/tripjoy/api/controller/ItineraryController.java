@@ -60,15 +60,29 @@ public class ItineraryController {
     @PostMapping
     public ApiResponse<ItineraryResponse> createItinerary(@Valid @RequestBody ItineraryRequest request) {
         return ApiResponse.<ItineraryResponse>builder()
-                // .data(itineraryService.createItinerary(request))
+                .data(itineraryService.createItinerary(request))
                 .build();
     }
 
     @Operation(summary = "Get a single itinerary by ID")
-    @GetMapping(Endpoint.Itinerary.ID)
-    public ApiResponse<ItineraryResponse> getItineraryById(@PathVariable UUID itineraryId) {
+    @GetMapping("/{id}")
+    public ApiResponse<ItineraryResponse> getItinerary(@PathVariable UUID id) {
         return ApiResponse.<ItineraryResponse>builder()
-                // .data(itineraryService.getItineraryById(itineraryId))
+                .data(itineraryService.getItineraryById(id))
+                .build();
+    }
+
+    @GetMapping("/me")
+    public ApiResponse<List<ItineraryResponse>> getMyItineraries() {
+        return ApiResponse.<List<ItineraryResponse>>builder()
+                .data(itineraryService.getMyItineraries())
+                .build();
+    }
+
+    @GetMapping("/favorites")
+    public ApiResponse<List<ItineraryResponse>> getMyFavoriteItineraries() {
+        return ApiResponse.<List<ItineraryResponse>>builder()
+                .data(itineraryService.getMyFavoriteItineraries())
                 .build();
     }
 
@@ -77,14 +91,14 @@ public class ItineraryController {
     public ApiResponse<ItineraryResponse> updateItinerary(
             @PathVariable UUID itineraryId, @Valid @RequestBody ItineraryRequest request) {
         return ApiResponse.<ItineraryResponse>builder()
-                // .data(itineraryService.updateItinerary(itineraryId, request))
+                .data(itineraryService.updateItinerary(itineraryId, request))
                 .build();
     }
 
     @Operation(summary = "Delete an itinerary")
     @DeleteMapping(Endpoint.Itinerary.ID)
     public ApiResponse<Void> deleteItinerary(@PathVariable UUID itineraryId) {
-        // itineraryService.deleteItinerary(itineraryId);
+        itineraryService.deleteItinerary(itineraryId);
         return ApiResponse.<Void>builder()
                 .message("Itinerary deleted successfully")
                 .build();
@@ -95,14 +109,14 @@ public class ItineraryController {
     @Operation(summary = "Favorite an itinerary")
     @PostMapping(Endpoint.Itinerary.FAVORITES)
     public ApiResponse<Void> favoriteItinerary(@PathVariable UUID itineraryId) {
-        // itineraryService.favoriteItinerary(itineraryId);
+        itineraryService.favoriteItinerary(itineraryId);
         return ApiResponse.<Void>builder().message("Itinerary favorited").build();
     }
 
     @Operation(summary = "Unfavorite an itinerary")
     @DeleteMapping(Endpoint.Itinerary.FAVORITES)
     public ApiResponse<Void> unfavoriteItinerary(@PathVariable UUID itineraryId) {
-        // itineraryService.unfavoriteItinerary(itineraryId);
+        itineraryService.unfavoriteItinerary(itineraryId);
         return ApiResponse.<Void>builder().message("Itinerary unfavorited").build();
     }
 
@@ -113,7 +127,7 @@ public class ItineraryController {
     public ApiResponse<TripItemResponse> addTripItem(
             @PathVariable UUID itineraryId, @Valid @RequestBody TripItemRequest request) {
         return ApiResponse.<TripItemResponse>builder()
-                // .data(itineraryService.addTripItem(itineraryId, request))
+                .data(itineraryService.addTripItem(itineraryId, request))
                 .build();
     }
 
@@ -121,7 +135,7 @@ public class ItineraryController {
     @GetMapping(Endpoint.Itinerary.ITEMS_BASE)
     public ApiResponse<List<TripItemResponse>> getTripItems(@PathVariable UUID itineraryId) {
         return ApiResponse.<List<TripItemResponse>>builder()
-                // .data(itineraryService.getTripItems(itineraryId))
+                .data(itineraryService.getTripItems(itineraryId))
                 .build();
     }
 
@@ -132,14 +146,14 @@ public class ItineraryController {
             @PathVariable UUID tripItemId,
             @Valid @RequestBody TripItemRequest request) {
         return ApiResponse.<TripItemResponse>builder()
-                // .data(itineraryService.updateTripItem(itineraryId, tripItemId, request))
+                .data(itineraryService.updateTripItem(itineraryId, tripItemId, request))
                 .build();
     }
 
     @Operation(summary = "Remove a specific trip item from an itinerary")
     @DeleteMapping(Endpoint.Itinerary.ITEMS_ID)
     public ApiResponse<Void> removeTripItem(@PathVariable UUID itineraryId, @PathVariable UUID tripItemId) {
-        // itineraryService.removeTripItem(itineraryId, tripItemId);
+        itineraryService.removeTripItem(itineraryId, tripItemId);
         return ApiResponse.<Void>builder().message("Trip item removed").build();
     }
 
