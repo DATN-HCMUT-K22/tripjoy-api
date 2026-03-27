@@ -3,8 +3,10 @@ package com.tripjoy.api.service;
 import java.util.List;
 import java.util.UUID;
 
+import com.tripjoy.api.dto.request.ExpenseRequest;
 import com.tripjoy.api.dto.request.ItineraryRequest;
 import com.tripjoy.api.dto.request.TripItemRequest;
+import com.tripjoy.api.dto.response.ExpenseResponse;
 import com.tripjoy.api.dto.response.ItineraryResponse;
 import com.tripjoy.api.dto.response.TripItemResponse;
 
@@ -36,4 +38,13 @@ public interface IItineraryService {
     TripItemResponse updateTripItem(UUID itineraryId, UUID tripItemId, TripItemRequest request);
     
     void removeTripItem(UUID itineraryId, UUID tripItemId);
+    
+    // --- Expenses ---
+    ExpenseResponse addExpense(UUID itineraryId, ExpenseRequest request);
+    
+    List<ExpenseResponse> getExpenses(UUID itineraryId);
+    
+    ExpenseResponse updateExpense(UUID itineraryId, UUID expenseId, ExpenseRequest request);
+    
+    void removeExpense(UUID itineraryId, UUID expenseId);
 }
