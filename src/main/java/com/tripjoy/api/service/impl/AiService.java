@@ -12,6 +12,8 @@ import reactor.core.publisher.Mono;
 import com.tripjoy.api.configuration.AiServiceProperties;
 import com.tripjoy.api.dto.ai.AiFinalItineraryDto;
 import com.tripjoy.api.dto.ai.AiTravelRequestDto;
+import com.tripjoy.api.exception.AppException;
+import com.tripjoy.api.exception.ErrorCode;
 import com.tripjoy.api.service.IAiService;
 
 @Slf4j
@@ -47,6 +49,6 @@ public class AiService implements IAiService {
      */
     public Mono<AiFinalItineraryDto> generateItineraryFallback(AiTravelRequestDto request, Throwable t) {
         log.error("AI Service fallback triggered for generation request. Reason: {}", t.getMessage());
-        return Mono.error(new RuntimeException("AI Service is currently unavailable. Please try again later.", t));
+        return Mono.error(new AppException(ErrorCode.AI_SERVICE_UNAVAILABLE));
     }
 }

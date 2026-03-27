@@ -97,6 +97,12 @@ public enum ErrorCode {
 
     // --- 8. NOTIFICATION DOMAIN (8000 - 8999) ---
     NOTIF_NOT_FOUND(8001, "Notification not found", HttpStatus.NOT_FOUND),
+
+    // --- 9. AI & EXTERNAL SERVICES (9000 - 9999) ---
+    AI_SERVICE_UNAVAILABLE(9001, "AI Service is currently unavailable", HttpStatus.SERVICE_UNAVAILABLE),
+    AI_GENERATION_FAILED(9002, "AI failed to generate itinerary items", HttpStatus.INTERNAL_SERVER_ERROR),
+    AI_INVALID_RESPONSE(9003, "AI returned an invalid or malformed response", HttpStatus.BAD_GATEWAY),
+    AI_REQUEST_TIMEOUT(9004, "AI generation request timed out", HttpStatus.GATEWAY_TIMEOUT),
     ;
 
     private final int code;

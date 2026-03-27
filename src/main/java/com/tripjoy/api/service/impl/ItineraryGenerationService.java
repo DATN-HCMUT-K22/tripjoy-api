@@ -54,7 +54,7 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
     private final LocationRepository locationRepository;
     private final TripItemRepository tripItemRepository;
     private final UserRepository userRepository;
-    
+
     private final IAiService aiService;
     private final IGooglePlacesService googlePlacesService;
 
@@ -64,7 +64,7 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
     @Transactional
     public ItineraryResponse initiateGeneration(GenerateItineraryRequest request, UUID userId) {
         log.info("Initiating itinerary generation for destination: {}", request.getDestination());
-        
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
@@ -74,7 +74,8 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .peopleQuantity(request.getPeopleQuantity())
-                .budgetEstimate(request.getBudgetEstimate() != null ? BigDecimal.valueOf(request.getBudgetEstimate()) : null)
+                .budgetEstimate(
+                        request.getBudgetEstimate() != null ? BigDecimal.valueOf(request.getBudgetEstimate()) : null)
                 .status(ItineraryStatus.GENERATING)
                 .user(user)
                 .build();
@@ -104,15 +105,16 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
     @Transactional
     public void processGenerationAsync(UUID itineraryId, GenerateItineraryRequest request) {
         log.info("Starting background async generation for itinerary ID: {}", itineraryId);
-        
+
         try {
             // 1. Map Core request to AI request
             AiTravelRequestDto aiRequest = mapToAiRequest(request);
 
             // 2. Call AI Service (Blocking wait in this async thread is perfectly fine)
             AiFinalItineraryDto aiResponse = aiService.generateItinerary(aiRequest).block();
-            
+
             if (aiResponse == null || aiResponse.getTripItems() == null) {
+                log.error("AI Service returned empty or null trip items for itinerary ID: {}", itineraryId);
                 updateItineraryStatus(itineraryId, ItineraryStatus.FAILED);
                 return;
             }
@@ -132,22 +134,24 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
 
             itinerary.setName(aiResponse.getName());
             itinerary.setStatus(ItineraryStatus.DRAFT);
-            
+
             List<TripItem> tripItems = aiResponse.getTripItems().stream().map(aiItem -> {
                 Location location = locationRepository.findByProviderId(aiItem.getPlaceId()).orElse(null);
-                
+
                 return TripItem.builder()
                         .itinerary(itinerary)
                         .location(location)
                         .note(aiItem.getNote())
                         .duration(aiItem.getDuration())
-                        .startTime(LocalDateTime.parse(aiItem.getStartTime(), DateTimeFormatter.ISO_DATE_TIME)) // Assuming ISO format
+                        .startTime(LocalDateTime.parse(aiItem.getStartTime(), DateTimeFormatter.ISO_DATE_TIME)) // Assuming
+                                                                                                                // ISO
+                                                                                                                // format
                         .build();
             }).collect(Collectors.toList());
 
             tripItemRepository.saveAll(tripItems);
             itineraryRepository.save(itinerary);
-            
+
             log.info("Successfully completed itinerary generation for ID: {}", itineraryId);
 
         } catch (Exception e) {
@@ -179,10 +183,12 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
     }
 
     /**
-     * Queries DB for existing locations. For missing ones, fetches from Google Places API concurrently.
+     * Queries DB for existing locations. For missing ones, fetches from Google
+     * Places API concurrently.
      */
     private void enrichAndSaveLocations(Set<String> placeIds) {
-        if (placeIds.isEmpty()) return;
+        if (placeIds.isEmpty())
+            return;
 
         List<Location> existingLocations = locationRepository.findByProviderIdIn(placeIds);
         Set<String> existingPlaceIds = existingLocations.stream()
@@ -193,7 +199,8 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
                 .filter(id -> !existingPlaceIds.contains(id))
                 .collect(Collectors.toSet());
 
-        if (missingPlaceIds.isEmpty()) return;
+        if (missingPlaceIds.isEmpty())
+            return;
 
         // Fetch missing places concurrently using WebClient and Reactor
         List<Location> newLocations = Flux.fromIterable(missingPlaceIds)
@@ -218,13 +225,15 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
                 .poiCategories(dto.getTypes())
                 .build();
 
-        if (dto.getLocation() != null && dto.getLocation().getLatitude() != null && dto.getLocation().getLongitude() != null) {
+        if (dto.getLocation() != null && dto.getLocation().getLatitude() != null
+                && dto.getLocation().getLongitude() != null) {
             location.setLatitude(dto.getLocation().getLatitude());
             location.setLongitude(dto.getLocation().getLongitude());
-            Point point = geometryFactory.createPoint(new Coordinate(dto.getLocation().getLongitude(), dto.getLocation().getLatitude()));
+            Point point = geometryFactory
+                    .createPoint(new Coordinate(dto.getLocation().getLongitude(), dto.getLocation().getLatitude()));
             location.setCoordinates(point);
         }
-        
+
         return location;
     }
 }
