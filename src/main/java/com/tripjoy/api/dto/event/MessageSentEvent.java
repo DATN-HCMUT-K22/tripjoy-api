@@ -1,9 +1,10 @@
 package com.tripjoy.api.dto.event;
 
-import com.tripjoy.api.dto.response.ChatMessageResponse;
-import lombok.*;
-
 import java.util.UUID;
+
+import com.tripjoy.api.dto.response.ChatMessageResponse;
+
+import lombok.*;
 
 /**
  * Event fired after a chat message is successfully saved to database.

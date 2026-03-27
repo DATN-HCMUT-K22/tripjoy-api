@@ -1,9 +1,10 @@
 package com.tripjoy.api.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
-
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.*;
 
 @Data
 @Builder

@@ -1,11 +1,13 @@
 package com.tripjoy.api.entity;
 
-import com.tripjoy.api.enums.NotificationType;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
+
+import com.tripjoy.api.enums.NotificationType;
+
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -13,12 +15,14 @@ import java.time.LocalDateTime;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "notifications", indexes = {
-        @Index(name = "idx_recipient_unread", columnList = "recipient_id, is_read, created_at"),
-        @Index(name = "idx_recipient_created", columnList = "recipient_id, created_at"),
-        @Index(name = "idx_entity", columnList = "entity_type, entity_id"),
-        @Index(name = "idx_actor", columnList = "actor_id, created_at")
-})
+@Table(
+        name = "notifications",
+        indexes = {
+            @Index(name = "idx_recipient_unread", columnList = "recipient_id, is_read, created_at"),
+            @Index(name = "idx_recipient_created", columnList = "recipient_id, created_at"),
+            @Index(name = "idx_entity", columnList = "entity_type, entity_id"),
+            @Index(name = "idx_actor", columnList = "actor_id, created_at")
+        })
 public class Notification extends BaseEntity {
 
     // RECIPIENT - Người nhận notification (REQUIRED)

@@ -1,8 +1,9 @@
 package com.tripjoy.api.dto.request.report;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,8 +21,7 @@ public class ModerationActionRequest {
             name = "userId",
             description = "The unique ID of the users receiving the action",
             type = "String",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
+            requiredMode = Schema.RequiredMode.REQUIRED)
     String userId;
 
     @NotBlank
@@ -31,7 +31,7 @@ public class ModerationActionRequest {
             type = "String",
             requiredMode = Schema.RequiredMode.REQUIRED,
             example = "BAN_USER" // e.g., BAN_USER, WARN_USER, DELETE_POST
-    )
+            )
     String actionType;
 
     @Schema(
@@ -39,7 +39,6 @@ public class ModerationActionRequest {
             description = "Admin's justification or notes for this action",
             type = "String",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "Users violated community guidelines multiple times."
-    )
+            example = "Users violated community guidelines multiple times.")
     String note;
 }

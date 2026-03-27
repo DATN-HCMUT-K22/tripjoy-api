@@ -1,18 +1,20 @@
 package com.tripjoy.api.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -27,8 +29,7 @@ public class ItineraryRequest {
             description = "Name of the itinerary",
             type = "String",
             requiredMode = Schema.RequiredMode.REQUIRED,
-            example = "Summer Trip to Da Nang"
-    )
+            example = "Summer Trip to Da Nang")
     String name;
 
     @Schema(
@@ -36,8 +37,7 @@ public class ItineraryRequest {
             description = "Detailed description of the itinerary",
             type = "String",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "A 5-day trip to explore beaches and food in Da Nang."
-    )
+            example = "A 5-day trip to explore beaches and food in Da Nang.")
     String description;
 
     @NotNull
@@ -46,8 +46,7 @@ public class ItineraryRequest {
             description = "Start date and time of the trip (ISO 8601 format)",
             type = "String",
             requiredMode = Schema.RequiredMode.REQUIRED,
-            example = "2026-07-20T09:00:00"
-    )
+            example = "2026-07-20T09:00:00")
     LocalDateTime startDate;
 
     @NotNull
@@ -56,8 +55,7 @@ public class ItineraryRequest {
             description = "End date and time of the trip (ISO 8601 format)",
             type = "String",
             requiredMode = Schema.RequiredMode.REQUIRED,
-            example = "2026-07-25T18:00:00"
-    )
+            example = "2026-07-25T18:00:00")
     LocalDateTime endDate;
 
     @Positive(message = "People quantity must be positive")
@@ -66,8 +64,7 @@ public class ItineraryRequest {
             description = "Number of people in the trip",
             type = "Integer",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "4"
-    )
+            example = "4")
     Integer peopleQuantity;
 
     @PositiveOrZero(message = "Budget must be zero or positive")
@@ -76,8 +73,7 @@ public class ItineraryRequest {
             description = "Estimated budget for the trip (e.g., in VND)",
             type = "Double",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "10000000"
-    )
+            example = "10000000")
     Double budgetEstimate;
 
     @Schema(
@@ -85,8 +81,7 @@ public class ItineraryRequest {
             description = "Destination of the trip",
             type = "String",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "Da Nang"
-    )
+            example = "Da Nang")
     String destination;
 
     @Schema(
@@ -94,8 +89,7 @@ public class ItineraryRequest {
             description = "Status of the itinerary",
             type = "String",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "PLANNING"
-    )
+            example = "PLANNING")
     String status;
 
     @JsonProperty("group_id")
@@ -104,8 +98,7 @@ public class ItineraryRequest {
             description = "UUID of the group this itinerary belongs to",
             type = "String",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "a1b2c3d4-e5f6-7890-1234-567890abcdef"
-    )
+            example = "a1b2c3d4-e5f6-7890-1234-567890abcdef")
     String groupId;
 
     @Schema(
@@ -113,8 +106,7 @@ public class ItineraryRequest {
             description = "Set of themes for the itinerary (from Itinerary_theme table)",
             type = "Array",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "[\"Beach\", \"Food\", \"Culture\"]"
-    )
+            example = "[\"Beach\", \"Food\", \"Culture\"]")
     Set<String> themes;
 
     // --- CASCADE CREATE ---

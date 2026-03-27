@@ -1,9 +1,9 @@
 package com.tripjoy.api.service;
 
+import java.util.UUID;
+
 import com.corundumstudio.socketio.SocketIOClient;
 import com.tripjoy.api.dto.response.ChatMessageResponse;
-
-import java.util.UUID;
 
 public interface ISocketService {
     void onConnect(SocketIOClient client);

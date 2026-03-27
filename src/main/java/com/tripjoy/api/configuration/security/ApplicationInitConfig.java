@@ -1,21 +1,23 @@
 package com.tripjoy.api.configuration.security;
 
-import com.tripjoy.api.constant.PredefinedRole;
-import com.tripjoy.api.entity.Role;
-import com.tripjoy.api.entity.User;
-import com.tripjoy.api.repository.RoleRepository;
-import com.tripjoy.api.repository.UserRepository;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashSet;
+
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.HashSet;
+import com.tripjoy.api.constant.PredefinedRole;
+import com.tripjoy.api.entity.Role;
+import com.tripjoy.api.entity.User;
+import com.tripjoy.api.repository.RoleRepository;
+import com.tripjoy.api.repository.UserRepository;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @RequiredArgsConstructor

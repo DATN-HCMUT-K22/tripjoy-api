@@ -1,20 +1,22 @@
 package com.tripjoy.api.service.impl;
 
+import java.io.IOException;
+import java.util.*;
+
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.tripjoy.api.dto.response.MediaUploadResponse;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
 import com.tripjoy.api.service.IStorageService;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.util.*;
 
 @Slf4j
 @Service
@@ -25,11 +27,11 @@ public class CloudinaryStorageService implements IStorageService {
     Cloudinary cloudinary;
 
     // ─── Allowed MIME types ───────────────────────────────────────────────────
-    private static final Set<String> ALLOWED_IMAGE_TYPES = Set.of(
-            "image/jpeg", "image/png", "image/webp", "image/gif", "image/heic", "image/heif");
+    private static final Set<String> ALLOWED_IMAGE_TYPES =
+            Set.of("image/jpeg", "image/png", "image/webp", "image/gif", "image/heic", "image/heif");
 
-    private static final Set<String> ALLOWED_VIDEO_TYPES = Set.of(
-            "video/mp4", "video/quicktime", "video/x-msvideo", "video/webm");
+    private static final Set<String> ALLOWED_VIDEO_TYPES =
+            Set.of("video/mp4", "video/quicktime", "video/x-msvideo", "video/webm");
 
     private static final long MAX_IMAGE_SIZE = 10 * 1024 * 1024L; // 10 MB
     private static final long MAX_VIDEO_SIZE = 50 * 1024 * 1024L; // 50 MB
@@ -40,16 +42,18 @@ public class CloudinaryStorageService implements IStorageService {
         validateFile(file, ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE, "Image");
 
         try {
-            Map<?, ?> uploadResult = cloudinary.uploader().upload(
-                    file.getBytes(),
-                    ObjectUtils.asMap(
-                            "folder", folder,
-                            "resource_type", "image",
-                            "quality", "auto",
-                            "fetch_format", "auto", // serves WebP/AVIF based on browser support
-                            "width", 1080,
-                            "crop", "limit" // shrinks if wider than 1080, never upscales
-                    ));
+            Map<?, ?> uploadResult = cloudinary
+                    .uploader()
+                    .upload(
+                            file.getBytes(),
+                            ObjectUtils.asMap(
+                                    "folder", folder,
+                                    "resource_type", "image",
+                                    "quality", "auto",
+                                    "fetch_format", "auto", // serves WebP/AVIF based on browser support
+                                    "width", 1080,
+                                    "crop", "limit" // shrinks if wider than 1080, never upscales
+                                    ));
 
             log.info("Image uploaded to Cloudinary: publicId={}", uploadResult.get("public_id"));
             return mapToResponse(uploadResult);
@@ -66,14 +70,16 @@ public class CloudinaryStorageService implements IStorageService {
         validateFile(file, ALLOWED_VIDEO_TYPES, MAX_VIDEO_SIZE, "Video");
 
         try {
-            Map<?, ?> uploadResult = cloudinary.uploader().uploadLarge(
-                    file.getBytes(),
-                    ObjectUtils.asMap(
-                            "folder", folder,
-                            "resource_type", "video",
-                            "quality", "auto",
-                            "format", "mp4" // normalize all videos to mp4
-                    ));
+            Map<?, ?> uploadResult = cloudinary
+                    .uploader()
+                    .uploadLarge(
+                            file.getBytes(),
+                            ObjectUtils.asMap(
+                                    "folder", folder,
+                                    "resource_type", "video",
+                                    "quality", "auto",
+                                    "format", "mp4" // normalize all videos to mp4
+                                    ));
 
             log.info("Video uploaded to Cloudinary: publicId={}", uploadResult.get("public_id"));
             return mapToResponse(uploadResult);
@@ -91,9 +97,8 @@ public class CloudinaryStorageService implements IStorageService {
             throw new AppException(ErrorCode.INVALID_MEDIA_PUBLIC_ID);
         }
         try {
-            Map<?, ?> result = cloudinary.uploader().destroy(
-                    publicId,
-                    ObjectUtils.asMap("resource_type", resourceType));
+            Map<?, ?> result =
+                    cloudinary.uploader().destroy(publicId, ObjectUtils.asMap("resource_type", resourceType));
 
             String resultStr = String.valueOf(result.get("result"));
             if (!"ok".equals(resultStr)) {
@@ -145,8 +150,12 @@ public class CloudinaryStorageService implements IStorageService {
         if (file.getSize() > maxSize) {
             throw new AppException(ErrorCode.MEDIA_FILE_TOO_LARGE);
         }
-        log.debug("{} file validation passed: name={}, type={}, size={} bytes",
-                label, file.getOriginalFilename(), contentType, file.getSize());
+        log.debug(
+                "{} file validation passed: name={}, type={}, size={} bytes",
+                label,
+                file.getOriginalFilename(),
+                contentType,
+                file.getSize());
     }
 
     private MediaUploadResponse mapToResponse(Map<?, ?> result) {

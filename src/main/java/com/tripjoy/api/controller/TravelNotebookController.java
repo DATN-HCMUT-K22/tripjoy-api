@@ -1,19 +1,22 @@
 package com.tripjoy.api.controller;
 
+import java.util.UUID;
+
+import jakarta.validation.Valid;
+
+import org.springframework.web.bind.annotation.*;
+
 import com.tripjoy.api.constant.Endpoint;
 import com.tripjoy.api.dto.request.TravelNotebookRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.TravelNotebookResponse;
 import com.tripjoy.api.service.ITravelNotebookService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 
 @RestController
 @RequestMapping(Endpoint.TravelNotebook.BASE)
@@ -26,8 +29,7 @@ public class TravelNotebookController {
 
     @Operation(summary = "Create a new travel notebook")
     @PostMapping
-    public ApiResponse<TravelNotebookResponse> createNotebook(
-            @Valid @RequestBody TravelNotebookRequest request) {
+    public ApiResponse<TravelNotebookResponse> createNotebook(@Valid @RequestBody TravelNotebookRequest request) {
 
         // return ApiResponse.<TravelNotebookResponse>builder()
         // .data(travelNotebookService.createNotebook(request))
@@ -37,8 +39,7 @@ public class TravelNotebookController {
 
     @Operation(summary = "Get a single travel notebook by ID")
     @GetMapping(Endpoint.TravelNotebook.ID)
-    public ApiResponse<TravelNotebookResponse> getNotebookById(
-            @PathVariable UUID notebookId) {
+    public ApiResponse<TravelNotebookResponse> getNotebookById(@PathVariable UUID notebookId) {
 
         // return ApiResponse.<TravelNotebookResponse>builder()
         // .data(travelNotebookService.getNotebookById(notebookId))
@@ -49,8 +50,7 @@ public class TravelNotebookController {
     @Operation(summary = "Update a travel notebook")
     @PutMapping(Endpoint.TravelNotebook.ID)
     public ApiResponse<TravelNotebookResponse> updateNotebook(
-            @PathVariable UUID notebookId,
-            @Valid @RequestBody TravelNotebookRequest request) {
+            @PathVariable UUID notebookId, @Valid @RequestBody TravelNotebookRequest request) {
 
         // return ApiResponse.<TravelNotebookResponse>builder()
         // .data(travelNotebookService.updateNotebook(notebookId, request))

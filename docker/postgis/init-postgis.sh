@@ -12,6 +12,10 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     -- Enable PostGIS Topology (optional)
     CREATE EXTENSION IF NOT EXISTS postgis_topology;
 
+    -- Full-Text Search extensions
+    CREATE EXTENSION IF NOT EXISTS pg_trgm;      -- Fuzzy search (similarity matching)
+    CREATE EXTENSION IF NOT EXISTS unaccent;      -- Bỏ dấu tiếng Việt khi search
+
     -- LƯU Ý: $POSTGRES_USER là user container mặc định,
     -- cần đảm bảo user này có quyền. Ta dùng nó để tạo.
 

@@ -1,10 +1,10 @@
 package com.tripjoy.api.service;
 
-import com.tripjoy.api.dto.request.chat.ConversationUpdateRequest;
-import com.tripjoy.api.dto.response.ConversationResponse;
-
 import java.util.List;
 import java.util.UUID;
+
+import com.tripjoy.api.dto.request.chat.ConversationUpdateRequest;
+import com.tripjoy.api.dto.response.ConversationResponse;
 
 public interface IConversationService {
     List<ConversationResponse> getUserConversations(UUID userId);

@@ -1,11 +1,12 @@
 package com.tripjoy.api.dto.response.report;
 
+import java.util.UUID;
+
 import com.tripjoy.api.dto.response.BaseResponse;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
-
-import java.util.UUID;
 
 @Data
 @SuperBuilder

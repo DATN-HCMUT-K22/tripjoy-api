@@ -1,13 +1,15 @@
 package com.tripjoy.api.configuration.security;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
+import java.util.*;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import lombok.*;
 
 @Builder
 @AllArgsConstructor

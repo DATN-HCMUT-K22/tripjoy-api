@@ -1,11 +1,11 @@
 package com.tripjoy.api.converter;
 
-import jakarta.persistence.AttributeConverter;
-import jakarta.persistence.Converter;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
 
 /**
  * JPA Converter to store List<String> as comma-separated string in database

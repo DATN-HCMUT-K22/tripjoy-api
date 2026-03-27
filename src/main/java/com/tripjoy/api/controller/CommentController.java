@@ -1,21 +1,24 @@
 package com.tripjoy.api.controller;
 
+import java.util.UUID;
+
+import jakarta.validation.Valid;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
+
 import com.tripjoy.api.constant.Endpoint;
 import com.tripjoy.api.dto.request.CommentRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.CommentResponse;
 import com.tripjoy.api.service.ICommentService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 
 @RestController
 @RequestMapping(Endpoint.Comment.BASE)
@@ -36,8 +39,8 @@ public class CommentController {
 
     @Operation(summary = "Update a comment")
     @PutMapping(Endpoint.Comment.ID)
-    public ApiResponse<CommentResponse> updateComment(@PathVariable UUID commentId,
-            @Valid @RequestBody CommentRequest request) {
+    public ApiResponse<CommentResponse> updateComment(
+            @PathVariable UUID commentId, @Valid @RequestBody CommentRequest request) {
         return ApiResponse.<CommentResponse>builder()
                 // .data(commentService.updateComment(commentId, request))
                 .build();
@@ -47,7 +50,9 @@ public class CommentController {
     @DeleteMapping(Endpoint.Comment.ID)
     public ApiResponse<Void> deleteComment(@PathVariable UUID commentId) {
         // commentService.deleteComment(commentId);
-        return ApiResponse.<Void>builder().message("Comment deleted successfully").build();
+        return ApiResponse.<Void>builder()
+                .message("Comment deleted successfully")
+                .build();
     }
 
     @Operation(summary = "Like a comment")
@@ -66,8 +71,7 @@ public class CommentController {
 
     @Operation(summary = "Get replies for a comment (paginated)")
     @GetMapping(Endpoint.Comment.REPLIES)
-    public ApiResponse<Page<CommentResponse>> getRepliesForComment(
-            @PathVariable UUID commentId, Pageable pageable) {
+    public ApiResponse<Page<CommentResponse>> getRepliesForComment(@PathVariable UUID commentId, Pageable pageable) {
         return ApiResponse.<Page<CommentResponse>>builder()
                 // .data(commentService.getRepliesForComment(commentId, pageable))
                 .build();

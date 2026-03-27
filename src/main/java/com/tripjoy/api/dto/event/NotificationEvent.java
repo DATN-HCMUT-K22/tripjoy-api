@@ -1,10 +1,11 @@
 package com.tripjoy.api.dto.event;
 
-import com.tripjoy.api.enums.NotificationType;
-import lombok.*;
-
 import java.util.Map;
 import java.util.UUID;
+
+import com.tripjoy.api.enums.NotificationType;
+
+import lombok.*;
 
 @Getter
 @Setter

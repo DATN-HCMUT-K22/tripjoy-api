@@ -1,20 +1,22 @@
 package com.tripjoy.api.controller;
 
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
+
 import com.tripjoy.api.constant.Endpoint;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.NotificationResponse;
 import com.tripjoy.api.service.INotificationService;
 import com.tripjoy.api.utils.SecurityUtils;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 
 @RestController
 @RequestMapping(Endpoint.Notification.BASE)
@@ -28,11 +30,10 @@ public class NotificationController {
     @Operation(summary = "Get all notifications", description = "Get paginated list of notifications for current user")
     @GetMapping
     public ApiResponse<Page<NotificationResponse>> getNotifications(
-            @RequestParam(required = false, defaultValue = "false") Boolean unreadOnly,
-            Pageable pageable) {
+            @RequestParam(required = false, defaultValue = "false") Boolean unreadOnly, Pageable pageable) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
-        Page<NotificationResponse> notifications = notificationService.getNotifications(currentUserId, pageable,
-                unreadOnly);
+        Page<NotificationResponse> notifications =
+                notificationService.getNotifications(currentUserId, pageable, unreadOnly);
 
         return ApiResponse.<Page<NotificationResponse>>builder()
                 .data(notifications)
@@ -45,9 +46,7 @@ public class NotificationController {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         Long count = notificationService.getUnreadCount(currentUserId);
 
-        return ApiResponse.<Long>builder()
-                .data(count)
-                .build();
+        return ApiResponse.<Long>builder().data(count).build();
     }
 
     @Operation(summary = "Get notification by ID", description = "Get specific notification details")
@@ -56,9 +55,7 @@ public class NotificationController {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         NotificationResponse notification = notificationService.getById(notificationId, currentUserId);
 
-        return ApiResponse.<NotificationResponse>builder()
-                .data(notification)
-                .build();
+        return ApiResponse.<NotificationResponse>builder().data(notification).build();
     }
 
     @Operation(summary = "Mark notification as read", description = "Mark a single notification as read")
@@ -102,8 +99,6 @@ public class NotificationController {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         notificationService.deleteNotification(notificationId, currentUserId);
 
-        return ApiResponse.<Void>builder()
-                .message("Notification deleted")
-                .build();
+        return ApiResponse.<Void>builder().message("Notification deleted").build();
     }
 }

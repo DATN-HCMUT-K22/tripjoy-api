@@ -1,12 +1,11 @@
 package com.tripjoy.api.dto.request;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.time.LocalDate;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Data
 @NoArgsConstructor
@@ -21,8 +20,7 @@ public class UserUpdateRequest {
             description = "New password for the users (leave empty to keep current password)",
             type = "String",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "NewStr0ngP@ss"
-    )
+            example = "NewStr0ngP@ss")
     String password;
 
     @Schema(
@@ -30,8 +28,7 @@ public class UserUpdateRequest {
             description = "Users's full name",
             type = "String",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "John Doe"
-    )
+            example = "John Doe")
     String fullName;
 
     @Schema(
@@ -39,8 +36,7 @@ public class UserUpdateRequest {
             description = "Short biography or profile description",
             type = "String",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "Traveler. Photographer. Coffee lover."
-    )
+            example = "Traveler. Photographer. Coffee lover.")
     String bio;
 
     @Schema(
@@ -49,8 +45,7 @@ public class UserUpdateRequest {
             type = "String",
             format = "uri",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "https://example.com/avatars/johndoe.jpg"
-    )
+            example = "https://example.com/avatars/johndoe.jpg")
     String avatarUrl;
 
     @Schema(
@@ -58,8 +53,7 @@ public class UserUpdateRequest {
             description = "Flag indicating whether the users is marked as deleted",
             type = "boolean",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "false"
-    )
+            example = "false")
     boolean isDeleted = false;
 
     @Schema(
@@ -67,8 +61,7 @@ public class UserUpdateRequest {
             description = "Flag indicating whether the users account is locked",
             type = "boolean",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "false"
-    )
+            example = "false")
     boolean isLocked = false;
 
     @Schema(
@@ -77,8 +70,7 @@ public class UserUpdateRequest {
             type = "string",
             format = "date",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "1990-01-01"
-    )
+            example = "1990-01-01")
     LocalDate dateOfBirth;
 
     @Schema(
@@ -86,7 +78,6 @@ public class UserUpdateRequest {
             description = "List of role names assigned to the users",
             type = "array",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "[\"USER\", \"ADMIN\"]"
-    )
+            example = "[\"USER\", \"ADMIN\"]")
     List<String> roles;
 }

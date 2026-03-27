@@ -1,10 +1,11 @@
 package com.tripjoy.api.service;
 
-import com.tripjoy.api.dto.response.NotificationResponse;
+import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.UUID;
+import com.tripjoy.api.dto.response.NotificationResponse;
 
 /**
  * Notification Service Interface

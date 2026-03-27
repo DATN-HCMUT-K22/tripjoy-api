@@ -1,4 +1,3 @@
 package com.tripjoy.api.service;
 
-public interface IReportService {
-}
+public interface IReportService {}

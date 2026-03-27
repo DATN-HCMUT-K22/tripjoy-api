@@ -1,5 +1,16 @@
 package com.tripjoy.api.configuration.security;
 
+import java.text.ParseException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.StringJoiner;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
@@ -9,19 +20,10 @@ import com.tripjoy.api.entity.User;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
 import com.tripjoy.api.repository.InvalidatedTokenRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-
-import java.text.ParseException;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.StringJoiner;
-import java.util.UUID;
 
 @Component
 @Slf4j
@@ -50,8 +52,7 @@ public class JwtUtils {
                 .issuer("tripjoy")
                 .issueTime(new Date())
                 .expirationTime(new Date(
-                        Instant.now().plus(EXPIRATION, ChronoUnit.SECONDS).toEpochMilli()
-                ))
+                        Instant.now().plus(EXPIRATION, ChronoUnit.SECONDS).toEpochMilli()))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScope(user))
                 .claim("userId", user.getId().toString())
@@ -77,8 +78,9 @@ public class JwtUtils {
                 .subject(user.getId().toString())
                 .issuer("tripjoy")
                 .issueTime(new Date())
-                .expirationTime(new Date(
-                        Instant.now().plus(REFRESH_EXPIRATION, ChronoUnit.SECONDS).toEpochMilli()))
+                .expirationTime(new Date(Instant.now()
+                        .plus(REFRESH_EXPIRATION, ChronoUnit.SECONDS)
+                        .toEpochMilli()))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("type", "refresh")
                 .build();
@@ -101,20 +103,22 @@ public class JwtUtils {
         SignedJWT signedJWT = SignedJWT.parse(token);
 
         Date expiresAt = isRefresh
-                ? new Date(signedJWT.getJWTClaimsSet().getIssueTime()
-                        .toInstant().plus(REFRESH_EXPIRATION, ChronoUnit.SECONDS).toEpochMilli())
+                ? new Date(signedJWT
+                        .getJWTClaimsSet()
+                        .getIssueTime()
+                        .toInstant()
+                        .plus(REFRESH_EXPIRATION, ChronoUnit.SECONDS)
+                        .toEpochMilli())
                 : signedJWT.getJWTClaimsSet().getExpirationTime();
 
         var isVerified = signedJWT.verify(verifier);
 
         // Kiểm tra chữ ký và hạn
-        if (!(isVerified && expiresAt.after(new Date())))
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        if (!(isVerified && expiresAt.after(new Date()))) throw new AppException(ErrorCode.UNAUTHENTICATED);
 
         // Kiểm tra xem token đã bị logout chưa
         UUID tokenId = UUID.fromString(signedJWT.getJWTClaimsSet().getJWTID());
-        if (invalidatedTokenRepository.existsById(tokenId))
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        if (invalidatedTokenRepository.existsById(tokenId)) throw new AppException(ErrorCode.UNAUTHENTICATED);
 
         return signedJWT;
     }

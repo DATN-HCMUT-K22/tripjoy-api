@@ -1,10 +1,11 @@
 package com.tripjoy.api.dto.event;
 
+import java.util.List;
+
 import com.tripjoy.api.entity.Group;
 import com.tripjoy.api.entity.User;
-import lombok.*;
 
-import java.util.List;
+import lombok.*;
 
 @Getter
 @Setter

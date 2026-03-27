@@ -1,13 +1,16 @@
 package com.tripjoy.api.mapper;
 
+import java.util.UUID;
+
+import org.mapstruct.*;
+
 import com.tripjoy.api.configuration.mapper.BaseMapperConfig;
 import com.tripjoy.api.dto.response.ConversationResponse;
 import com.tripjoy.api.entity.Conversation;
-import org.mapstruct.*;
 
-import java.util.UUID;
-
-@Mapper(config = BaseMapperConfig.class, uses = { UserMapper.class, ChatMessageMapper.class })
+@Mapper(
+        config = BaseMapperConfig.class,
+        uses = {UserMapper.class, ChatMessageMapper.class})
 public interface ConversationMapper {
 
     @Mapping(target = "name", ignore = true)

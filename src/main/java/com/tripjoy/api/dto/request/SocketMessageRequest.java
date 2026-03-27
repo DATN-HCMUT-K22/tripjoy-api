@@ -1,8 +1,8 @@
 package com.tripjoy.api.dto.request;
 
-import lombok.Data;
-
 import java.util.UUID;
+
+import lombok.Data;
 
 @Data
 public class SocketMessageRequest {
@@ -16,6 +16,6 @@ public class SocketMessageRequest {
     private UUID senderId;
 
     // Đích đến: Chỉ 1 trong 2 trường dưới có giá trị
-    private UUID groupId;     // Nếu chat nhóm
-    private UUID receiverId;  // Nếu chat 1-1
+    private UUID groupId; // Nếu chat nhóm
+    private UUID receiverId; // Nếu chat 1-1
 }

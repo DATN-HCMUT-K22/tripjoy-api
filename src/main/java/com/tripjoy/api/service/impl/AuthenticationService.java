@@ -1,9 +1,15 @@
 package com.tripjoy.api.service.impl;
 
+import java.text.ParseException;
+import java.util.*;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.nimbusds.jose.*;
 import com.tripjoy.api.configuration.security.JwtUtils;
 import com.tripjoy.api.constant.PredefinedRole;
-import com.tripjoy.api.service.IAuthenticationService;
 import com.tripjoy.api.dto.request.UserCreationRequest;
 import com.tripjoy.api.dto.request.auth.AuthenticationRequest;
 import com.tripjoy.api.dto.request.auth.IntrospectRequest;
@@ -21,16 +27,12 @@ import com.tripjoy.api.mapper.UserMapper;
 import com.tripjoy.api.repository.InvalidatedTokenRepository;
 import com.tripjoy.api.repository.RoleRepository;
 import com.tripjoy.api.repository.UserRepository;
+import com.tripjoy.api.service.IAuthenticationService;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.text.ParseException;
-import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -63,7 +65,8 @@ public class AuthenticationService implements IAuthenticationService {
 
         // 4. Gán Role mặc định (USER)
         // Tìm role tên là "USER" trong DB, nếu chưa có thì lỗi server
-        Role userRole = roleRepository.findByName(PredefinedRole.USER_ROLE)
+        Role userRole = roleRepository
+                .findByName(PredefinedRole.USER_ROLE)
                 .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
 
         Set<Role> roles = new HashSet<>();
@@ -81,13 +84,13 @@ public class AuthenticationService implements IAuthenticationService {
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        var user = userRepository.findByUsername(request.getUsername())
+        var user = userRepository
+                .findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         boolean isAuthenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
 
-        if (!isAuthenticated)
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        if (!isAuthenticated) throw new AppException(ErrorCode.UNAUTHENTICATED);
 
         var accessToken = jwtUtils.generateToken(user);
         var refreshToken = jwtUtils.generateRefreshToken(user);
@@ -112,8 +115,7 @@ public class AuthenticationService implements IAuthenticationService {
         return IntrospectResponse.builder().isValid(isValid).build();
     }
 
-    public void logout(LogoutRequest request)
-            throws JOSEException, ParseException {
+    public void logout(LogoutRequest request) throws JOSEException, ParseException {
         try {
             // Gọi JwtProvider để lấy thông tin token
             var signedToken = jwtUtils.verifyToken(request.getToken(), true);
@@ -122,10 +124,8 @@ public class AuthenticationService implements IAuthenticationService {
             UUID jtiUuid = UUID.fromString(jti);
             Date expiresAt = signedToken.getJWTClaimsSet().getExpirationTime();
 
-            InvalidatedToken invalidatedToken = InvalidatedToken.builder()
-                    .id(jtiUuid)
-                    .expiresAt(expiresAt)
-                    .build();
+            InvalidatedToken invalidatedToken =
+                    InvalidatedToken.builder().id(jtiUuid).expiresAt(expiresAt).build();
 
             invalidatedTokenRepository.save(invalidatedToken);
         } catch (AppException e) {
@@ -133,8 +133,7 @@ public class AuthenticationService implements IAuthenticationService {
         }
     }
 
-    public AuthenticationResponse refreshToken(RefreshRequest request)
-            throws ParseException, JOSEException {
+    public AuthenticationResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
         var signedToken = jwtUtils.verifyToken(request.getToken(), true);
 
         String tokenType = signedToken.getJWTClaimsSet().getStringClaim("type");
@@ -146,14 +145,13 @@ public class AuthenticationService implements IAuthenticationService {
         UUID jtiUuid = UUID.fromString(jti);
         var expiresAt = signedToken.getJWTClaimsSet().getExpirationTime();
 
-        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
-                .id(jtiUuid)
-                .expiresAt(expiresAt)
-                .build();
+        InvalidatedToken invalidatedToken =
+                InvalidatedToken.builder().id(jtiUuid).expiresAt(expiresAt).build();
         invalidatedTokenRepository.save(invalidatedToken);
 
         var username = signedToken.getJWTClaimsSet().getSubject();
-        var user = userRepository.findById(UUID.fromString(username))
+        var user = userRepository
+                .findById(UUID.fromString(username))
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         var newAccessToken = jwtUtils.generateToken(user);

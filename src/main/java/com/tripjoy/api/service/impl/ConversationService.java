@@ -1,5 +1,12 @@
 package com.tripjoy.api.service.impl;
 
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.tripjoy.api.dto.request.chat.ConversationUpdateRequest;
 import com.tripjoy.api.dto.response.ConversationResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
@@ -13,14 +20,9 @@ import com.tripjoy.api.mapper.ConversationMapper;
 import com.tripjoy.api.repository.ConversationMemberRepository;
 import com.tripjoy.api.repository.ConversationRepository;
 import com.tripjoy.api.service.IConversationService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -45,8 +47,8 @@ public class ConversationService implements IConversationService {
     }
 
     // Manually enrich response (because MapStruct @AfterMapping doesn't execute)
-    private void enrichConversationResponse(ConversationResponse response, Conversation conversation,
-            UUID currentUserId) {
+    private void enrichConversationResponse(
+            ConversationResponse response, Conversation conversation, UUID currentUserId) {
         // 1. Set name and avatar based on type
         if (conversation.getType() == ConversationType.GROUP) {
             // For GROUP: use conversation name if set, otherwise group name
@@ -81,8 +83,7 @@ public class ConversationService implements IConversationService {
             List<UserSimpleResponse> memberList = conversation.getMembers().stream()
                     .map(cm -> {
                         User user = cm.getUser();
-                        if (user == null)
-                            return null;
+                        if (user == null) return null;
                         return UserSimpleResponse.builder()
                                 .id(user.getId())
                                 .username(user.getUsername())
@@ -108,7 +109,8 @@ public class ConversationService implements IConversationService {
     }
 
     public ConversationResponse getConversationDetail(UUID conversationId, UUID currentUserId) {
-        Conversation conv = conversationRepository.findById(conversationId)
+        Conversation conv = conversationRepository
+                .findById(conversationId)
                 .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_FOUND));
 
         // Truyền currentUserId để mapper biết đường lấy tên/avatar đối phương
@@ -118,10 +120,11 @@ public class ConversationService implements IConversationService {
     }
 
     @Transactional
-    public ConversationResponse updateConversation(UUID conversationId, ConversationUpdateRequest request,
-            UUID currentUserId) {
+    public ConversationResponse updateConversation(
+            UUID conversationId, ConversationUpdateRequest request, UUID currentUserId) {
         // 1. Find conversation
-        Conversation conversation = conversationRepository.findById(conversationId)
+        Conversation conversation = conversationRepository
+                .findById(conversationId)
                 .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_FOUND));
 
         // 2. Verify user is member

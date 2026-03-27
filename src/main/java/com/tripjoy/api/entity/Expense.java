@@ -1,9 +1,10 @@
 package com.tripjoy.api.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.math.BigDecimal;
+
+import jakarta.persistence.*;
+
+import lombok.*;
 
 @Getter
 @Setter

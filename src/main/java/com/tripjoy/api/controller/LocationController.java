@@ -1,24 +1,27 @@
 package com.tripjoy.api.controller;
 
+import java.util.List;
+import java.util.UUID;
+
+import jakarta.validation.Valid;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
 import com.tripjoy.api.constant.Endpoint;
 import com.tripjoy.api.dto.request.LocationCreateRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.location.LocationResponse;
 import com.tripjoy.api.service.ILocationService;
 import com.tripjoy.api.utils.PageableUtils;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping(Endpoint.Location.BASE)
@@ -29,10 +32,11 @@ public class LocationController {
 
     ILocationService locationService;
 
-    @Operation(summary = "[ADMIN] Create a new location manually", description = "For admin to pre-populate hot/trending locations or batch import. "
-            +
-            "Normal users should NOT call this - locations are auto-created via suggest flow. " +
-            "Automatically prevents duplicates (by providerId or coordinates).")
+    @Operation(
+            summary = "[ADMIN] Create a new location manually",
+            description = "For admin to pre-populate hot/trending locations or batch import. "
+                    + "Normal users should NOT call this - locations are auto-created via suggest flow. "
+                    + "Automatically prevents duplicates (by providerId or coordinates).")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ApiResponse<LocationResponse> createLocation(@Valid @RequestBody LocationCreateRequest request) {
@@ -41,26 +45,30 @@ public class LocationController {
                 .build();
     }
 
-    @Operation(summary = "[ADMIN] Update location info", description = "Only admin can edit shared location data to maintain consistency. "
-            +
-            "Updates affect all groups suggesting this location.")
+    @Operation(
+            summary = "[ADMIN] Update location info",
+            description = "Only admin can edit shared location data to maintain consistency. "
+                    + "Updates affect all groups suggesting this location.")
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(Endpoint.Location.ID)
-    public ApiResponse<LocationResponse> updateLocation(@PathVariable UUID locationId,
-            @Valid @RequestBody LocationCreateRequest request) {
+    public ApiResponse<LocationResponse> updateLocation(
+            @PathVariable UUID locationId, @Valid @RequestBody LocationCreateRequest request) {
         return ApiResponse.<LocationResponse>builder()
                 .data(locationService.updateLocation(locationId, request))
                 .build();
     }
 
-    @Operation(summary = "[ADMIN] Soft delete location", description = "Marks location as deleted (is_deleted=true). Existing trips retain data, "
-            +
-            "but location won't appear in new searches.")
+    @Operation(
+            summary = "[ADMIN] Soft delete location",
+            description = "Marks location as deleted (is_deleted=true). Existing trips retain data, "
+                    + "but location won't appear in new searches.")
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(Endpoint.Location.ID)
     public ApiResponse<Void> deleteLocation(@PathVariable UUID locationId) {
         locationService.deleteLocation(locationId);
-        return ApiResponse.<Void>builder().message("Location soft deleted successfully").build();
+        return ApiResponse.<Void>builder()
+                .message("Location soft deleted successfully")
+                .build();
     }
 
     @Operation(summary = "Get all locations (paginated)")
@@ -79,9 +87,10 @@ public class LocationController {
                 .build();
     }
 
-    @Operation(summary = "Find nearby locations - OK", description = "Search for locations within a specified radius using PostGIS spatial queries. "
-            +
-            "Results are ordered by distance (nearest first).")
+    @Operation(
+            summary = "Find nearby locations - OK",
+            description = "Search for locations within a specified radius using PostGIS spatial queries. "
+                    + "Results are ordered by distance (nearest first).")
     @GetMapping("/nearby")
     public ApiResponse<List<LocationResponse>> getNearbyLocations(
             @RequestParam Double latitude,
@@ -90,17 +99,17 @@ public class LocationController {
             @RequestParam(required = false) List<String> categories,
             @RequestParam(required = false, defaultValue = "50") Integer limit) {
 
-        List<LocationResponse> nearby = locationService.getNearbyLocations(
-                latitude, longitude, radius, categories, limit);
+        List<LocationResponse> nearby =
+                locationService.getNearbyLocations(latitude, longitude, radius, categories, limit);
 
-        return ApiResponse.<List<LocationResponse>>builder()
-                .data(nearby)
-                .build();
+        return ApiResponse.<List<LocationResponse>>builder().data(nearby).build();
     }
 
-    @Operation(summary = "Search locations by text - OK", description = "Search locations by name or address with optional filters for city, district, and categories. "
-            +
-            "Supports pagination.")
+    @Operation(
+            summary = "Search locations by text - OK",
+            description =
+                    "Search locations by name or address with optional filters for city, district, and categories. "
+                            + "Supports pagination.")
     @GetMapping("/search")
     public ApiResponse<Page<LocationResponse>> searchLocations(
             @RequestParam(required = false) String query,
@@ -110,11 +119,9 @@ public class LocationController {
             Pageable pageable) {
         // Convert pageable field to use snake_case for SQL Native query in Repository
         Pageable sqlPageable = PageableUtils.toSnakeCase(pageable);
-        Page<LocationResponse> results = locationService.searchLocations(
-                query, city, district, categories, sqlPageable);
+        Page<LocationResponse> results =
+                locationService.searchLocations(query, city, district, categories, sqlPageable);
 
-        return ApiResponse.<Page<LocationResponse>>builder()
-                .data(results)
-                .build();
+        return ApiResponse.<Page<LocationResponse>>builder().data(results).build();
     }
 }

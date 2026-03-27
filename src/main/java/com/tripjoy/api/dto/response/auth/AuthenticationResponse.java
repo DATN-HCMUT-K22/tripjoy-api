@@ -1,6 +1,7 @@
 package com.tripjoy.api.dto.response.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 

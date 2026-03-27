@@ -1,6 +1,7 @@
 package com.tripjoy.api.entity;
 
 import jakarta.persistence.*;
+
 import lombok.*;
 
 @Getter

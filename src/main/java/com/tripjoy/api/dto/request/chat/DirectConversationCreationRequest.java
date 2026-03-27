@@ -1,11 +1,11 @@
 package com.tripjoy.api.dto.request.chat;
 
+import java.util.UUID;
 
 import jakarta.validation.constraints.NotNull;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.util.UUID;
 
 @Data
 @Builder

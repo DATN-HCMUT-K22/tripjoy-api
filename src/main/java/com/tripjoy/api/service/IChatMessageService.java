@@ -1,12 +1,13 @@
 package com.tripjoy.api.service;
 
+import java.util.List;
+import java.util.UUID;
+
 import com.tripjoy.api.dto.request.chat.ChatMessageRequest;
 import com.tripjoy.api.dto.response.ChatMessageResponse;
 import com.tripjoy.api.dto.response.MessageCursorResponse;
+import com.tripjoy.api.dto.response.MessageSearchResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
-
-import java.util.List;
-import java.util.UUID;
 
 public interface IChatMessageService {
     void likeMessage(UUID messageId, UUID userId);
@@ -22,11 +23,12 @@ public interface IChatMessageService {
     List<ChatMessageResponse> getPinnedMessages(UUID conversationId, UUID userId);
 
     MessageCursorResponse getMessages(
-            UUID conversationId,
-            UUID currentUserId,
-            String before,
-            String after,
-            Integer limit);
+            UUID conversationId, UUID currentUserId, String before, String after, Integer limit);
 
     List<UserSimpleResponse> getMessageLikes(UUID messageId, UUID currentUserId);
+
+    List<MessageSearchResponse> searchMessages(
+            UUID conversationId, UUID currentUserId, String keyword, int page, int size);
+
+    List<MessageSearchResponse> searchMessagesGlobal(UUID currentUserId, String keyword, int page, int size);
 }

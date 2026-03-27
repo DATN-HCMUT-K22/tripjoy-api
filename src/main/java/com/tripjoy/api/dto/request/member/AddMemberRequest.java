@@ -1,14 +1,15 @@
 package com.tripjoy.api.dto.request.member;
 
+import java.util.UUID;
+
+import jakarta.validation.constraints.NotNull;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tripjoy.api.enums.GroupRole;
+
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -24,8 +25,7 @@ public class AddMemberRequest {
             description = "UUID of the users to be added to the group",
             type = "String",
             requiredMode = Schema.RequiredMode.REQUIRED,
-            example = "a1b2c3d4-e5f6-7890-1234-567890abcdef"
-    )
+            example = "a1b2c3d4-e5f6-7890-1234-567890abcdef")
     UUID memberId;
 
     @NotNull(message = "Role is required")
@@ -35,7 +35,6 @@ public class AddMemberRequest {
             type = "string",
             allowableValues = {"LEADER", "CO_LEADER", "MEMBER"},
             requiredMode = Schema.RequiredMode.REQUIRED,
-            example = "CO_LEADER"
-    )
+            example = "CO_LEADER")
     GroupRole role = GroupRole.MEMBER;
 }

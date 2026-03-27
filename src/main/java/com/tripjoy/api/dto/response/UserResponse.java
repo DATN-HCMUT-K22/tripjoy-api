@@ -1,13 +1,12 @@
 package com.tripjoy.api.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-import lombok.experimental.SuperBuilder;
-
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 @Data
 @NoArgsConstructor

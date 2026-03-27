@@ -1,8 +1,9 @@
 package com.tripjoy.api.dto.request;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,8 +24,7 @@ public class ExpenseRequest {
             description = "Name of the expense",
             type = "String",
             requiredMode = Schema.RequiredMode.REQUIRED,
-            example = "Dinner at Hai San Be Man"
-    )
+            example = "Dinner at Hai San Be Man")
     String name;
 
     @Schema(
@@ -32,8 +32,7 @@ public class ExpenseRequest {
             description = "Detailed description of the expense",
             type = "String",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "Fresh seafood dinner"
-    )
+            example = "Fresh seafood dinner")
     String description;
 
     @NotNull
@@ -42,8 +41,7 @@ public class ExpenseRequest {
             description = "Cost of the expense",
             type = "Double",
             requiredMode = Schema.RequiredMode.REQUIRED,
-            example = "1500000.0"
-    )
+            example = "1500000.0")
     Double amount;
 
     @Schema(
@@ -51,8 +49,7 @@ public class ExpenseRequest {
             description = "Category of the expense",
             type = "String",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "Food"
-    )
+            example = "Food")
     String type;
 
     @Schema(
@@ -60,8 +57,7 @@ public class ExpenseRequest {
             description = "Payment method",
             type = "String",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "Credit Card"
-    )
+            example = "Credit Card")
     String method;
 
     // get users auth info from token (not from request body) -> this is users added expense

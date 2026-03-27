@@ -1,5 +1,13 @@
 package com.tripjoy.api.service.impl;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.tripjoy.api.dto.response.NotificationResponse;
 import com.tripjoy.api.entity.Notification;
 import com.tripjoy.api.exception.AppException;
@@ -7,17 +15,11 @@ import com.tripjoy.api.exception.ErrorCode;
 import com.tripjoy.api.mapper.NotificationMapper;
 import com.tripjoy.api.repository.NotificationRepository;
 import com.tripjoy.api.service.INotificationService;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -54,7 +56,8 @@ public class NotificationService implements INotificationService {
     @Override
     @Transactional
     public void markAsRead(UUID notificationId, UUID userId) {
-        Notification notification = notificationRepository.findByIdAndRecipient(notificationId, userId)
+        Notification notification = notificationRepository
+                .findByIdAndRecipient(notificationId, userId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOTIF_NOT_FOUND));
 
         if (Boolean.FALSE.equals(notification.getIsRead())) {
@@ -80,15 +83,19 @@ public class NotificationService implements INotificationService {
     @Override
     @Transactional
     public void toggleArchive(UUID notificationId, UUID userId, boolean archived) {
-        Notification notification = notificationRepository.findByIdAndRecipient(notificationId, userId)
+        Notification notification = notificationRepository
+                .findByIdAndRecipient(notificationId, userId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOTIF_NOT_FOUND));
 
         LocalDateTime now = LocalDateTime.now();
         int updated = notificationRepository.updateArchived(notificationId, userId, archived, now);
 
         if (updated > 0) {
-            log.info("Notification archive status updated: notificationId={}, userId={}, archived={}",
-                    notificationId, userId, archived);
+            log.info(
+                    "Notification archive status updated: notificationId={}, userId={}, archived={}",
+                    notificationId,
+                    userId,
+                    archived);
         }
     }
 
@@ -96,7 +103,8 @@ public class NotificationService implements INotificationService {
     @Override
     @Transactional
     public void deleteNotification(UUID notificationId, UUID userId) {
-        Notification notification = notificationRepository.findByIdAndRecipient(notificationId, userId)
+        Notification notification = notificationRepository
+                .findByIdAndRecipient(notificationId, userId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOTIF_NOT_FOUND));
 
         notificationRepository.delete(notification);
@@ -107,7 +115,8 @@ public class NotificationService implements INotificationService {
     @Override
     @Transactional(readOnly = true)
     public NotificationResponse getById(UUID notificationId, UUID userId) {
-        Notification notification = notificationRepository.findByIdAndRecipient(notificationId, userId)
+        Notification notification = notificationRepository
+                .findByIdAndRecipient(notificationId, userId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOTIF_NOT_FOUND));
 
         return notificationMapper.toResponse(notification);

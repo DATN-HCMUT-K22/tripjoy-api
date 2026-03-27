@@ -1,12 +1,14 @@
 package com.tripjoy.api.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.util.HashSet;
 import java.util.Set;
+
+import jakarta.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
+
+import lombok.*;
 
 @Getter
 @Setter

@@ -1,8 +1,9 @@
 package com.tripjoy.api.exception;
 
-import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+
+import lombok.Getter;
 
 @Getter
 public enum ErrorCode {
@@ -47,8 +48,8 @@ public enum ErrorCode {
     CANNOT_REMOVE_LEADER(3009, "Cannot remove the group leader", HttpStatus.FORBIDDEN),
     LEADER_CANNOT_LEAVE(3010, "Leader cannot leave group. Transfer leadership first", HttpStatus.BAD_REQUEST),
     CANNOT_CHANGE_LEADER_ROLE(3011, "Cannot change the leader's role", HttpStatus.FORBIDDEN),
-    CANNOT_ASSIGN_LEADER_ROLE(3012, "Cannot assign LEADER role. Use transfer leadership instead",
-            HttpStatus.BAD_REQUEST),
+    CANNOT_ASSIGN_LEADER_ROLE(
+            3012, "Cannot assign LEADER role. Use transfer leadership instead", HttpStatus.BAD_REQUEST),
     CANNOT_TRANSFER_TO_YOURSELF(3013, "Cannot transfer leadership to yourself", HttpStatus.BAD_REQUEST),
     GROUP_NOT_DELETED(3014, "Group is not deleted", HttpStatus.BAD_REQUEST),
     SUGGESTION_NOT_FOUND(3015, "Location suggestion not found", HttpStatus.NOT_FOUND),
@@ -73,8 +74,8 @@ public enum ErrorCode {
     UNSUPPORTED_FILE_TYPE(5002, "Unsupported file type", HttpStatus.BAD_REQUEST),
     UPLOAD_FAILED(5003, "File upload failed", HttpStatus.INTERNAL_SERVER_ERROR),
     MEDIA_FILE_EMPTY(5004, "Media file must not be empty", HttpStatus.BAD_REQUEST),
-    MEDIA_UNSUPPORTED_TYPE(5005, "Unsupported media type. Allowed: JPG, PNG, WEBP, GIF, HEIC, MP4, MOV, AVI",
-            HttpStatus.BAD_REQUEST),
+    MEDIA_UNSUPPORTED_TYPE(
+            5005, "Unsupported media type. Allowed: JPG, PNG, WEBP, GIF, HEIC, MP4, MOV, AVI", HttpStatus.BAD_REQUEST),
     MEDIA_FILE_TOO_LARGE(5006, "Media file exceeds maximum allowed size", HttpStatus.PAYLOAD_TOO_LARGE),
     MEDIA_UPLOAD_FAILED(5007, "Failed to upload media to cloud storage", HttpStatus.INTERNAL_SERVER_ERROR),
     MEDIA_DELETE_FAILED(5008, "Failed to delete media from cloud storage", HttpStatus.INTERNAL_SERVER_ERROR),
@@ -91,12 +92,11 @@ public enum ErrorCode {
     LOCATION_IN_USE(7002, "Cannot delete location: It is being used in group suggestions", HttpStatus.CONFLICT),
     INVALID_COORDINATES(7003, "Invalid latitude or longitude", HttpStatus.BAD_REQUEST),
     MAPBOX_API_ERROR(7004, "Mapbox API request failed", HttpStatus.BAD_GATEWAY),
-    INVALID_LOCATION_INPUT(7005, "Must provide either location_id OR location_data, but not both",
-            HttpStatus.BAD_REQUEST),
+    INVALID_LOCATION_INPUT(
+            7005, "Must provide either location_id OR location_data, but not both", HttpStatus.BAD_REQUEST),
 
     // --- 8. NOTIFICATION DOMAIN (8000 - 8999) ---
     NOTIF_NOT_FOUND(8001, "Notification not found", HttpStatus.NOT_FOUND),
-
     ;
 
     private final int code;

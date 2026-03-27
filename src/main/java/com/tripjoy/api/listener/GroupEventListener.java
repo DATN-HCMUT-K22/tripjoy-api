@@ -1,5 +1,15 @@
 package com.tripjoy.api.listener;
 
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
+
 import com.tripjoy.api.dto.event.GroupCreatedEvent;
 import com.tripjoy.api.dto.event.MemberJoinedGroupEvent;
 import com.tripjoy.api.dto.event.MemberRemovedFromGroupEvent;
@@ -10,17 +20,9 @@ import com.tripjoy.api.enums.ConversationType;
 import com.tripjoy.api.repository.ConversationMemberRepository;
 import com.tripjoy.api.repository.ConversationRepository;
 import com.tripjoy.api.repository.UserRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
-
-import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @Component
@@ -39,7 +41,9 @@ public class GroupEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleGroupCreated(GroupCreatedEvent event) {
         try {
-            log.info("EVENT: Group Created {} -> Init default conversation", event.getGroup().getId());
+            log.info(
+                    "EVENT: Group Created {} -> Init default conversation",
+                    event.getGroup().getId());
 
             // 1. Tạo Conversation "General Chat"
             Conversation defaultConv = Conversation.builder()
@@ -112,8 +116,8 @@ public class GroupEventListener {
             int count = 0;
             for (Conversation conversation : conversations) {
                 // Kiểm tra xem đã tồn tại chưa để tránh lỗi Duplicate Key
-                boolean exists = conversationMemberRepository.existsByConversationIdAndUserId(conversation.getId(),
-                        user.getId());
+                boolean exists = conversationMemberRepository.existsByConversationIdAndUserId(
+                        conversation.getId(), user.getId());
 
                 if (!exists) {
                     ConversationMember newMember = ConversationMember.builder()
@@ -161,9 +165,7 @@ public class GroupEventListener {
             int count = 0;
             for (Conversation conversation : conversations) {
                 // Delete ConversationMember record
-                conversationMemberRepository.deleteByConversationIdAndUserId(
-                        conversation.getId(),
-                        removedUser.getId());
+                conversationMemberRepository.deleteByConversationIdAndUserId(conversation.getId(), removedUser.getId());
                 count++;
             }
 
