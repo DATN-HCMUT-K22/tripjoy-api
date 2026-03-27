@@ -14,7 +14,6 @@ import com.tripjoy.api.dto.request.TripItemRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.ItineraryResponse;
 import com.tripjoy.api.dto.response.TripItemResponse;
-import com.tripjoy.api.dto.response.TravelNotebookResponse;
 import com.tripjoy.api.service.IItineraryService;
 import com.tripjoy.api.service.IItineraryGenerationService;
 import com.tripjoy.api.utils.SecurityUtils;
@@ -159,15 +158,5 @@ public class ItineraryController {
         return ApiResponse.<Void>builder().message("Trip item removed").build();
     }
 
-    // --- Itinerary Notebooks (List) ---
 
-    @Operation(summary = "Get all travel notebooks for this itinerary")
-    @GetMapping(Endpoint.Itinerary.NOTEBOOKS)
-    public ApiResponse<List<TravelNotebookResponse>> getNotebooksForItinerary(@PathVariable UUID itineraryId) {
-
-        // return ApiResponse.<List<TravelNotebookResponse>>builder()
-        // .data(travelNotebookService.getNotebooksByItinerary(itineraryId))
-        // .build();
-        return null; // Placeholder
-    }
 }
