@@ -126,7 +126,7 @@ public class ItineraryController {
     @Operation(summary = "Add a trip item to an itinerary")
     @PostMapping(Endpoint.Itinerary.ITEMS_BASE)
     public ApiResponse<TripItemResponse> addTripItem(
-            @PathVariable UUID itineraryId, @Valid @RequestBody TripItemRequest request) {
+            @PathVariable("itineraryId") UUID itineraryId, @Valid @RequestBody TripItemRequest request) {
         return ApiResponse.<TripItemResponse>builder()
                 .data(itineraryService.addTripItem(itineraryId, request))
                 .build();
@@ -134,7 +134,7 @@ public class ItineraryController {
 
     @Operation(summary = "Get all trip items for an itinerary")
     @GetMapping(Endpoint.Itinerary.ITEMS_BASE)
-    public ApiResponse<List<TripItemResponse>> getTripItems(@PathVariable UUID itineraryId) {
+    public ApiResponse<List<TripItemResponse>> getTripItems(@PathVariable("itineraryId") UUID itineraryId) {
         return ApiResponse.<List<TripItemResponse>>builder()
                 .data(itineraryService.getTripItems(itineraryId))
                 .build();
@@ -143,8 +143,8 @@ public class ItineraryController {
     @Operation(summary = "Update a specific trip item")
     @PutMapping(Endpoint.Itinerary.ITEMS_ID)
     public ApiResponse<TripItemResponse> updateTripItem(
-            @PathVariable UUID itineraryId,
-            @PathVariable UUID tripItemId,
+            @PathVariable("itineraryId") UUID itineraryId,
+            @PathVariable("tripItemId") UUID tripItemId,
             @Valid @RequestBody TripItemRequest request) {
         return ApiResponse.<TripItemResponse>builder()
                 .data(itineraryService.updateTripItem(itineraryId, tripItemId, request))
@@ -153,7 +153,8 @@ public class ItineraryController {
 
     @Operation(summary = "Remove a specific trip item from an itinerary")
     @DeleteMapping(Endpoint.Itinerary.ITEMS_ID)
-    public ApiResponse<Void> removeTripItem(@PathVariable UUID itineraryId, @PathVariable UUID tripItemId) {
+    public ApiResponse<Void> removeTripItem(
+            @PathVariable("itineraryId") UUID itineraryId, @PathVariable("tripItemId") UUID tripItemId) {
         itineraryService.removeTripItem(itineraryId, tripItemId);
         return ApiResponse.<Void>builder().message("Trip item removed").build();
     }

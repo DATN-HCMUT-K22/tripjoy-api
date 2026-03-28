@@ -173,11 +173,10 @@ public class ItineraryService implements IItineraryService {
 
     @Override
     public List<TripItemResponse> getTripItems(UUID itineraryId) {
-        Itinerary itinerary = itineraryRepository.findById(itineraryId)
+        itineraryRepository.findById(itineraryId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        // Note: Filter soft deleted items here if TripItem gets softDelete capability
-        return itinerary.getTripItems().stream()
+        return tripItemRepository.findByItineraryId(itineraryId).stream()
                 .map(tripItemMapper::toTripItemResponse)
                 .collect(Collectors.toList());
     }

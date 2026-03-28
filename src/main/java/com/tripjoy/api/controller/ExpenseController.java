@@ -31,7 +31,7 @@ public class ExpenseController {
     @Operation(summary = "Add an expense to an itinerary")
     @PostMapping(Endpoint.Itinerary.EXPENSES_BASE)
     public ApiResponse<ExpenseResponse> addExpense(
-            @PathVariable UUID itineraryId, @Valid @RequestBody ExpenseRequest request) {
+            @PathVariable("itineraryId") UUID itineraryId, @Valid @RequestBody ExpenseRequest request) {
         return ApiResponse.<ExpenseResponse>builder()
                 .data(expenseService.addExpense(itineraryId, request))
                 .build();
@@ -39,7 +39,7 @@ public class ExpenseController {
 
     @Operation(summary = "Get all expenses of an itinerary")
     @GetMapping(Endpoint.Itinerary.EXPENSES_BASE)
-    public ApiResponse<List<ExpenseResponse>> getExpenses(@PathVariable UUID itineraryId) {
+    public ApiResponse<List<ExpenseResponse>> getExpenses(@PathVariable("itineraryId") UUID itineraryId) {
         return ApiResponse.<List<ExpenseResponse>>builder()
                 .data(expenseService.getExpenses(itineraryId))
                 .build();
@@ -48,8 +48,8 @@ public class ExpenseController {
     @Operation(summary = "Update an expense in an itinerary")
     @PutMapping(Endpoint.Itinerary.EXPENSES_ID)
     public ApiResponse<ExpenseResponse> updateExpense(
-            @PathVariable UUID itineraryId,
-            @PathVariable UUID expenseId,
+            @PathVariable("itineraryId") UUID itineraryId,
+            @PathVariable("expenseId") UUID expenseId,
             @Valid @RequestBody ExpenseRequest request) {
         return ApiResponse.<ExpenseResponse>builder()
                 .data(expenseService.updateExpense(itineraryId, expenseId, request))
@@ -58,7 +58,8 @@ public class ExpenseController {
 
     @Operation(summary = "Remove an expense from an itinerary")
     @DeleteMapping(Endpoint.Itinerary.EXPENSES_ID)
-    public ApiResponse<Void> removeExpense(@PathVariable UUID itineraryId, @PathVariable UUID expenseId) {
+    public ApiResponse<Void> removeExpense(
+            @PathVariable("itineraryId") UUID itineraryId, @PathVariable("expenseId") UUID expenseId) {
         expenseService.removeExpense(itineraryId, expenseId);
         return ApiResponse.<Void>builder()
                 .message("Expense removed successfully")
