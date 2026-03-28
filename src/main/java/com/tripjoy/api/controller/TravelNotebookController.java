@@ -1,5 +1,6 @@
 package com.tripjoy.api.controller;
 
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.validation.Valid;
@@ -63,7 +64,14 @@ public class TravelNotebookController {
     public ApiResponse<Void> deleteNotebook(@PathVariable UUID notebookId) {
 
         // travelNotebookService.deleteNotebook(notebookId);
-        // return ApiResponse.<Void>builder().message("Notebook deleted").build();
+        return null; // Placeholder
+    }
+
+    // --- Itinerary-specific Notebook (Sub-resource) ---
+    @Operation(summary = "Get travel notebook for a specific itinerary")
+    @GetMapping(Endpoint.Itinerary.BASE + Endpoint.Itinerary.NOTEBOOKS)
+    public ApiResponse<List<TravelNotebookResponse>> getNotebooksByItinerary(@PathVariable UUID itineraryId) {
+        // travelNotebookService.getNotebookByItineraryId(itineraryId)
         return null; // Placeholder
     }
 }

@@ -9,6 +9,7 @@ import jakarta.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
+import org.hibernate.annotations.BatchSize;
 
 import lombok.*;
 
@@ -45,9 +46,15 @@ public class Post extends BaseEntity {
     @JsonIgnore
     private Set<Comment> comments = new HashSet<>();
 
-    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonIgnore
-    private Set<PostHashtag> hashtags = new HashSet<>();
+    @ManyToMany
+    @JoinTable(
+        name = "post_hashtag_mapping",
+        joinColumns = @JoinColumn(name = "post_id"),
+        inverseJoinColumns = @JoinColumn(name = "hashtag_id")
+    )
+    @BatchSize(size = 20)
+    @Builder.Default
+    private Set<Hashtag> hashtags = new HashSet<>();
 
     @ManyToMany
     @JoinTable(

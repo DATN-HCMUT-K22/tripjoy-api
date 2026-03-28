@@ -18,7 +18,7 @@ import lombok.experimental.SuperBuilder;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ExpenseRequest {
 
-    @NotBlank
+    @NotBlank(message = "INVALID_REQUEST")
     @Schema(
             name = "name",
             description = "Name of the expense",
@@ -35,7 +35,7 @@ public class ExpenseRequest {
             example = "Fresh seafood dinner")
     String description;
 
-    @NotNull
+    @NotNull(message = "INVALID_REQUEST")
     @Schema(
             name = "amount",
             description = "Cost of the expense",
