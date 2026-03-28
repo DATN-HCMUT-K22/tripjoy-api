@@ -24,7 +24,7 @@ import com.tripjoy.api.dto.ai.GooglePlaceDetailsDto;
 import com.tripjoy.api.dto.request.GenerateItineraryRequest;
 import com.tripjoy.api.dto.response.ItineraryResponse;
 import com.tripjoy.api.entity.Itinerary;
-import com.tripjoy.api.entity.ItineraryTheme;
+import com.tripjoy.api.entity.Theme;
 import com.tripjoy.api.entity.Location;
 import com.tripjoy.api.entity.TripItem;
 import com.tripjoy.api.entity.User;
@@ -38,6 +38,7 @@ import com.tripjoy.api.repository.TripItemRepository;
 import com.tripjoy.api.repository.UserRepository;
 import com.tripjoy.api.service.IAiService;
 import com.tripjoy.api.service.IGooglePlacesService;
+import com.tripjoy.api.service.IThemeService;
 import com.tripjoy.api.service.IItineraryGenerationService;
 
 import lombok.RequiredArgsConstructor;
@@ -57,6 +58,7 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
 
     private final IAiService aiService;
     private final IGooglePlacesService googlePlacesService;
+    private final IThemeService themeService;
 
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
@@ -81,13 +83,7 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
                 .build();
 
         if (request.getThemes() != null && !request.getThemes().isEmpty()) {
-            Set<ItineraryTheme> themes = request.getThemes().stream()
-                    .map(t -> ItineraryTheme.builder()
-                            .theme(t)
-                            .itinerary(itinerary)
-                            .build())
-                    .collect(Collectors.toSet());
-            itinerary.setItineraryThemes(themes);
+            itinerary.setThemes(themeService.syncThemes(request.getThemes()));
         }
 
         Itinerary savedItinerary = itineraryRepository.save(itinerary);

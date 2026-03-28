@@ -1,6 +1,7 @@
 package com.tripjoy.api.dto.response;
 
 import java.time.LocalDate;
+import java.util.Set;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -38,4 +39,6 @@ public class ItineraryResponse extends BaseResponse {
 
     @JsonProperty("created_by_user") // Renamed
     UserSimpleResponse createdByUser;
+
+    Set<String> themes;
 }

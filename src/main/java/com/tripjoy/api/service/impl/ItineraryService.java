@@ -27,6 +27,7 @@ import com.tripjoy.api.repository.LocationRepository;
 import com.tripjoy.api.repository.TripItemRepository;
 import com.tripjoy.api.repository.UserRepository;
 import com.tripjoy.api.service.IItineraryService;
+import com.tripjoy.api.service.IThemeService;
 import com.tripjoy.api.utils.SecurityUtils;
 
 import lombok.AccessLevel;
@@ -46,6 +47,7 @@ public class ItineraryService implements IItineraryService {
     LocationRepository locationRepository;
     ItineraryMapper itineraryMapper;
     TripItemMapper tripItemMapper;
+    IThemeService themeService;
 
     @Override
     public ItineraryResponse createItinerary(ItineraryRequest request) {
@@ -55,6 +57,10 @@ public class ItineraryService implements IItineraryService {
 
         Itinerary itinerary = itineraryMapper.toItinerary(request);
         itinerary.setUser(user);
+        
+        if (request.getThemes() != null) {
+            itinerary.setThemes(themeService.syncThemes(request.getThemes()));
+        }
         
         if (request.getStatus() == null) {
             itinerary.setStatus(ItineraryStatus.DRAFT);
@@ -90,6 +96,10 @@ public class ItineraryService implements IItineraryService {
         validateOwnership(itinerary);
 
         itineraryMapper.updateItinerary(itinerary, request);
+
+        if (request.getThemes() != null) {
+            itinerary.setThemes(themeService.syncThemes(request.getThemes()));
+        }
 
         if (request.getGroupId() != null) {
             Group group = groupRepository.findById(UUID.fromString(request.getGroupId()))

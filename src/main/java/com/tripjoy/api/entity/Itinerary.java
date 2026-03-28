@@ -10,6 +10,7 @@ import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 import com.tripjoy.api.enums.ItineraryStatus;
+import org.hibernate.annotations.BatchSize;
 
 import lombok.*;
 
@@ -61,10 +62,15 @@ public class Itinerary extends BaseEntity {
     @JoinColumn(name = "destination")
     private Location destination;
 
-    @OneToMany(mappedBy = "itinerary", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
+    @ManyToMany
+    @JoinTable(
+        name = "itinerary_theme_mapping",
+        joinColumns = @JoinColumn(name = "itinerary_id"),
+        inverseJoinColumns = @JoinColumn(name = "theme_id")
+    )
+    @BatchSize(size = 20)
     @Builder.Default
-    private Set<ItineraryTheme> itineraryThemes = new HashSet<>();
+    private Set<Theme> themes = new HashSet<>();
 
     @OneToMany(mappedBy = "itinerary", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
