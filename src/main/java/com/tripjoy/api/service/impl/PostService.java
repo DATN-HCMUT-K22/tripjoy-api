@@ -2,19 +2,30 @@ package com.tripjoy.api.service.impl;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tripjoy.api.dto.request.PostRequest;
 import com.tripjoy.api.dto.request.PostSearchRequest;
 import com.tripjoy.api.dto.response.PostResponse;
+import com.tripjoy.api.entity.Itinerary;
 import com.tripjoy.api.entity.Post;
+import com.tripjoy.api.entity.User;
+import com.tripjoy.api.exception.AppException;
+import com.tripjoy.api.exception.ErrorCode;
 import com.tripjoy.api.mapper.PostMapper;
+import com.tripjoy.api.repository.ItineraryRepository;
 import com.tripjoy.api.repository.PostRepository;
+import com.tripjoy.api.repository.UserRepository;
+import com.tripjoy.api.service.IHashtagService;
 import com.tripjoy.api.service.IPostService;
+import com.tripjoy.api.utils.SecurityUtils;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -27,82 +38,208 @@ public class PostService implements IPostService {
 
     PostRepository postRepository;
     PostMapper postMapper;
+    UserRepository userRepository;
+    ItineraryRepository itineraryRepository;
+    IHashtagService hashtagService;
+
+    @Override
+    @Transactional
+    public PostResponse createPost(PostRequest request) {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        Post post = Post.builder()
+                .content(request.getContent())
+                .mediaUrls(request.getMediaUrls())
+                .creator(user)
+                .shareQuantity(0)
+                .build();
+
+        if (request.getItineraryId() != null) {
+            Itinerary itinerary = itineraryRepository.findById(request.getItineraryId())
+                    .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+            post.setItinerary(itinerary);
+        }
+
+        if (request.getHashtags() != null && !request.getHashtags().isEmpty()) {
+            post.setHashtags(hashtagService.syncHashtags(request.getHashtags()));
+        }
+
+        post = postRepository.save(post);
+        return getPostResponseWithContext(post, userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<PostResponse> getAllPosts(Pageable pageable, UUID currentUserId) {
+        return postRepository.findBySoftDeleteInfoIsDeletedFalse(pageable)
+                .map(post -> getPostResponseWithContext(post, currentUserId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PostResponse getPostById(UUID postId, UUID currentUserId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        if (post.getSoftDeleteInfo() != null && post.getSoftDeleteInfo().isDeleted()) {
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
+        }
+
+        return getPostResponseWithContext(post, currentUserId);
+    }
+
+    @Override
+    @Transactional
+    public PostResponse updatePost(UUID postId, PostRequest request) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        validateOwnership(post);
+
+        post.setContent(request.getContent());
+        post.setMediaUrls(request.getMediaUrls());
+
+        if (request.getItineraryId() != null) {
+            Itinerary itinerary = itineraryRepository.findById(request.getItineraryId())
+                    .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+            post.setItinerary(itinerary);
+        } else {
+            post.setItinerary(null);
+        }
+
+        if (request.getHashtags() != null) {
+            post.setHashtags(hashtagService.syncHashtags(request.getHashtags()));
+        }
+
+        post = postRepository.save(post);
+        return getPostResponseWithContext(post, SecurityUtils.getCurrentUserId());
+    }
+
+    @Override
+    @Transactional
+    public void deletePost(UUID postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        validateOwnership(post);
+
+        post.getSoftDeleteInfo().markAsDeleted(SecurityUtils.getCurrentUserId().toString());
+        postRepository.save(post);
+    }
+
+    @Override
+    @Transactional
+    public void likePost(UUID postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        User user = userRepository.findById(SecurityUtils.getCurrentUserId())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        post.getLikeUsers().add(user);
+        postRepository.save(post);
+    }
+
+    @Override
+    @Transactional
+    public void unlikePost(UUID postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        User user = userRepository.findById(SecurityUtils.getCurrentUserId())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        post.getLikeUsers().remove(user);
+        postRepository.save(post);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<PostResponse> getSavedPosts(Pageable pageable, UUID currentUserId) {
+        return postRepository.findBySaveUsersIdAndSoftDeleteInfoIsDeletedFalse(currentUserId, pageable)
+                .map(post -> getPostResponseWithContext(post, currentUserId));
+    }
+
+    @Override
+    @Transactional
+    public void savePost(UUID postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        User user = userRepository.findById(SecurityUtils.getCurrentUserId())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        post.getSaveUsers().add(user);
+        postRepository.save(post);
+    }
+
+    @Override
+    @Transactional
+    public void unsavePost(UUID postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        User user = userRepository.findById(SecurityUtils.getCurrentUserId())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        post.getSaveUsers().remove(user);
+        postRepository.save(post);
+    }
 
     @Override
     @Transactional(readOnly = true)
     public Page<PostResponse> searchPosts(PostSearchRequest request, UUID currentUserId) {
-        // Enforce pagination limits
         int page = Math.max(0, request.getPage());
-        int size = Math.min(50, Math.max(1, request.getSize())); // Max 50 items per page
+        int size = Math.min(50, Math.max(1, request.getSize()));
         int offset = page * size;
 
-        // Clean text inputs
         String keyword = request.getQ() != null && !request.getQ().trim().isEmpty() ? request.getQ().trim() : null;
         String hashtag = request.getHashtag() != null && !request.getHashtag().trim().isEmpty() ? request.getHashtag().trim() : null;
         
-        // Remove # from hashtag if user included it
         if (hashtag != null && hashtag.startsWith("#")) {
             hashtag = hashtag.substring(1);
         }
 
-        // 1. Query for posts data
         List<Post> posts = postRepository.searchPosts(
-                keyword,
-                hashtag,
-                request.getCreatorId(),
-                request.getItineraryId(),
-                request.getStartDate(),
-                request.getEndDate(),
-                request.getMinDays(),
-                request.getMaxDays(),
-                request.getMinBudget(),
-                request.getMaxBudget(),
-                request.getMinPeople(),
-                request.getMaxPeople(),
-                request.getOriginId(),
-                request.getDestinationId(),
-                request.getSort(),
-                size,
-                offset);
+                keyword, hashtag, request.getCreatorId(), request.getItineraryId(),
+                request.getStartDate(), request.getEndDate(), request.getMinDays(), request.getMaxDays(),
+                request.getMinBudget(), request.getMaxBudget(), request.getMinPeople(), request.getMaxPeople(),
+                request.getOriginId(), request.getDestinationId(), request.getSort(), size, offset);
 
-        // 2. Count total results for pagination metadata
         long totalElements = 0;
         if (!posts.isEmpty() || page > 0) {
             totalElements = postRepository.countSearchPosts(
-                    keyword,
-                    hashtag,
-                    request.getCreatorId(),
-                    request.getItineraryId(),
-                    request.getStartDate(),
-                    request.getEndDate(),
-                    request.getMinDays(),
-                    request.getMaxDays(),
-                    request.getMinBudget(),
-                    request.getMaxBudget(),
-                    request.getMinPeople(),
-                    request.getMaxPeople(),
-                    request.getOriginId(),
-                    request.getDestinationId());
+                    keyword, hashtag, request.getCreatorId(), request.getItineraryId(),
+                    request.getStartDate(), request.getEndDate(), request.getMinDays(), request.getMaxDays(),
+                    request.getMinBudget(), request.getMaxBudget(), request.getMinPeople(), request.getMaxPeople(),
+                    request.getOriginId(), request.getDestinationId());
         }
 
-        // 3. Map entities to Responses, handling contextual fields manually
-        List<PostResponse> responses = posts.stream().map(post -> {
-            PostResponse response = postMapper.toPostResponse(post);
-            
-            // Context logic: check if the current user liked or saved the post
-            if (currentUserId != null) {
-                response.setIsLiked(post.getLikeUsers() != null 
-                    && post.getLikeUsers().stream().anyMatch(user -> user.getId().equals(currentUserId)));
-                response.setIsSaved(post.getSaveUsers() != null 
-                    && post.getSaveUsers().stream().anyMatch(user -> user.getId().equals(currentUserId)));
-            } else {
-                response.setIsLiked(false);
-                response.setIsSaved(false);
-            }
-            
-            return response;
-        }).toList();
+        List<PostResponse> responses = posts.stream()
+                .map(post -> getPostResponseWithContext(post, currentUserId))
+                .collect(Collectors.toList());
 
         return new PageImpl<>(responses, PageRequest.of(page, size), totalElements);
+    }
+
+    private PostResponse getPostResponseWithContext(Post post, UUID currentUserId) {
+        PostResponse response = postMapper.toPostResponse(post);
+        if (currentUserId != null) {
+            response.setIsLiked(post.getLikeUsers() != null && post.getLikeUsers().stream().anyMatch(u -> u.getId().equals(currentUserId)));
+            response.setIsSaved(post.getSaveUsers() != null && post.getSaveUsers().stream().anyMatch(u -> u.getId().equals(currentUserId)));
+        } else {
+            response.setIsLiked(false);
+            response.setIsSaved(false);
+        }
+        return response;
+    }
+
+    private void validateOwnership(Post post) {
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+        if (post.getCreator() == null || !post.getCreator().getId().equals(currentUserId)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
     }
 }
