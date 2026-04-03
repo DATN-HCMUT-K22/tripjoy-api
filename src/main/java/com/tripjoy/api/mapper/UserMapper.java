@@ -6,7 +6,7 @@ import org.mapstruct.MappingTarget;
 
 import com.tripjoy.api.configuration.mapper.BaseMapperConfig;
 import com.tripjoy.api.dto.request.UserCreationRequest;
-import com.tripjoy.api.dto.request.UserUpdateRequest;
+import com.tripjoy.api.dto.request.UserProfileUpdateRequest;
 import com.tripjoy.api.dto.response.UserResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import com.tripjoy.api.entity.User;
@@ -19,9 +19,8 @@ public interface UserMapper {
 
     UserSimpleResponse toUserSimpleResponse(User user);
 
-    // Update: Chỉ cần ignore những cái CẤM update (như password, roles)
     @Mapping(target = "roles", ignore = true)
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "username", ignore = true)
-    void updateUser(@MappingTarget User user, UserUpdateRequest request);
+    void updateMyProfile(@MappingTarget User user, UserProfileUpdateRequest request);
 }

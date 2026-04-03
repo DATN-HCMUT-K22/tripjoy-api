@@ -10,8 +10,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.tripjoy.api.dto.request.ChangePasswordRequest;
 import com.tripjoy.api.dto.request.UserCreationRequest;
-import com.tripjoy.api.dto.request.UserUpdateRequest;
+import com.tripjoy.api.dto.request.UserProfileUpdateRequest;
+import com.tripjoy.api.dto.request.UserRoleUpdateRequest;
+
 import com.tripjoy.api.dto.response.UserResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import com.tripjoy.api.entity.Role;
@@ -73,16 +76,56 @@ public class UserService implements IUserService {
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
-    @PostAuthorize("returnObject.username == authentication.name")
-    public UserResponse updateUser(UUID userId, UserUpdateRequest request) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    @Override
+    public UserResponse updateMyProfile(UserProfileUpdateRequest request) {
+        var context = SecurityContextHolder.getContext();
+        String currentUserId = context.getAuthentication().getName();
 
-        userMapper.updateUser(user, request);
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        User user = userRepository
+                .findById(UUID.fromString(currentUserId))
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        userMapper.updateMyProfile(user, request);
+        return userMapper.toUserResponse(userRepository.save(user));
+    }
+
+    @Override
+    public void changeMyPassword(ChangePasswordRequest request) {
+        var context = SecurityContextHolder.getContext();
+        String currentUserId = context.getAuthentication().getName();
+
+        User user = userRepository
+                .findById(UUID.fromString(currentUserId))
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED); // or INVALID_PASSWORD
+        }
+
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new AppException(ErrorCode.INVALID_REQUEST); // passwords do not match
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserResponse assignRoles(UUID userId, UserRoleUpdateRequest request) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         List<Role> roles = roleRepository.findAllById(request.getRoles());
         user.setRoles(new HashSet<>(roles));
 
+        return userMapper.toUserResponse(userRepository.save(user));
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserResponse updateUserStatus(UUID userId, boolean isLocked) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        user.setIsLocked(isLocked);
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
