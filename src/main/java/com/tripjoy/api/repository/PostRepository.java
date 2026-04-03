@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,14 +26,15 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
             value =
                     """
         SELECT p.* FROM post p
-        LEFT JOIN post_hashtag ph ON ph.post_id = p.id
+        LEFT JOIN post_hashtag_mapping phm ON phm.post_id = p.id
+        LEFT JOIN hashtag h ON phm.hashtag_id = h.id
         LEFT JOIN itinerary i ON p.itinerary_id = i.id
         WHERE p.is_deleted = false
         AND (:keyword IS NULL OR (
             to_tsvector('simple', coalesce(p.content, '')) @@ plainto_tsquery('simple', CAST(:keyword AS text))
             OR p.content ILIKE '%' || CAST(:keyword AS text) || '%'
         ))
-        AND (:hashtag IS NULL OR LOWER(ph.hashtag) = LOWER(CAST(:hashtag AS text)))
+        AND (:hashtag IS NULL OR LOWER(h.name) = LOWER(CAST(:hashtag AS text)))
         AND (CAST(:creatorId AS uuid) IS NULL OR p.creator_id = CAST(:creatorId AS uuid))
         AND (CAST(:itineraryId AS uuid) IS NULL OR p.itinerary_id = CAST(:itineraryId AS uuid))
         AND (CAST(:startDate AS timestamp) IS NULL OR i.start_date >= CAST(:startDate AS timestamp))
@@ -77,14 +80,15 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
             value =
                     """
         SELECT COUNT(DISTINCT p.id) FROM post p
-        LEFT JOIN post_hashtag ph ON ph.post_id = p.id
+        LEFT JOIN post_hashtag_mapping phm ON phm.post_id = p.id
+        LEFT JOIN hashtag h ON phm.hashtag_id = h.id
         LEFT JOIN itinerary i ON p.itinerary_id = i.id
         WHERE p.is_deleted = false
         AND (:keyword IS NULL OR (
             to_tsvector('simple', coalesce(p.content, '')) @@ plainto_tsquery('simple', CAST(:keyword AS text))
             OR p.content ILIKE '%' || CAST(:keyword AS text) || '%'
         ))
-        AND (:hashtag IS NULL OR LOWER(ph.hashtag) = LOWER(CAST(:hashtag AS text)))
+        AND (:hashtag IS NULL OR LOWER(h.name) = LOWER(CAST(:hashtag AS text)))
         AND (CAST(:creatorId AS uuid) IS NULL OR p.creator_id = CAST(:creatorId AS uuid))
         AND (CAST(:itineraryId AS uuid) IS NULL OR p.itinerary_id = CAST(:itineraryId AS uuid))
         AND (CAST(:startDate AS timestamp) IS NULL OR i.start_date >= CAST(:startDate AS timestamp))
@@ -114,4 +118,8 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
             @Param("maxPeople") Integer maxPeople,
             @Param("originId") UUID originId,
             @Param("destinationId") UUID destinationId);
+
+    Page<Post> findBySoftDeleteInfoIsDeletedFalse(Pageable pageable);
+
+    Page<Post> findBySaveUsersIdAndSoftDeleteInfoIsDeletedFalse(UUID userId, Pageable pageable);
 }

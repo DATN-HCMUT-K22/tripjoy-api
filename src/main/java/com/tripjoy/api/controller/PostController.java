@@ -33,7 +33,7 @@ import lombok.experimental.FieldDefaults;
 public class PostController {
 
     IPostService postService;
-    ICommentService commentService; // Used for nested comments
+    ICommentService commentService;
 
     // --- SEARCH ---
 
@@ -56,38 +56,40 @@ public class PostController {
     @PostMapping
     public ApiResponse<PostResponse> createPost(@Valid @RequestBody PostRequest request) {
         return ApiResponse.<PostResponse>builder()
-                // .data(postService.createPost(request))
+                .data(postService.createPost(request))
                 .build();
     }
 
     @Operation(summary = "Get all posts (paginated)")
     @GetMapping
     public ApiResponse<Page<PostResponse>> getAllPosts(Pageable pageable) {
+        UUID currentUserId = SecurityUtils.getCurrentUserIdSafe();
         return ApiResponse.<Page<PostResponse>>builder()
-                // .data(postService.getAllPosts(pageable))
+                .data(postService.getAllPosts(pageable, currentUserId))
                 .build();
     }
 
     @Operation(summary = "Get a single post by ID")
     @GetMapping(Endpoint.Post.ID)
-    public ApiResponse<PostResponse> getPostById(@PathVariable UUID postId) {
+    public ApiResponse<PostResponse> getPostById(@PathVariable("postId") UUID postId) {
+        UUID currentUserId = SecurityUtils.getCurrentUserIdSafe();
         return ApiResponse.<PostResponse>builder()
-                // .data(postService.getPostById(postId))
+                .data(postService.getPostById(postId, currentUserId))
                 .build();
     }
 
     @Operation(summary = "Update a post")
     @PutMapping(Endpoint.Post.ID)
-    public ApiResponse<PostResponse> updatePost(@PathVariable UUID postId, @Valid @RequestBody PostRequest request) {
+    public ApiResponse<PostResponse> updatePost(@PathVariable("postId") UUID postId, @Valid @RequestBody PostRequest request) {
         return ApiResponse.<PostResponse>builder()
-                // .data(postService.updatePost(postId, request))
+                .data(postService.updatePost(postId, request))
                 .build();
     }
 
     @Operation(summary = "Delete a post")
     @DeleteMapping(Endpoint.Post.ID)
-    public ApiResponse<Void> deletePost(@PathVariable UUID postId) {
-        // postService.deletePost(postId);
+    public ApiResponse<Void> deletePost(@PathVariable("postId") UUID postId) {
+        postService.deletePost(postId);
         return ApiResponse.<Void>builder().message("Post deleted successfully").build();
     }
 
@@ -95,59 +97,61 @@ public class PostController {
 
     @Operation(summary = "Like a post")
     @PostMapping(Endpoint.Post.LIKES)
-    public ApiResponse<Void> likePost(@PathVariable UUID postId) {
-        // postService.likePost(postId);
+    public ApiResponse<Void> likePost(@PathVariable("postId") UUID postId) {
+        postService.likePost(postId);
         return ApiResponse.<Void>builder().message("Post liked").build();
     }
 
     @Operation(summary = "Unlike a post")
     @DeleteMapping(Endpoint.Post.LIKES)
-    public ApiResponse<Void> unlikePost(@PathVariable UUID postId) {
-        // postService.unlikePost(postId);
+    public ApiResponse<Void> unlikePost(@PathVariable("postId") UUID postId) {
+        postService.unlikePost(postId);
         return ApiResponse.<Void>builder().message("Post unliked").build();
     }
 
     // --- Save Actions ---
 
     @Operation(summary = "Get saved posts for the current user")
-    @GetMapping(Endpoint.Post.SAVES)
-    public ApiResponse<PostResponse> getSavedPosts() {
-        return ApiResponse.<PostResponse>builder()
-                // .data(postService.getSavedPosts())
+    @GetMapping(Endpoint.Post.MY_SAVES)
+    public ApiResponse<Page<PostResponse>> getMySavedPosts(Pageable pageable) {
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+        return ApiResponse.<Page<PostResponse>>builder()
+                .data(postService.getSavedPosts(pageable, currentUserId))
                 .build();
     }
 
     @Operation(summary = "Save a post")
     @PostMapping(Endpoint.Post.SAVES)
-    public ApiResponse<Void> savePost(@PathVariable UUID postId) {
-        // postService.savePost(postId);
+    public ApiResponse<Void> savePost(@PathVariable("postId") UUID postId) {
+        postService.savePost(postId);
         return ApiResponse.<Void>builder().message("Post saved").build();
     }
 
     @Operation(summary = "Unsave a post")
     @DeleteMapping(Endpoint.Post.SAVES)
-    public ApiResponse<Void> unsavePost(@PathVariable UUID postId) {
-        // postService.unsavePost(postId);
+    public ApiResponse<Void> unsavePost(@PathVariable("postId") UUID postId) {
+        postService.unsavePost(postId);
         return ApiResponse.<Void>builder().message("Post unsaved").build();
     }
 
     @Operation(summary = "Get root comments for a post (paginated)")
     @GetMapping(Endpoint.Post.COMMENTS)
-    // --- BẮT ĐẦU THAY ĐỔI ---
     public ApiResponse<Page<CommentResponse>> getCommentsForPost(
-            @PathVariable UUID postId, Pageable pageable) { // <-- Thêm Pageable
-        return ApiResponse.<Page<CommentResponse>>builder() // <-- Đổi List sang Page
-                // .data(commentService.getRootCommentsForPost(postId, pageable))
+            @PathVariable("postId") UUID postId, Pageable pageable) {
+        UUID currentUserId = SecurityUtils.getCurrentUserIdSafe();
+        return ApiResponse.<Page<CommentResponse>>builder()
+                .data(commentService.getCommentsByPostId(postId, pageable, currentUserId))
                 .build();
     }
 
     @Operation(summary = "Create a new root comment on a post")
     @PostMapping(Endpoint.Post.COMMENTS)
     public ApiResponse<CommentResponse> createComment(
-            @PathVariable UUID postId, @Valid @RequestBody CommentRequest request) {
+            @PathVariable("postId") UUID postId, @Valid @RequestBody CommentRequest request) {
+        // Force correct postId from path into request if mismatch
+        request.setPostId(postId);
         return ApiResponse.<CommentResponse>builder()
-                // .data(commentService.createRootComment(postId, request)) // <-- Đổi tên
-                // service cho rõ
+                .data(commentService.createComment(request))
                 .build();
     }
 }

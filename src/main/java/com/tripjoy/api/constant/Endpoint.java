@@ -134,6 +134,7 @@ public class Endpoint {
         public static final String ID = "/{postId}";
         public static final String LIKES = ID + "/likes";
         public static final String SAVES = ID + "/saves";
+        public static final String MY_SAVES = "/my-saves";
         public static final String COMMENTS = ID + "/comments";
     }
 
