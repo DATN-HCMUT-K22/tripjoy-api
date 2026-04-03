@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.UUID;
 
 import com.tripjoy.api.dto.request.UserCreationRequest;
-import com.tripjoy.api.dto.request.UserUpdateRequest;
+import com.tripjoy.api.dto.request.ChangePasswordRequest;
+import com.tripjoy.api.dto.request.UserProfileUpdateRequest;
+import com.tripjoy.api.dto.request.UserRoleUpdateRequest;
 import com.tripjoy.api.dto.response.UserResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 
@@ -17,7 +19,13 @@ public interface IUserService {
 
     UserResponse createUser(UserCreationRequest request);
 
-    UserResponse updateUser(UUID userId, UserUpdateRequest request);
+    UserResponse updateMyProfile(UserProfileUpdateRequest request);
+
+    void changeMyPassword(ChangePasswordRequest request);
+
+    UserResponse assignRoles(UUID userId, UserRoleUpdateRequest request);
+
+    UserResponse updateUserStatus(UUID userId, boolean isLocked);
 
     void deleteUser(UUID userId);
 

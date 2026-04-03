@@ -45,7 +45,7 @@ public class User extends BaseEntity {
     @JoinTable(
             name = "user_role",
             joinColumns = @JoinColumn(name = "users_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
+            inverseJoinColumns = @JoinColumn(name = "role_name"))
     private Set<Role> roles;
 
     @ManyToMany(mappedBy = "favouriteUsers")
