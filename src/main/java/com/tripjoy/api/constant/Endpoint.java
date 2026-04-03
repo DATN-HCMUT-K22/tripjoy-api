@@ -21,8 +21,9 @@ public class Endpoint {
         public static final String ME = "/me";
         public static final String ID = "/{userId}";
         public static final String SEARCH = "/search";
-        //        public static final String PASSWORD = "/password";
-        //        public static final String RESEND_EMAIL_VERIFICATION = "/resend-email-verification";
+        public static final String ME_PASSWORD = ME + "/password";
+        public static final String ID_ROLES = ID + "/roles";
+        public static final String ID_STATUS = ID + "/status";
     }
 
     public static final class Role {
