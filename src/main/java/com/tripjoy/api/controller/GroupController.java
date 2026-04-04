@@ -102,7 +102,7 @@ public class GroupController {
 
         // Service bắn Event MemberJoined -> Tự thêm vào Chat
         // Giả sử request.getUserId() trả về UUID của người được thêm
-        groupService.addMemberToGroup(groupId, request.getMemberId());
+        groupService.addMemberToGroup(groupId, request.getMemberId(), request.getRole());
 
         return ApiResponse.<Void>builder()
                 .message("Member added successfully and syncing to chat...")
