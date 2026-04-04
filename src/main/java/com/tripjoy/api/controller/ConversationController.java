@@ -85,6 +85,18 @@ public class ConversationController {
                 .build();
     }
 
+    @Operation(summary = "Reset unread count to 0 when user opens a chat")
+    @PutMapping(Endpoint.Conversation.ID + "/read")
+    public ApiResponse<Void> resetUnreadCount(@PathVariable UUID conversationId) {
+
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+        conversationService.resetUnreadCount(conversationId, currentUserId);
+
+        return ApiResponse.<Void>builder()
+                .message("Unread count reset to 0")
+                .build();
+    }
+
     // --- QUẢN LÝ TIN NHẮN (MESSAGES) ---
 
     @Operation(summary = "Send message to conversation - OK")

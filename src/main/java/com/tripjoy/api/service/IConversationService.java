@@ -12,4 +12,6 @@ public interface IConversationService {
     ConversationResponse getConversationDetail(UUID conversationId, UUID currentUserId);
 
     ConversationResponse updateConversation(UUID conversationId, ConversationUpdateRequest request, UUID currentUserId);
+
+    void resetUnreadCount(UUID conversationId, UUID currentUserId);
 }
