@@ -1,6 +1,6 @@
 package com.tripjoy.api.entity;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,7 +31,7 @@ public class User extends BaseEntity {
     private String fullName;
     private String bio;
     private String avatarUrl;
-    private LocalDateTime dateOfBirth;
+    private LocalDate dateOfBirth;
     private Long credits;
 
     @Embedded
