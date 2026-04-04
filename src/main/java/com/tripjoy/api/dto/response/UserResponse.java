@@ -1,5 +1,6 @@
 package com.tripjoy.api.dto.response;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
@@ -18,7 +19,7 @@ public class UserResponse extends BaseResponse {
     UUID id;
     String username;
     String email;
-    LocalDateTime dateOfBirth;
+    LocalDate dateOfBirth;
     boolean isEmailVerified;
     String phoneNumber;
     String fullName;
