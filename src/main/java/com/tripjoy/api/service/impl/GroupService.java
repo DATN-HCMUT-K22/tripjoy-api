@@ -128,7 +128,7 @@ public class GroupService implements IGroupService {
     }
 
     @Transactional
-    public GroupMemberResponse addMemberToGroup(UUID groupId, UUID userId) {
+    public GroupMemberResponse addMemberToGroup(UUID groupId, UUID userId, GroupRole role) {
         // --- STEP 1: VALIDATION ---
         Group group = groupRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
 
@@ -143,7 +143,7 @@ public class GroupService implements IGroupService {
         GroupMember gMember = GroupMember.builder()
                 .group(group)
                 .user(user)
-                .role(GroupRole.MEMBER)
+                .role(role != null ? role : GroupRole.MEMBER)
                 .build();
 
         // Lưu xong mới có ID, createdAt...
