@@ -7,6 +7,7 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tripjoy.api.dto.response.simple.ItinerarySimpleResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
+import com.tripjoy.api.enums.PostVisibility;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -26,6 +27,8 @@ public class PostResponse extends BaseResponse {
     List<String> mediaUrls;
 
     String content;
+    
+    PostVisibility visibility;
 
     // createdAt, updatedAt đã có từ BaseResponse - REMOVED
 

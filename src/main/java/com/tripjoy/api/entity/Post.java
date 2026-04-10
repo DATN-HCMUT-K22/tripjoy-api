@@ -10,6 +10,7 @@ import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 import org.hibernate.annotations.BatchSize;
+import com.tripjoy.api.enums.PostVisibility;
 
 import lombok.*;
 
@@ -33,6 +34,11 @@ public class Post extends BaseEntity {
 
     private String content;
     private Integer shareQuantity;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private PostVisibility visibility = PostVisibility.PUBLIC;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "itinerary_id")

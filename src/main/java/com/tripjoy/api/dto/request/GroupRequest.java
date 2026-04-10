@@ -50,6 +50,7 @@ public class GroupRequest {
     private Integer chatbotCount;
     private Boolean isPro;
 
+    @JsonProperty("theme_color")
     @Schema(name = "theme_color", description = "Hex color code for group theme", example = "#FF5733")
     String themeColor;
 
