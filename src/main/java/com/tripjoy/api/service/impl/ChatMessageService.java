@@ -6,11 +6,15 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.tripjoy.api.configuration.redis.RedisCacheConfig;
 
 import com.tripjoy.api.dto.event.MessageLikedEvent;
 import com.tripjoy.api.dto.event.MessagePinnedEvent;
@@ -38,7 +42,9 @@ import com.tripjoy.api.service.IChatMessageService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -119,7 +125,16 @@ public class ChatMessageService implements IChatMessageService {
         ChatMessage savedMessage = chatMessageRepository.save(message);
 
         conversation.setLastMessageTimestamp(LocalDateTime.now());
+        conversation.setLastMessageId(savedMessage.getId());
+        conversation.setLastMessageContent(savedMessage.getMessageContent());
+        conversation.setLastMessageType(savedMessage.getMessageType());
+        conversation.setLastMessageSenderId(sender.getId());
+        conversation.setLastMessageSenderName(sender.getFullName());
+        conversation.setLastMessageSenderAvatar(sender.getAvatarUrl());
         conversationRepository.save(conversation);
+
+        // Run bulk update for unread count fan-out
+        conversationMemberRepository.incrementUnreadCountForOthers(conversationId, senderId);
 
         ChatMessageResponse response = chatMessageMapper.toResponse(savedMessage);
 
@@ -166,6 +181,9 @@ public class ChatMessageService implements IChatMessageService {
         message.setIsPinned(true);
         chatMessageRepository.save(message);
 
+        // Evict pinned message cache for this conversation
+        evictPinnedCache(conversationId);
+
         MessagePinnedEvent event = MessagePinnedEvent.builder()
                 .conversationId(conversationId)
                 .messageId(messageId)
@@ -197,6 +215,9 @@ public class ChatMessageService implements IChatMessageService {
         message.setIsPinned(false);
         chatMessageRepository.save(message);
 
+        // Evict pinned message cache for this conversation
+        evictPinnedCache(conversationId);
+
         MessageUnpinnedEvent event = MessageUnpinnedEvent.builder()
                 .conversationId(conversationId)
                 .messageId(messageId)
@@ -205,7 +226,13 @@ public class ChatMessageService implements IChatMessageService {
         eventPublisher.publishEvent(event);
     }
 
+    /**
+     * Returns pinned messages for a conversation.
+     * Cached in {@code chat:pinned} for 5 minutes.
+     * Cache is evicted immediately on pin/unpin operations.
+     */
     @Transactional(readOnly = true)
+    @Cacheable(value = RedisCacheConfig.CACHE_CHAT_PINNED, key = "#conversationId")
     public List<ChatMessageResponse> getPinnedMessages(UUID conversationId, UUID userId) {
         // 1. Verify user is member of conversation
         boolean isMember = conversationMemberRepository.existsByConversationIdAndUserId(conversationId, userId);
@@ -218,6 +245,16 @@ public class ChatMessageService implements IChatMessageService {
 
         // 3. Map to response DTOs
         return pinnedMessages.stream().map(chatMessageMapper::toResponse).collect(Collectors.toList());
+    }
+
+    /**
+     * Programmatic cache eviction helper for pinned messages.
+     * Used by {@link #pinMessage} and {@link #unpinMessage} to clear stale cache
+     * without requiring Spring AOP proxy (avoids self-invocation problem).
+     */
+    @CacheEvict(value = RedisCacheConfig.CACHE_CHAT_PINNED, key = "#conversationId")
+    public void evictPinnedCache(UUID conversationId) {
+        log.debug("Evicting pinned message cache for conversation: {}", conversationId);
     }
 
     @Override

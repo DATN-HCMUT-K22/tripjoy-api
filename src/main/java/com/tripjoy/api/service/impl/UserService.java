@@ -4,14 +4,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.tripjoy.api.configuration.redis.RedisCacheConfig;
+import com.tripjoy.api.dto.request.ChangePasswordRequest;
 import com.tripjoy.api.dto.request.UserCreationRequest;
-import com.tripjoy.api.dto.request.UserUpdateRequest;
+import com.tripjoy.api.dto.request.UserProfileUpdateRequest;
+import com.tripjoy.api.dto.request.UserRoleUpdateRequest;
+import com.tripjoy.api.dto.response.UserPublicResponse;
 import com.tripjoy.api.dto.response.UserResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import com.tripjoy.api.entity.Role;
@@ -26,76 +32,190 @@ import com.tripjoy.api.service.IUserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
+/**
+ * User profile service implementing 3 distinct access flows:
+ *
+ * <h3>Flow 1 — My Profile ({@link #getMyInfo})</h3>
+ * <ul>
+ *   <li>Caller: current authenticated user only</li>
+ *   <li>Data: full UserResponse including credits, email, phone</li>
+ *   <li>Cache: <b>NO</b> — data changes frequently (credits, avatar)</li>
+ * </ul>
+ *
+ * <h3>Flow 2 — Public Profile ({@link #getPublicProfile})</h3>
+ * <ul>
+ *   <li>Caller: any authenticated user looking at another user's profile</li>
+ *   <li>Data: {@link UserPublicResponse} — <b>no</b> sensitive fields (email, phone, credits, roles)</li>
+ *   <li>Cache: {@code user:public} — 12h TTL, safe to share across callers</li>
+ * </ul>
+ *
+ * <h3>Flow 3 — Admin View ({@link #getUserDetailsForAdmin})</h3>
+ * <ul>
+ *   <li>Caller: ADMIN role only — enforced by {@code @PreAuthorize} <i>before</i> execution</li>
+ *   <li>Data: full UserResponse</li>
+ *   <li>Cache: {@code user:admin} — 12h TTL, separate namespace from public cache</li>
+ * </ul>
+ *
+ * <h3>Why NOT @PostAuthorize + @Cacheable?</h3>
+ * <p>{@code @PostAuthorize} checks AFTER the method runs and AFTER the cache is populated.
+ * If user A's data is cached via {@code getUserById(aliceId)}, and Admin then calls the same
+ * method, the cache returns alice's data and {@code @PostAuthorize} sees
+ * {@code alice.username != admin.username} → throws 403. This breaks the cache for everyone
+ * except the data owner. The 3-flow pattern avoids this entirely by using {@code @PreAuthorize}
+ * (admin-only, blocks before execution) or no auth restriction at all (public profile, data
+ * is non-sensitive by design).
+ */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserService implements IUserService {
+
     UserRepository userRepository;
     RoleRepository roleRepository;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
 
-    //    @PreAuthorize("hasRole('ADMIN')")
-    public List<UserResponse> getUsers() {
+    // ==================== Flow 1: My Profile ====================
 
-        return userRepository.findAll().stream()
-                .map(userMapper::toUserResponse) // .map(users -> userMapper.toUserResponse(users))
-                .toList();
+    /**
+     * Get current user's own full profile.
+     * NOT cached — credits, avatar, and other fields can change at any time within the session.
+     */
+    @Override
+    public UserResponse getMyInfo() {
+        String currentUserId = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository
+                .findById(UUID.fromString(currentUserId))
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        return userMapper.toUserResponse(user);
     }
 
-    @PostAuthorize("returnObject.username == authentication.name")
-    public UserResponse getUserById(UUID id) {
+    // ==================== Flow 2: Public Profile ====================
+
+    /**
+     * Get a non-sensitive public profile of any user.
+     * Cached in {@code user:public} for 12 hours.
+     * Response intentionally omits email, phone, credits, isLocked, and roles.
+     */
+    @Override
+    @Cacheable(value = RedisCacheConfig.CACHE_USER_PUBLIC, key = "#id")
+    public UserPublicResponse getPublicProfile(UUID id) {
+        log.debug("Cache MISS — loading public profile from DB: {}", id);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        return userMapper.toPublicResponse(user);
+    }
+
+    // ==================== Flow 3: Admin View ====================
+
+    /**
+     * Get full user details — ADMIN only.
+     * {@code @PreAuthorize} blocks non-admins BEFORE execution (and before cache is read),
+     * so admins and non-admins never share the same cache entry.
+     * Cached in {@code user:admin} for 12 hours under a separate namespace from public profiles.
+     */
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    @Cacheable(value = RedisCacheConfig.CACHE_USER_ADMIN_VIEW, key = "#id")
+    public UserResponse getUserDetailsForAdmin(UUID id) {
+        log.debug("Cache MISS — loading full user details for admin: {}", id);
         return userMapper.toUserResponse(
                 userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND)));
     }
 
-    public UserResponse getMyInfo() {
-        var context = SecurityContextHolder.getContext();
-        String name = context.getAuthentication().getName();
+    // ==================== Admin Mutations ====================
 
-        User user = userRepository
-                .findById(UUID.fromString(name))
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
-        return userMapper.toUserResponse(user);
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<UserResponse> getUsers() {
+        return userRepository.findAll().stream()
+                .map(userMapper::toUserResponse)
+                .toList();
     }
 
     public UserResponse createUser(UserCreationRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) throw new AppException(ErrorCode.USER_EXISTED);
-
         User user = userMapper.toUser(request);
-
-        // PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        // Users.setRole()
-
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
-    @PostAuthorize("returnObject.username == authentication.name")
-    public UserResponse updateUser(UUID userId, UserUpdateRequest request) {
+    /**
+     * Update own profile and evict BOTH caches (public + admin view) for the user.
+     * Key for eviction comes from the saved entity's ID (resolved via SpEL on return value).
+     */
+    @Override
+    @Caching(evict = {
+        @CacheEvict(value = RedisCacheConfig.CACHE_USER_PUBLIC,     key = "#result.id"),
+        @CacheEvict(value = RedisCacheConfig.CACHE_USER_ADMIN_VIEW, key = "#result.id")
+    })
+    public UserResponse updateMyProfile(UserProfileUpdateRequest request) {
+        String currentUserId = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository
+                .findById(UUID.fromString(currentUserId))
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        userMapper.updateMyProfile(user, request);
+        return userMapper.toUserResponse(userRepository.save(user));
+    }
+
+    @Override
+    public void changeMyPassword(ChangePasswordRequest request) {
+        String currentUserId = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository
+                .findById(UUID.fromString(currentUserId))
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new AppException(ErrorCode.INVALID_REQUEST);
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    @Caching(evict = {
+        @CacheEvict(value = RedisCacheConfig.CACHE_USER_PUBLIC,     key = "#userId"),
+        @CacheEvict(value = RedisCacheConfig.CACHE_USER_ADMIN_VIEW, key = "#userId")
+    })
+    public UserResponse assignRoles(UUID userId, UserRoleUpdateRequest request) {
         User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
-        userMapper.updateUser(user, request);
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-
         List<Role> roles = roleRepository.findAllById(request.getRoles());
         user.setRoles(new HashSet<>(roles));
+        return userMapper.toUserResponse(userRepository.save(user));
+    }
 
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    @Caching(evict = {
+        @CacheEvict(value = RedisCacheConfig.CACHE_USER_PUBLIC,     key = "#userId"),
+        @CacheEvict(value = RedisCacheConfig.CACHE_USER_ADMIN_VIEW, key = "#userId")
+    })
+    public UserResponse updateUserStatus(UUID userId, boolean isLocked) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        user.setIsLocked(isLocked);
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @Caching(evict = {
+        @CacheEvict(value = RedisCacheConfig.CACHE_USER_PUBLIC,     key = "#userId"),
+        @CacheEvict(value = RedisCacheConfig.CACHE_USER_ADMIN_VIEW, key = "#userId")
+    })
     public void deleteUser(UUID userId) {
         userRepository.deleteById(userId);
     }
 
     @Override
     public List<UserSimpleResponse> searchUsers(String keyword) {
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return List.of();
-        }
+        if (keyword == null || keyword.trim().isEmpty()) return List.of();
         return userRepository.searchByUsernameOrEmail(keyword.trim()).stream()
                 .map(userMapper::toUserSimpleResponse)
                 .toList();

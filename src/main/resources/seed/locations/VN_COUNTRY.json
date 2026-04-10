@@ -1,0 +1,14 @@
+[
+  {
+    "admin_code": "VN",
+    "name": "Việt Nam",
+    "name_en": "Vietnam",
+    "country_name": "Vietnam",
+    "latitude": 14.058324,
+    "longitude": 108.277199,
+    "provider_id": "ChIJr4jIVHkIdTERlMEBMBxJacI",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "maki": "globe",
+    "viewport": "{\"northeast\":{\"lat\":23.393395,\"lng\":109.469077},\"southwest\":{\"lat\":8.559615,\"lng\":102.144143}}"
+  }
+]

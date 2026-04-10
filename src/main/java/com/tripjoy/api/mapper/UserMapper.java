@@ -1,12 +1,15 @@
 package com.tripjoy.api.mapper;
 
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import com.tripjoy.api.configuration.mapper.BaseMapperConfig;
 import com.tripjoy.api.dto.request.UserCreationRequest;
-import com.tripjoy.api.dto.request.UserUpdateRequest;
+import com.tripjoy.api.dto.request.UserProfileUpdateRequest;
+import com.tripjoy.api.dto.response.UserPublicResponse;
 import com.tripjoy.api.dto.response.UserResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import com.tripjoy.api.entity.User;
@@ -17,11 +20,17 @@ public interface UserMapper {
 
     UserResponse toUserResponse(User user);
 
+    /**
+     * Map to public profile — omits sensitive fields automatically via DTO structure.
+     * MapStruct will only map fields that exist in {@link UserPublicResponse}.
+     */
+    UserPublicResponse toPublicResponse(User user);
+
     UserSimpleResponse toUserSimpleResponse(User user);
 
-    // Update: Chỉ cần ignore những cái CẤM update (như password, roles)
+    // @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "roles", ignore = true)
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "username", ignore = true)
-    void updateUser(@MappingTarget User user, UserUpdateRequest request);
+    void updateMyProfile(@MappingTarget User user, UserProfileUpdateRequest request);
 }

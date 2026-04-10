@@ -68,6 +68,7 @@ public enum ErrorCode {
     MESSAGE_NOT_PINNED(4010, "Message is not pinned", HttpStatus.BAD_REQUEST),
     PIN_LIMIT_EXCEEDED(4011, "Cannot pin more than 50 messages in a conversation", HttpStatus.BAD_REQUEST),
     MESSAGE_NOT_IN_CONVERSATION(4012, "Message does not belong to this conversation", HttpStatus.BAD_REQUEST),
+    CANNOT_SELF_DIRECT_MESSAGE(4013, "Cannot create a direct conversation with yourself", HttpStatus.BAD_REQUEST),
 
     // --- 5. FILE & MEDIA (5000 - 5999) ---
     FILE_TOO_LARGE(5001, "File size exceeds the limit", HttpStatus.BAD_REQUEST),
@@ -90,13 +91,23 @@ public enum ErrorCode {
     // --- 7. LOCATION DOMAIN (7000 - 7999) ---
     LOCATION_NOT_FOUND(7001, "Location not found", HttpStatus.NOT_FOUND),
     LOCATION_IN_USE(7002, "Cannot delete location: It is being used in group suggestions", HttpStatus.CONFLICT),
-    INVALID_COORDINATES(7003, "Invalid latitude or longitude", HttpStatus.BAD_REQUEST),
+    INVALID_COORDINATES(7003, "Invalid latitude or longitude values", HttpStatus.BAD_REQUEST),
     MAPBOX_API_ERROR(7004, "Mapbox API request failed", HttpStatus.BAD_GATEWAY),
-    INVALID_LOCATION_INPUT(
-            7005, "Must provide either location_id OR location_data, but not both", HttpStatus.BAD_REQUEST),
+    INVALID_LOCATION_INPUT(7005, "Must provide either location_id OR location_data, but not both", HttpStatus.BAD_REQUEST),
+    INVALID_LOCATION_TYPE(7006, "Invalid or unsupported location type", HttpStatus.BAD_REQUEST),
+    LOCATION_TYPE_REQUIRED(7007, "Location type is required for this operation", HttpStatus.BAD_REQUEST),
+    GOOGLE_MAPS_API_ERROR(7008, "Google Maps API request failed", HttpStatus.BAD_GATEWAY),
+    LOCATION_SEEDING_FAILED(7009, "Location seeding process encountered an error", HttpStatus.INTERNAL_SERVER_ERROR),
+
 
     // --- 8. NOTIFICATION DOMAIN (8000 - 8999) ---
     NOTIF_NOT_FOUND(8001, "Notification not found", HttpStatus.NOT_FOUND),
+
+    // --- 9. AI & EXTERNAL SERVICES (9000 - 9999) ---
+    AI_SERVICE_UNAVAILABLE(9001, "AI Service is currently unavailable", HttpStatus.SERVICE_UNAVAILABLE),
+    AI_GENERATION_FAILED(9002, "AI failed to generate itinerary items", HttpStatus.INTERNAL_SERVER_ERROR),
+    AI_INVALID_RESPONSE(9003, "AI returned an invalid or malformed response", HttpStatus.BAD_GATEWAY),
+    AI_REQUEST_TIMEOUT(9004, "AI generation request timed out", HttpStatus.GATEWAY_TIMEOUT),
     ;
 
     private final int code;

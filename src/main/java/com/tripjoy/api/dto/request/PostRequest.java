@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
+import com.tripjoy.api.enums.PostVisibility;
 
 @Data
 @NoArgsConstructor
@@ -56,4 +57,14 @@ public class PostRequest {
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
             example = "[\"danang\", \"food\", \"beach\"]")
     Set<String> hashtags;
+
+    @Schema(
+            name = "visibility",
+            description = "Visibility of the post (PUBLIC or PRIVATE)",
+            type = "String",
+            allowableValues = {"PUBLIC", "PRIVATE"},
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            example = "PUBLIC")
+    @Builder.Default
+    PostVisibility visibility = PostVisibility.PUBLIC;
 }

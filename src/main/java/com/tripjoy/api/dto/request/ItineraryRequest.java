@@ -11,6 +11,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import com.tripjoy.api.enums.ItineraryStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -23,7 +24,7 @@ import lombok.experimental.SuperBuilder;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ItineraryRequest {
 
-    @NotBlank
+    @NotBlank(message = "INVALID_REQUEST")
     @Schema(
             name = "name",
             description = "Name of the itinerary",
@@ -40,7 +41,8 @@ public class ItineraryRequest {
             example = "A 5-day trip to explore beaches and food in Da Nang.")
     String description;
 
-    @NotNull
+    @NotNull(message = "INVALID_REQUEST")
+    @JsonProperty("start_date")
     @Schema(
             name = "start_date",
             description = "Start date and time of the trip (ISO 8601 format)",
@@ -49,7 +51,8 @@ public class ItineraryRequest {
             example = "2026-07-20T09:00:00")
     LocalDateTime startDate;
 
-    @NotNull
+    @NotNull(message = "INVALID_REQUEST")
+    @JsonProperty("end_date")
     @Schema(
             name = "end_date",
             description = "End date and time of the trip (ISO 8601 format)",
@@ -58,7 +61,8 @@ public class ItineraryRequest {
             example = "2026-07-25T18:00:00")
     LocalDateTime endDate;
 
-    @Positive(message = "People quantity must be positive")
+    @Positive(message = "INVALID_REQUEST")
+    @JsonProperty("people_quantity")
     @Schema(
             name = "people_quantity",
             description = "Number of people in the trip",
@@ -67,7 +71,8 @@ public class ItineraryRequest {
             example = "4")
     Integer peopleQuantity;
 
-    @PositiveOrZero(message = "Budget must be zero or positive")
+    @PositiveOrZero(message = "INVALID_REQUEST")
+    @JsonProperty("budget_estimate")
     @Schema(
             name = "budget_estimate",
             description = "Estimated budget for the trip (e.g., in VND)",
@@ -89,8 +94,8 @@ public class ItineraryRequest {
             description = "Status of the itinerary",
             type = "String",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "PLANNING")
-    String status;
+            example = "DRAFT")
+    ItineraryStatus status;
 
     @JsonProperty("group_id")
     @Schema(

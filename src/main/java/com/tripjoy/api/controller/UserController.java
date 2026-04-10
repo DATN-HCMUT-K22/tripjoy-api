@@ -8,9 +8,13 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import com.tripjoy.api.constant.Endpoint;
+import com.tripjoy.api.dto.request.ChangePasswordRequest;
 import com.tripjoy.api.dto.request.UserCreationRequest;
-import com.tripjoy.api.dto.request.UserUpdateRequest;
+import com.tripjoy.api.dto.request.UserProfileUpdateRequest;
+import com.tripjoy.api.dto.request.UserRoleUpdateRequest;
+import com.tripjoy.api.dto.request.UserStatusUpdateRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
+import com.tripjoy.api.dto.response.UserPublicResponse;
 import com.tripjoy.api.dto.response.UserResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import com.tripjoy.api.service.IUserService;
@@ -27,62 +31,95 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Tag(name = "Users", description = "Endpoints for managing user accounts")
 public class UserController {
-    IUserService userService;
+        IUserService userService;
 
-    @Operation(
-            summary = "Search users by username or email",
-            description = "Searches for users whose username or email contains the given keyword. "
-                    + "Uses case-insensitive LIKE matching.")
-    @GetMapping(Endpoint.User.SEARCH)
-    public ApiResponse<List<UserSimpleResponse>> searchUsers(@RequestParam String q) {
-        return ApiResponse.<List<UserSimpleResponse>>builder()
-                .data(userService.searchUsers(q))
-                .build();
-    }
+        @Operation(summary = "Search users by username or email", description = "Searches for users whose username or email contains the given keyword. "
+                        + "Uses case-insensitive LIKE matching.")
+        @GetMapping(Endpoint.User.SEARCH)
+        public ApiResponse<List<UserSimpleResponse>> searchUsers(@RequestParam String q) {
+                return ApiResponse.<List<UserSimpleResponse>>builder()
+                                .data(userService.searchUsers(q))
+                                .build();
+        }
 
-    @GetMapping
-    @Operation(summary = "Get all users", description = "Retrieves a list of all registered users.")
-    //    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
-    // @PreAuthorize("hasAuthority('APPROVE_POST')")
-    public ApiResponse<List<UserResponse>> getUsers() {
+        @GetMapping
+        @Operation(summary = "Get all users", description = "Retrieves a list of all registered users.")
+        // @PreAuthorize("hasRole('SYSTEM_ADMIN')")
+        // @PreAuthorize("hasAuthority('APPROVE_POST')")
+        public ApiResponse<List<UserResponse>> getUsers() {
 
-        return ApiResponse.<List<UserResponse>>builder()
-                .data(userService.getUsers())
-                .build();
-    }
+                return ApiResponse.<List<UserResponse>>builder()
+                                .data(userService.getUsers())
+                                .build();
+        }
 
-    @GetMapping(Endpoint.User.ME)
-    @Operation(
-            summary = "Get current user's info",
-            description = "Retrieves the profile information of the currently authenticated user.")
-    public ApiResponse<UserResponse> getMyInfo() {
-        return ApiResponse.<UserResponse>builder().data(userService.getMyInfo()).build();
-    }
+        @GetMapping(Endpoint.User.ME)
+        @Operation(summary = "Get current user's info", description = "Retrieves the profile information of the currently authenticated user. Full data including credits and email.")
+        public ApiResponse<UserResponse> getMyInfo() {
+                return ApiResponse.<UserResponse>builder().data(userService.getMyInfo()).build();
+        }
 
-    @Operation(summary = "Create a new user", description = "Creates a new user account based on the provided request.")
-    @PostMapping
-    public ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
-        return ApiResponse.<UserResponse>builder()
-                .data(userService.createUser(request))
-                .build();
-    }
+        @GetMapping(Endpoint.User.ID + "/profile")
+        @Operation(summary = "Get user's public profile", description = "Returns a public, non-sensitive profile of any user (avatar, bio, fullName). Cached 12h.")
+        public ApiResponse<UserPublicResponse> getPublicProfile(@PathVariable UUID userId) {
+                return ApiResponse.<UserPublicResponse>builder()
+                                .data(userService.getPublicProfile(userId))
+                                .build();
+        }
 
-    @Operation(
-            summary = "Update user by ID",
-            description = "Updates an existing user's information by their unique ID.")
-    @PutMapping(Endpoint.User.ID)
-    ApiResponse<UserResponse> updateUser(@PathVariable UUID userId, @RequestBody UserUpdateRequest request) {
-        return ApiResponse.<UserResponse>builder()
-                .data(userService.updateUser(userId, request))
-                .build();
-    }
+        @GetMapping(Endpoint.User.ID + "/admin-view")
+        @Operation(summary = "Admin: Get full user details", description = "Returns complete user data including sensitive fields. Requires ADMIN role. Cached 12h (admin namespace).")
+        public ApiResponse<UserResponse> getUserDetailsForAdmin(@PathVariable UUID userId) {
+                return ApiResponse.<UserResponse>builder()
+                                .data(userService.getUserDetailsForAdmin(userId))
+                                .build();
+        }
 
-    @Operation(
-            summary = "Delete user by ID",
-            description = "Deletes a user account from the system by their unique ID.")
-    @DeleteMapping(Endpoint.User.ID)
-    ApiResponse<Void> deleteUser(@PathVariable UUID userId) {
-        userService.deleteUser(userId);
-        return ApiResponse.<Void>builder().message("User has been deleted").build();
-    }
+        @Operation(summary = "Create a new user", description = "Creates a new user account based on the provided request.")
+        @PostMapping
+        public ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
+                return ApiResponse.<UserResponse>builder()
+                                .data(userService.createUser(request))
+                                .build();
+        }
+
+        @Operation(summary = "Update my profile", description = "Updates the authenticated user's profile information.")
+        @PatchMapping(Endpoint.User.ME)
+        ApiResponse<UserResponse> updateMyProfile(@RequestBody @Valid UserProfileUpdateRequest request) {
+                return ApiResponse.<UserResponse>builder()
+                                .data(userService.updateMyProfile(request))
+                                .build();
+        }
+
+        @Operation(summary = "Change my password", description = "Changes the authenticated user's password securely.")
+        @PutMapping(Endpoint.User.ME_PASSWORD)
+        ApiResponse<Void> changeMyPassword(@RequestBody @Valid ChangePasswordRequest request) {
+                userService.changeMyPassword(request);
+                return ApiResponse.<Void>builder().message("Password changed successfully").build();
+        }
+
+        @Operation(summary = "Assign roles to user (Admin only)", description = "Assigns a set of roles to a specific user.")
+        @PutMapping(Endpoint.User.ID_ROLES)
+        ApiResponse<UserResponse> assignRoles(
+                        @PathVariable UUID userId, @RequestBody @Valid UserRoleUpdateRequest request) {
+                return ApiResponse.<UserResponse>builder()
+                                .data(userService.assignRoles(userId, request))
+                                .build();
+        }
+
+        @Operation(summary = "Update user locked status (Admin only)", description = "Locks or unlocks a user account.")
+        @PatchMapping(Endpoint.User.ID_STATUS)
+        ApiResponse<UserResponse> updateUserStatus(
+                        @PathVariable UUID userId, @RequestBody @Valid UserStatusUpdateRequest request) {
+                return ApiResponse.<UserResponse>builder()
+                                .data(userService.updateUserStatus(userId, request.getIsLocked()))
+                                .build();
+        }
+
+        @Operation(summary = "Delete user by ID", description = "Deletes a user account from the system by their unique ID.")
+        @DeleteMapping(Endpoint.User.ID)
+        ApiResponse<Void> deleteUser(@PathVariable UUID userId) {
+                userService.deleteUser(userId);
+                return ApiResponse.<Void>builder().message("User has been deleted").build();
+        }
 }

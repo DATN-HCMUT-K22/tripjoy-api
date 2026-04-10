@@ -21,8 +21,6 @@ public class GroupResponse extends BaseResponse {
     String name;
     String description;
     String avatar;
-    String theme;
-
     @JsonProperty("theme_color")
     String themeColor;
 

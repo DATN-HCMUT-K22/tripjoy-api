@@ -9,6 +9,8 @@ import jakarta.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
+import org.hibernate.annotations.BatchSize;
+import com.tripjoy.api.enums.PostVisibility;
 
 import lombok.*;
 
@@ -33,6 +35,11 @@ public class Post extends BaseEntity {
     private String content;
     private Integer shareQuantity;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private PostVisibility visibility = PostVisibility.PUBLIC;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "itinerary_id")
     private Itinerary itinerary;
@@ -45,9 +52,15 @@ public class Post extends BaseEntity {
     @JsonIgnore
     private Set<Comment> comments = new HashSet<>();
 
-    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonIgnore
-    private Set<PostHashtag> hashtags = new HashSet<>();
+    @ManyToMany
+    @JoinTable(
+        name = "post_hashtag_mapping",
+        joinColumns = @JoinColumn(name = "post_id"),
+        inverseJoinColumns = @JoinColumn(name = "hashtag_id")
+    )
+    @BatchSize(size = 20)
+    @Builder.Default
+    private Set<Hashtag> hashtags = new HashSet<>();
 
     @ManyToMany
     @JoinTable(

@@ -19,7 +19,8 @@ import lombok.experimental.SuperBuilder;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TripItemRequest {
 
-    @NotNull
+    @NotNull(message = "INVALID_REQUEST")
+    @JsonProperty("start_time")
     @Schema(
             name = "start_time",
             description = "Start time of this specific trip item (ISO 8601 format)",
@@ -54,7 +55,7 @@ public class TripItemRequest {
             example = "Remember to buy sunscreen.")
     String note;
 
-    @NotNull
+    @NotNull(message = "INVALID_REQUEST")
     @JsonProperty("location_id")
     @Schema(
             name = "location_id",

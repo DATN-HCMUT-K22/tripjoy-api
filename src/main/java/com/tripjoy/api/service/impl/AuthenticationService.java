@@ -128,6 +128,11 @@ public class AuthenticationService implements IAuthenticationService {
                     InvalidatedToken.builder().id(jtiUuid).expiresAt(expiresAt).build();
 
             invalidatedTokenRepository.save(invalidatedToken);
+
+            // Eagerly populate Redis blacklist cache so the next request for
+            // this token hits Redis, not DB
+            jwtUtils.addToBlacklist(jti);
+
         } catch (AppException e) {
             log.info("Token already invalidated");
         }
@@ -148,6 +153,10 @@ public class AuthenticationService implements IAuthenticationService {
         InvalidatedToken invalidatedToken =
                 InvalidatedToken.builder().id(jtiUuid).expiresAt(expiresAt).build();
         invalidatedTokenRepository.save(invalidatedToken);
+
+        // Eagerly populate Redis blacklist cache — prevents DB hit on next
+        // request using the now-invalidated refresh token
+        jwtUtils.addToBlacklist(jti);
 
         var username = signedToken.getJWTClaimsSet().getSubject();
         var user = userRepository

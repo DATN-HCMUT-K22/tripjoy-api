@@ -17,6 +17,14 @@ public class TravelNotebook extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    /** Ẩm thực địa phương — do AI sinh ra từ Wikipedia + Gemini */
+    @Column(columnDefinition = "TEXT")
+    private String food;
+
+    /** Khí hậu & lời khuyên trang phục — do AI sinh ra */
+    @Column(columnDefinition = "TEXT")
+    private String climate;
+
     @Column(name = "weather_forecast", columnDefinition = "TEXT")
     private String weatherForecast;
 
@@ -33,3 +41,4 @@ public class TravelNotebook extends BaseEntity {
     @JoinColumn(name = "itinerary_id")
     private Itinerary itinerary;
 }
+

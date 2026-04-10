@@ -21,8 +21,9 @@ public class Endpoint {
         public static final String ME = "/me";
         public static final String ID = "/{userId}";
         public static final String SEARCH = "/search";
-        //        public static final String PASSWORD = "/password";
-        //        public static final String RESEND_EMAIL_VERIFICATION = "/resend-email-verification";
+        public static final String ME_PASSWORD = ME + "/password";
+        public static final String ID_ROLES = ID + "/roles";
+        public static final String ID_STATUS = ID + "/status";
     }
 
     public static final class Role {
@@ -38,6 +39,17 @@ public class Endpoint {
     public static final class Location {
         public static final String BASE = API_PREFIX + "/locations";
         public static final String ID = "/{locationId}";
+        /** GET /locations/administrative — verified geographic regions (e.g. provinces) for user selection */
+        public static final String ADMINISTRATIVE = "/administrative";
+
+        /** POST /locations/resolve — upsert a location picked from map autocomplete */
+        public static final String RESOLVE = "/resolve";
+
+        /** GET /locations/nearby — PostGIS radius search */
+        public static final String NEARBY = "/nearby";
+
+        /** GET /locations/search — full-text + filter search (alias for GET /locations with q param) */
+        public static final String SEARCH = "/search";
     }
 
     public static final class Group {
@@ -108,6 +120,7 @@ public class Endpoint {
     public static final class Itinerary {
         public static final String BASE = API_PREFIX + "/itineraries";
         public static final String ID = "/{itineraryId}";
+        public static final String ME = "/me";
 
         // Quản lý các điểm đến (trip item) trong 1 lịch trình
         public static final String ITEMS_BASE = ID + "/items";
@@ -121,11 +134,22 @@ public class Endpoint {
         public static final String FAVORITES = ID + "/favorites";
 
         public static final String NOTEBOOKS = ID + "/notebooks";
+
+        public static final String AI_GENERATE = "/ai-generate";
+
+        // AI: Thay thế địa điểm không muốn đi bằng gợi ý mới từ AI
+        public static final String AI_MODIFY = ID + "/ai-modify";
     }
 
     public static final class TravelNotebook {
         public static final String BASE = API_PREFIX + "/notebooks";
         public static final String ID = "/{notebookId}";
+
+        /** POST /notebooks/{itineraryId}/ai-generate — AI sinh Travel Notebook */
+        public static final String AI_GENERATE = "/{itineraryId}/ai-generate";
+
+        /** GET /notebooks/{itineraryId}/itinerary — Lấy notebook theo itinerary */
+        public static final String BY_ITINERARY = "/{itineraryId}/itinerary";
     }
 
     public static final class Post {
@@ -134,6 +158,7 @@ public class Endpoint {
         public static final String ID = "/{postId}";
         public static final String LIKES = ID + "/likes";
         public static final String SAVES = ID + "/saves";
+        public static final String MY_SAVES = "/my-saves";
         public static final String COMMENTS = ID + "/comments";
     }
 
