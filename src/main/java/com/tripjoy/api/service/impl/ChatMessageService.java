@@ -125,7 +125,16 @@ public class ChatMessageService implements IChatMessageService {
         ChatMessage savedMessage = chatMessageRepository.save(message);
 
         conversation.setLastMessageTimestamp(LocalDateTime.now());
+        conversation.setLastMessageId(savedMessage.getId());
+        conversation.setLastMessageContent(savedMessage.getMessageContent());
+        conversation.setLastMessageType(savedMessage.getMessageType());
+        conversation.setLastMessageSenderId(sender.getId());
+        conversation.setLastMessageSenderName(sender.getFullName());
+        conversation.setLastMessageSenderAvatar(sender.getAvatarUrl());
         conversationRepository.save(conversation);
+
+        // Run bulk update for unread count fan-out
+        conversationMemberRepository.incrementUnreadCountForOthers(conversationId, senderId);
 
         ChatMessageResponse response = chatMessageMapper.toResponse(savedMessage);
 

@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tripjoy.api.dto.request.chat.ConversationUpdateRequest;
 import com.tripjoy.api.dto.response.ConversationResponse;
+import com.tripjoy.api.dto.response.simple.ChatMessageSimpleResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import com.tripjoy.api.entity.Conversation;
 import com.tripjoy.api.entity.ConversationMember;
@@ -55,12 +56,13 @@ public class ConversationService implements IConversationService {
             if (conversation.getName() != null && !conversation.getName().trim().isEmpty()) {
                 response.setName(conversation.getName());
             } else if (conversation.getGroup() != null) {
-                response.setName(conversation.getGroup().getName());
+                response.setName("General chat"); // Default fallback
             }
 
-            // Set avatar from group
+            // Set avatar and groupName from group
             if (conversation.getGroup() != null) {
                 response.setAvatar(conversation.getGroup().getAvatar());
+                response.setGroupName(conversation.getGroup().getName());
             }
         } else {
             // For DIRECT: get partner info
@@ -105,6 +107,27 @@ public class ConversationService implements IConversationService {
         if (myMemberInfo != null) {
             response.setUnreadCount(myMemberInfo.getUnreadCount());
             response.setIsPinned(myMemberInfo.getIsPinned());
+        }
+
+        // 4. Map Last Message (from cached denormalized fields)
+        if (conversation.getLastMessageId() != null) {
+            UserSimpleResponse sender = null;
+            if (conversation.getLastMessageSenderId() != null) {
+                sender = com.tripjoy.api.dto.response.simple.UserSimpleResponse.builder()
+                        .id(conversation.getLastMessageSenderId())
+                        .fullName(conversation.getLastMessageSenderName())
+                        .avatarUrl(conversation.getLastMessageSenderAvatar())
+                        .build();
+            }
+
+            ChatMessageSimpleResponse lastMsg = ChatMessageSimpleResponse.builder()
+                            .id(conversation.getLastMessageId())
+                            .messageContent(conversation.getLastMessageContent())
+                            .messageType(conversation.getLastMessageType())
+                            .sender(sender)
+                            .build();
+
+            response.setLastMessage(lastMsg);
         }
     }
 
@@ -152,4 +175,15 @@ public class ConversationService implements IConversationService {
         enrichConversationResponse(response, conversation, currentUserId);
         return response;
     }
+    @Transactional
+    public void resetUnreadCount(UUID conversationId, UUID currentUserId) {
+        // Verify user is member
+        boolean isMember = conversationMemberRepository.existsByConversationIdAndUserId(conversationId, currentUserId);
+        if (!isMember) {
+            throw new AppException(ErrorCode.USER_NOT_IN_CONVERSATION);
+        }
+
+        conversationMemberRepository.resetUnreadCount(conversationId, currentUserId);
+    }
+
 }

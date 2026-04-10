@@ -2,6 +2,7 @@ package com.tripjoy.api.entity;
 
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 
 import jakarta.persistence.*;
 
@@ -34,6 +35,24 @@ public class Conversation extends BaseEntity {
     private String name;
 
     private LocalDateTime lastMessageTimestamp;
+
+    @Column(name = "last_message_id")
+    private UUID lastMessageId;
+
+    @Column(name = "last_message_content")
+    private String lastMessageContent;
+
+    @Column(name = "last_message_type")
+    private String lastMessageType;
+
+    @Column(name = "last_message_sender_id")
+    private UUID lastMessageSenderId;
+
+    @Column(name = "last_message_sender_name")
+    private String lastMessageSenderName;
+
+    @Column(name = "last_message_sender_avatar")
+    private String lastMessageSenderAvatar;
 
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore

@@ -152,7 +152,7 @@ public class GroupService implements IGroupService {
         GroupMember gMember = GroupMember.builder()
                 .group(group)
                 .user(user)
-                .role(GroupRole.MEMBER)
+                .role(role != null ? role : GroupRole.MEMBER)
                 .build();
 
         // Lưu xong mới có ID, createdAt...

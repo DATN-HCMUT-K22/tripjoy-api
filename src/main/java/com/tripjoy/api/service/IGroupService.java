@@ -1,5 +1,7 @@
 package com.tripjoy.api.service;
 
+import com.tripjoy.api.enums.GroupRole;
+
 import java.util.List;
 import java.util.UUID;
 import com.tripjoy.api.enums.GroupRole;
