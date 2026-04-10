@@ -11,6 +11,7 @@ import com.corundumstudio.socketio.annotation.OnDisconnect;
 import com.corundumstudio.socketio.annotation.OnEvent;
 import com.tripjoy.api.configuration.socketio.SocketRateLimiter;
 import com.tripjoy.api.dto.response.ChatMessageResponse;
+import com.tripjoy.api.dto.response.ConversationResponse;
 import com.tripjoy.api.service.ISocketService;
 
 import lombok.RequiredArgsConstructor;
@@ -154,6 +155,26 @@ public class SocketService implements ISocketService {
             log.info("Notification broadcasted to user: userId={}", userId);
         } catch (Exception e) {
             log.error("Failed to broadcast notification: userId={}, error={}", userId, e.getMessage());
+        }
+    }
+
+    /**
+     * Notify a user that a new Direct Conversation has been created for them.
+     *
+     * <p>Broadcasts {@code new_conversation} to the user's personal room {@code user_{userId}}.
+     * The Socket.IO client should listen for this event and:
+     * <ol>
+     *   <li>Add the conversation to the inbox list</li>
+     *   <li>Emit {@code join_conversation} with the new conversationId to start receiving messages</li>
+     * </ol>
+     */
+    public void notifyNewDirectConversation(UUID userId, ConversationResponse conversation) {
+        try {
+            String roomName = "user_" + userId;
+            server.getRoomOperations(roomName).sendEvent("new_conversation", conversation);
+            log.info("Notified user {} of new direct conversation: {}", userId, conversation.getId());
+        } catch (Exception e) {
+            log.error("Failed to notify user {} of new DM conversation: {}", userId, e.getMessage());
         }
     }
 }
