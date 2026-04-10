@@ -26,6 +26,9 @@ public class ConversationResponse extends BaseResponse {
     @JsonProperty("group_id")
     UUID groupId;
 
+    @JsonProperty("group_name")
+    String groupName;
+
     String name; // Tên Group hoặc Tên người chat cùng
 
     String avatar; // Avatar Group hoặc Avatar người chat cùng
