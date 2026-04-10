@@ -4,6 +4,7 @@ import com.tripjoy.api.enums.GroupRole;
 
 import java.util.List;
 import java.util.UUID;
+import com.tripjoy.api.enums.GroupRole;
 
 import com.tripjoy.api.dto.request.GroupRequest;
 import com.tripjoy.api.dto.request.member.TransferLeadershipRequest;

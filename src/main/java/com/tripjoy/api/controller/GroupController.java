@@ -15,6 +15,7 @@ import com.tripjoy.api.dto.request.member.UpdateMemberRoleRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.GroupMemberResponse;
 import com.tripjoy.api.dto.response.GroupResponse;
+import com.tripjoy.api.enums.GroupRole;
 import com.tripjoy.api.service.IGroupService;
 import com.tripjoy.api.utils.SecurityUtils;
 
