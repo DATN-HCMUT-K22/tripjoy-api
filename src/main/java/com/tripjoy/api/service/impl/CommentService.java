@@ -6,7 +6,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.ApplicationEventPublisher;
 
+import com.tripjoy.api.dto.event.CommentCreatedEvent;
+import com.tripjoy.api.dto.event.CommentLikedEvent;
 import com.tripjoy.api.dto.request.CommentRequest;
 import com.tripjoy.api.dto.response.CommentResponse;
 import com.tripjoy.api.entity.Comment;
@@ -34,6 +37,7 @@ public class CommentService implements ICommentService {
     PostRepository postRepository;
     UserRepository userRepository;
     CommentMapper commentMapper;
+    ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -59,6 +63,9 @@ public class CommentService implements ICommentService {
         }
 
         comment = commentRepository.save(comment);
+
+        eventPublisher.publishEvent(new CommentCreatedEvent(comment, user));
+
         return getCommentResponseWithContext(comment, userId);
     }
 
@@ -80,6 +87,8 @@ public class CommentService implements ICommentService {
 
         comment.getLikeUsers().add(user);
         commentRepository.save(comment);
+
+        eventPublisher.publishEvent(new CommentLikedEvent(comment, user));
     }
 
     @Override

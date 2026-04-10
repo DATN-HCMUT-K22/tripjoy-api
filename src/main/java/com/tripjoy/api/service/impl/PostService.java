@@ -8,9 +8,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.ApplicationEventPublisher;
 
+import com.tripjoy.api.dto.event.PostLikedEvent;
 import com.tripjoy.api.dto.request.PostRequest;
 import com.tripjoy.api.dto.request.PostSearchRequest;
 import com.tripjoy.api.dto.response.PostResponse;
@@ -41,6 +44,7 @@ public class PostService implements IPostService {
     UserRepository userRepository;
     ItineraryRepository itineraryRepository;
     IHashtagService hashtagService;
+    ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -140,6 +144,8 @@ public class PostService implements IPostService {
 
         post.getLikeUsers().add(user);
         postRepository.save(post);
+
+        eventPublisher.publishEvent(new PostLikedEvent(post, user));
     }
 
     @Override
