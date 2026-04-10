@@ -39,6 +39,17 @@ public class Endpoint {
     public static final class Location {
         public static final String BASE = API_PREFIX + "/locations";
         public static final String ID = "/{locationId}";
+        /** GET /locations/administrative — verified geographic regions (e.g. provinces) for user selection */
+        public static final String ADMINISTRATIVE = "/administrative";
+
+        /** POST /locations/resolve — upsert a location picked from map autocomplete */
+        public static final String RESOLVE = "/resolve";
+
+        /** GET /locations/nearby — PostGIS radius search */
+        public static final String NEARBY = "/nearby";
+
+        /** GET /locations/search — full-text + filter search (alias for GET /locations with q param) */
+        public static final String SEARCH = "/search";
     }
 
     public static final class Group {

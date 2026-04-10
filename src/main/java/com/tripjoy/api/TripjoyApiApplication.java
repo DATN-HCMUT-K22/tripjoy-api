@@ -13,7 +13,6 @@ import io.github.cdimascio.dotenv.Dotenv;
 public class TripjoyApiApplication {
 
     public static void main(String[] args) {
-
         // Load file .env
         Dotenv dotenv = Dotenv.configure()
                 .directory("./") // Tìm file .env ở thư mục gốc dự án
