@@ -2,6 +2,7 @@ package com.tripjoy.api.service;
 
 import java.util.List;
 import java.util.UUID;
+import com.tripjoy.api.enums.GroupRole;
 
 import com.tripjoy.api.dto.request.GroupRequest;
 import com.tripjoy.api.dto.request.member.TransferLeadershipRequest;
@@ -12,7 +13,7 @@ import com.tripjoy.api.dto.response.GroupResponse;
 public interface IGroupService {
     GroupResponse createGroup(GroupRequest request, UUID ownerId);
 
-    GroupMemberResponse addMemberToGroup(UUID groupId, UUID userId);
+    GroupMemberResponse addMemberToGroup(UUID groupId, UUID userId, GroupRole role);
 
     GroupResponse getGroupById(UUID groupId);
 

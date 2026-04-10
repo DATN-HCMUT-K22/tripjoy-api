@@ -137,7 +137,7 @@ public class GroupService implements IGroupService {
         @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId"),
         @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
     })
-    public GroupMemberResponse addMemberToGroup(UUID groupId, UUID userId) {
+    public GroupMemberResponse addMemberToGroup(UUID groupId, UUID userId, GroupRole role) {
         // --- STEP 1: VALIDATION ---
         Group group = groupRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
 
