@@ -7,13 +7,24 @@ import com.tripjoy.api.dto.request.UserCreationRequest;
 import com.tripjoy.api.dto.request.ChangePasswordRequest;
 import com.tripjoy.api.dto.request.UserProfileUpdateRequest;
 import com.tripjoy.api.dto.request.UserRoleUpdateRequest;
+import com.tripjoy.api.dto.response.UserPublicResponse;
 import com.tripjoy.api.dto.response.UserResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 
 public interface IUserService {
     List<UserResponse> getUsers();
 
-    UserResponse getUserById(UUID id);
+    /**
+     * Luồng 2: Public profile — visible to any authenticated user.
+     * Returns a limited DTO without sensitive fields (email, phone, credits, roles).
+     */
+    UserPublicResponse getPublicProfile(UUID id);
+
+    /**
+     * Luồng 3: Admin full view — requires ADMIN role.
+     * Returns full UserResponse including sensitive fields.
+     */
+    UserResponse getUserDetailsForAdmin(UUID id);
 
     UserResponse getMyInfo();
 

@@ -117,6 +117,10 @@ public class SuggestLocationService implements ISuggestLocationService {
 
         SuggestLocation saved = suggestLocationRepository.save(suggestion);
 
+        // 5. Async: increment usage_count for the referenced location.
+        //    This is fire-and-forget — failure here does NOT roll back the suggestion.
+        locationService.incrementUsageCount(List.of(location.getId()));
+
         log.info("Created suggestion ID: {} for location: {}", saved.getId(), location.getName());
 
         return suggestLocationMapper.toResponse(saved);

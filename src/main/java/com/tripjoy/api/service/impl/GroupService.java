@@ -8,9 +8,14 @@ import java.util.UUID;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.tripjoy.api.configuration.redis.RedisCacheConfig;
 
 import com.tripjoy.api.dto.event.GroupCreatedEvent;
 import com.tripjoy.api.dto.event.MemberJoinedGroupEvent;
@@ -52,6 +57,7 @@ public class GroupService implements IGroupService {
     GroupMapper groupMapper;
 
     @Transactional(readOnly = true)
+    @Cacheable(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId")
     public GroupResponse getGroupById(UUID groupId) {
         return groupRepository
                 .findByIdAndNotDeleted(groupId)
@@ -119,8 +125,7 @@ public class GroupService implements IGroupService {
         entityManager.flush();
         entityManager.refresh(group);
 
-        // --- STEP 4: FIRE EVENT (Sửa lỗi ở đây) ---
-        // Truyền đủ 3 tham số: group, creator, và list thành viên ban đầu
+        // --- STEP 4: FIRE EVENT ---
         eventPublisher.publishEvent(new GroupCreatedEvent(group, owner, initialMembers));
 
         // --- STEP 5: MAP ENTITY -> RESPONSE ---
@@ -128,7 +133,11 @@ public class GroupService implements IGroupService {
     }
 
     @Transactional
-    public GroupMemberResponse addMemberToGroup(UUID groupId, UUID userId, GroupRole role) {
+    @Caching(evict = {
+        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId"),
+        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
+    })
+    public GroupMemberResponse addMemberToGroup(UUID groupId, UUID userId) {
         // --- STEP 1: VALIDATION ---
         Group group = groupRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
 
@@ -157,6 +166,10 @@ public class GroupService implements IGroupService {
     }
 
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId"),
+        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
+    })
     public GroupResponse updateGroup(UUID groupId, GroupRequest request, UUID currentUserId) {
         Group group = groupRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
 
@@ -177,6 +190,7 @@ public class GroupService implements IGroupService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
     public List<GroupMemberResponse> getGroupMembers(UUID groupId) {
         // Verify group exists
         Group group = groupRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
@@ -190,6 +204,10 @@ public class GroupService implements IGroupService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId"),
+        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
+    })
     public void removeMemberFromGroup(UUID groupId, UUID memberId, UUID currentUserId) {
         // 1. Validate Group & Permissions (Giữ nguyên code của bạn)
         Group group = groupRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
@@ -222,6 +240,10 @@ public class GroupService implements IGroupService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId"),
+        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
+    })
     public void leaveGroup(UUID groupId, UUID currentUserId) {
         // 1. Validate Group exists
         Group group = groupRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
@@ -251,6 +273,7 @@ public class GroupService implements IGroupService {
 
     @Override
     @Transactional
+    @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
     public GroupMemberResponse updateMemberRole(
             UUID groupId, UUID memberId, UpdateMemberRoleRequest request, UUID currentUserId) {
         // 1. Validate Group exists
@@ -293,6 +316,10 @@ public class GroupService implements IGroupService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId"),
+        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
+    })
     public void transferLeadership(UUID groupId, TransferLeadershipRequest request, UUID currentUserId) {
         // 1. Validate Group exists
         Group group = groupRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
@@ -337,6 +364,10 @@ public class GroupService implements IGroupService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId"),
+        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
+    })
     public void deleteGroup(UUID groupId, UUID currentUserId) {
         // 1. Validate Group exists
         Group group = groupRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
@@ -375,6 +406,10 @@ public class GroupService implements IGroupService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId"),
+        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
+    })
     public void restoreGroup(UUID groupId, UUID currentUserId) {
         // 1. Validate Group exists (even if deleted)
         Group group = groupRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));

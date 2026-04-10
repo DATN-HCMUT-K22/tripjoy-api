@@ -14,6 +14,7 @@ import com.tripjoy.api.dto.request.UserProfileUpdateRequest;
 import com.tripjoy.api.dto.request.UserRoleUpdateRequest;
 import com.tripjoy.api.dto.request.UserStatusUpdateRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
+import com.tripjoy.api.dto.response.UserPublicResponse;
 import com.tripjoy.api.dto.response.UserResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import com.tripjoy.api.service.IUserService;
@@ -53,9 +54,25 @@ public class UserController {
         }
 
         @GetMapping(Endpoint.User.ME)
-        @Operation(summary = "Get current user's info", description = "Retrieves the profile information of the currently authenticated user.")
+        @Operation(summary = "Get current user's info", description = "Retrieves the profile information of the currently authenticated user. Full data including credits and email.")
         public ApiResponse<UserResponse> getMyInfo() {
                 return ApiResponse.<UserResponse>builder().data(userService.getMyInfo()).build();
+        }
+
+        @GetMapping(Endpoint.User.ID + "/profile")
+        @Operation(summary = "Get user's public profile", description = "Returns a public, non-sensitive profile of any user (avatar, bio, fullName). Cached 12h.")
+        public ApiResponse<UserPublicResponse> getPublicProfile(@PathVariable UUID userId) {
+                return ApiResponse.<UserPublicResponse>builder()
+                                .data(userService.getPublicProfile(userId))
+                                .build();
+        }
+
+        @GetMapping(Endpoint.User.ID + "/admin-view")
+        @Operation(summary = "Admin: Get full user details", description = "Returns complete user data including sensitive fields. Requires ADMIN role. Cached 12h (admin namespace).")
+        public ApiResponse<UserResponse> getUserDetailsForAdmin(@PathVariable UUID userId) {
+                return ApiResponse.<UserResponse>builder()
+                                .data(userService.getUserDetailsForAdmin(userId))
+                                .build();
         }
 
         @Operation(summary = "Create a new user", description = "Creates a new user account based on the provided request.")

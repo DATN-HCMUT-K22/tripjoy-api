@@ -27,6 +27,7 @@ import com.tripjoy.api.repository.LocationRepository;
 import com.tripjoy.api.repository.TripItemRepository;
 import com.tripjoy.api.repository.UserRepository;
 import com.tripjoy.api.service.IItineraryService;
+import com.tripjoy.api.service.ILocationService;
 import com.tripjoy.api.service.IThemeService;
 import com.tripjoy.api.utils.SecurityUtils;
 
@@ -48,6 +49,7 @@ public class ItineraryService implements IItineraryService {
     ItineraryMapper itineraryMapper;
     TripItemMapper tripItemMapper;
     IThemeService themeService;
+    ILocationService locationService;
 
     @Override
     public ItineraryResponse createItinerary(ItineraryRequest request) {
@@ -178,6 +180,10 @@ public class ItineraryService implements IItineraryService {
         tripItem.setLocation(location);
 
         tripItem = tripItemRepository.save(tripItem);
+
+        // Async: increment usage_count — fire-and-forget, does not affect response
+        locationService.incrementUsageCount(List.of(location.getId()));
+
         return tripItemMapper.toTripItemResponse(tripItem);
     }
 

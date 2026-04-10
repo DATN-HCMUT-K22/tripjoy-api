@@ -9,6 +9,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import com.tripjoy.api.configuration.mapper.BaseMapperConfig;
 import com.tripjoy.api.dto.request.UserCreationRequest;
 import com.tripjoy.api.dto.request.UserProfileUpdateRequest;
+import com.tripjoy.api.dto.response.UserPublicResponse;
 import com.tripjoy.api.dto.response.UserResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import com.tripjoy.api.entity.User;
@@ -18,6 +19,12 @@ public interface UserMapper {
     User toUser(UserCreationRequest request);
 
     UserResponse toUserResponse(User user);
+
+    /**
+     * Map to public profile — omits sensitive fields automatically via DTO structure.
+     * MapStruct will only map fields that exist in {@link UserPublicResponse}.
+     */
+    UserPublicResponse toPublicResponse(User user);
 
     UserSimpleResponse toUserSimpleResponse(User user);
 
