@@ -144,6 +144,12 @@ public class Endpoint {
     public static final class TravelNotebook {
         public static final String BASE = API_PREFIX + "/notebooks";
         public static final String ID = "/{notebookId}";
+
+        /** POST /notebooks/{itineraryId}/ai-generate — AI sinh Travel Notebook */
+        public static final String AI_GENERATE = "/{itineraryId}/ai-generate";
+
+        /** GET /notebooks/{itineraryId}/itinerary — Lấy notebook theo itinerary */
+        public static final String BY_ITINERARY = "/{itineraryId}/itinerary";
     }
 
     public static final class Post {
