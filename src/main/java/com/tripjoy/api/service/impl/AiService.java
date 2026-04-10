@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono;
 
 import com.tripjoy.api.configuration.AiServiceProperties;
 import com.tripjoy.api.dto.ai.AiFinalItineraryDto;
+import com.tripjoy.api.dto.ai.AiModifyItineraryRequestDto;
 import com.tripjoy.api.dto.ai.AiTravelRequestDto;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
@@ -51,4 +52,27 @@ public class AiService implements IAiService {
         log.error("AI Service fallback triggered for generation request. Reason: {}", t.getMessage());
         return Mono.error(new AppException(ErrorCode.AI_SERVICE_UNAVAILABLE));
     }
+
+    @Override
+    @CircuitBreaker(name = AI_SERVICE_NAME, fallbackMethod = "modifyItineraryFallback")
+    @Retry(name = AI_SERVICE_NAME)
+    public Mono<AiFinalItineraryDto> modifyItinerary(AiModifyItineraryRequestDto request) {
+        log.info("Sending modify-itinerary request to AI Service with {} unwanted locations",
+                request.getUnwantedLocations() != null ? request.getUnwantedLocations().size() : 0);
+
+        return aiServiceWebClient.post()
+                .uri("/modify-itinerary")
+                .header("X-Internal-Api-Key", aiServiceProperties.getApiKey())
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(AiFinalItineraryDto.class)
+                .doOnSuccess(response -> log.info("Successfully received modified itinerary from AI Service"))
+                .doOnError(e -> log.error("Error communicating with AI Service (modify): {}", e.getMessage()));
+    }
+
+    public Mono<AiFinalItineraryDto> modifyItineraryFallback(AiModifyItineraryRequestDto request, Throwable t) {
+        log.error("AI Service fallback triggered for modify request. Reason: {}", t.getMessage());
+        return Mono.error(new AppException(ErrorCode.AI_SERVICE_UNAVAILABLE));
+    }
 }
+

@@ -120,6 +120,7 @@ public class Endpoint {
     public static final class Itinerary {
         public static final String BASE = API_PREFIX + "/itineraries";
         public static final String ID = "/{itineraryId}";
+        public static final String ME = "/me";
 
         // Quản lý các điểm đến (trip item) trong 1 lịch trình
         public static final String ITEMS_BASE = ID + "/items";
@@ -133,6 +134,11 @@ public class Endpoint {
         public static final String FAVORITES = ID + "/favorites";
 
         public static final String NOTEBOOKS = ID + "/notebooks";
+
+        public static final String AI_GENERATE = "/ai-generate";
+
+        // AI: Thay thế địa điểm không muốn đi bằng gợi ý mới từ AI
+        public static final String AI_MODIFY = ID + "/ai-modify";
     }
 
     public static final class TravelNotebook {

@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import com.tripjoy.api.constant.Endpoint;
+import com.tripjoy.api.dto.request.AiModifyItineraryRequest;
 import com.tripjoy.api.dto.request.GenerateItineraryRequest;
 import com.tripjoy.api.dto.request.ItineraryRequest;
 import com.tripjoy.api.dto.request.TripItemRequest;
@@ -36,15 +37,15 @@ public class ItineraryController {
     IItineraryGenerationService itineraryGenerationService;
 
     @Operation(summary = "Generate AI Itinerary (Async)")
-    @PostMapping("/generate")
+    @PostMapping(Endpoint.Itinerary.AI_GENERATE)
     public ResponseEntity<ApiResponse<ItineraryResponse>> generateItinerary(
             @Valid @RequestBody GenerateItineraryRequest request) {
-        
+
         UUID userId = SecurityUtils.getCurrentUserId();
-        
+
         // 1. Save placeholder generating state
         ItineraryResponse response = itineraryGenerationService.initiateGeneration(request, userId);
-        
+
         // 2. Trigger asynchronous processing
         itineraryGenerationService.processGenerationAsync(response.getId(), request);
 
@@ -53,8 +54,7 @@ public class ItineraryController {
                 ApiResponse.<ItineraryResponse>builder()
                         .message("Itinerary generation has started and will be available shortly")
                         .data(response)
-                        .build()
-        );
+                        .build());
     }
 
     @Operation(summary = "Create a new itinerary")
@@ -66,21 +66,21 @@ public class ItineraryController {
     }
 
     @Operation(summary = "Get a single itinerary by ID")
-    @GetMapping("/{id}")
+    @GetMapping(Endpoint.Itinerary.ID)
     public ApiResponse<ItineraryResponse> getItinerary(@PathVariable UUID id) {
         return ApiResponse.<ItineraryResponse>builder()
                 .data(itineraryService.getItineraryById(id))
                 .build();
     }
 
-    @GetMapping("/me")
+    @GetMapping(Endpoint.Itinerary.ME)
     public ApiResponse<List<ItineraryResponse>> getMyItineraries() {
         return ApiResponse.<List<ItineraryResponse>>builder()
                 .data(itineraryService.getMyItineraries())
                 .build();
     }
 
-    @GetMapping("/favorites")
+    @GetMapping(Endpoint.Itinerary.FAVORITES)
     public ApiResponse<List<ItineraryResponse>> getMyFavoriteItineraries() {
         return ApiResponse.<List<ItineraryResponse>>builder()
                 .data(itineraryService.getMyFavoriteItineraries())
@@ -159,5 +159,21 @@ public class ItineraryController {
         return ApiResponse.<Void>builder().message("Trip item removed").build();
     }
 
+    // --- AI Modification ---
 
+    @Operation(summary = "AI Modify Itinerary — replace unwanted locations with AI-suggested alternatives", description = "Provide a list of Google Place IDs you don't want. "
+            + "The AI will pick suitable replacements and update the itinerary synchronously.")
+    @PostMapping(Endpoint.Itinerary.AI_MODIFY)
+    public ResponseEntity<ApiResponse<ItineraryResponse>> aiModifyItinerary(
+            @PathVariable UUID itineraryId,
+            @Valid @RequestBody AiModifyItineraryRequest request) {
+
+        ItineraryResponse response = itineraryGenerationService.modifyItinerary(itineraryId, request);
+
+        return ResponseEntity.ok(
+                ApiResponse.<ItineraryResponse>builder()
+                        .message("Itinerary has been successfully modified by AI")
+                        .data(response)
+                        .build());
+    }
 }
