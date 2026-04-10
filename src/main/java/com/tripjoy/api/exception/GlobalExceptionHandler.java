@@ -14,6 +14,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import com.tripjoy.api.dto.response.ApiResponse;
 
@@ -129,6 +131,26 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.<Void>builder()
                         .code(ErrorCode.RESOURCE_NOT_FOUND.getCode())
                         .message(ErrorCode.RESOURCE_NOT_FOUND.getMessage())
+                        .build());
+    }
+
+    // Lỗi khi file upload quá lớn so với cấu hình mặc định (Tomcat/Spring)
+    @ExceptionHandler(value = MaxUploadSizeExceededException.class)
+    ResponseEntity<ApiResponse<Void>> handleMaxSizeException(MaxUploadSizeExceededException e) {
+        return ResponseEntity.status(ErrorCode.MEDIA_FILE_TOO_LARGE.getStatusCode())
+                .body(ApiResponse.<Void>builder()
+                        .code(ErrorCode.MEDIA_FILE_TOO_LARGE.getCode())
+                        .message(ErrorCode.MEDIA_FILE_TOO_LARGE.getMessage())
+                        .build());
+    }
+
+    // Lỗi khi quên gửi file trong request multipart
+    @ExceptionHandler(value = MissingServletRequestPartException.class)
+    ResponseEntity<ApiResponse<Void>> handleMissingPartException(MissingServletRequestPartException e) {
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.<Void>builder()
+                        .code(ErrorCode.INVALID_REQUEST.getCode())
+                        .message("Missing required part: " + e.getRequestPartName())
                         .build());
     }
 
