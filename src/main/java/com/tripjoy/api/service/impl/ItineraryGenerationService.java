@@ -19,12 +19,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tripjoy.api.dto.ai.AiCoordinateDto;
 import com.tripjoy.api.dto.ai.AiFinalItineraryDto;
+import com.tripjoy.api.dto.ai.AiModifyItineraryRequestDto;
 import com.tripjoy.api.dto.ai.AiTravelRequestDto;
+import com.tripjoy.api.dto.ai.AiTripItemDto;
 import com.tripjoy.api.dto.ai.GooglePlaceDetailsDto;
+import com.tripjoy.api.dto.request.AiModifyItineraryRequest;
 import com.tripjoy.api.dto.request.GenerateItineraryRequest;
 import com.tripjoy.api.dto.response.ItineraryResponse;
 import com.tripjoy.api.entity.Itinerary;
-import com.tripjoy.api.entity.Theme;
 import com.tripjoy.api.entity.Location;
 import com.tripjoy.api.entity.TripItem;
 import com.tripjoy.api.entity.User;
@@ -32,6 +34,7 @@ import com.tripjoy.api.enums.ItineraryStatus;
 import com.tripjoy.api.enums.MapProvider;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
+import com.tripjoy.api.mapper.ItineraryMapper;
 import com.tripjoy.api.repository.ItineraryRepository;
 import com.tripjoy.api.repository.LocationRepository;
 import com.tripjoy.api.repository.TripItemRepository;
@@ -59,6 +62,7 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
     private final IAiService aiService;
     private final IGooglePlacesService googlePlacesService;
     private final IThemeService themeService;
+    private final ItineraryMapper itineraryMapper;
 
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
@@ -231,5 +235,140 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
         }
 
         return location;
+    }
+
+    // =========================================================================
+    // MODIFY ITINERARY
+    // =========================================================================
+
+    @Override
+    @Transactional
+    public ItineraryResponse modifyItinerary(UUID itineraryId, AiModifyItineraryRequest request) {
+        log.info("Modifying itinerary ID: {} — replacing {} place(s)",
+                itineraryId, request.getUnwantedPlaceIds().size());
+
+        // 1. Load itinerary
+        Itinerary itinerary = itineraryRepository.findById(itineraryId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        // 2. Load all existing TripItems  
+        List<TripItem> currentItems = tripItemRepository.findByItineraryId(itineraryId);
+
+        // 3. Identify unwanted TripItems (những item có location.providerId nằm trong danh sách client gửi)
+        Set<String> unwantedPlaceIds = Set.copyOf(request.getUnwantedPlaceIds());
+
+        List<TripItem> unwantedItems = currentItems.stream()
+                .filter(item -> item.getLocation() != null
+                        && unwantedPlaceIds.contains(item.getLocation().getProviderId()))
+                .collect(Collectors.toList());
+
+        if (unwantedItems.isEmpty()) {
+            log.warn("No matching TripItems found for place IDs: {}", unwantedPlaceIds);
+            return itineraryMapper.toItineraryResponse(itinerary);
+        }
+
+        // 4. Lấy tọa độ destination từ TripItem đầu tiên còn lại (hoặc từ unwanted nếu không có)
+        TripItem referencItem = currentItems.stream()
+                .filter(item -> item.getLocation() != null && item.getLocation().getLatitude() != null)
+                .findFirst()
+                .orElse(unwantedItems.get(0));
+
+        Double lat = referencItem.getLocation() != null ? referencItem.getLocation().getLatitude() : 0.0;
+        Double lng = referencItem.getLocation() != null ? referencItem.getLocation().getLongitude() : 0.0;
+
+        // 5. Build AiFinalItineraryDto từ itinerary hiện tại (để gửi sang AI)
+        List<AiTripItemDto> aiAllItems = currentItems.stream()
+                .map(item -> AiTripItemDto.builder()
+                        .startTime(item.getStartTime() != null ? item.getStartTime().toString() : null)
+                        .duration(item.getDuration())
+                        .note(item.getNote())
+                        .locationName(item.getLocation() != null ? item.getLocation().getName() : null)
+                        .placeId(item.getLocation() != null ? item.getLocation().getProviderId() : null)
+                        .build())
+                .collect(Collectors.toList());
+
+        AiFinalItineraryDto aiItineraryDto = AiFinalItineraryDto.builder()
+                .name(itinerary.getName())
+                .startDate(itinerary.getStartDate() != null ? itinerary.getStartDate().toLocalDate().toString() : null)
+                .endDate(itinerary.getEndDate() != null ? itinerary.getEndDate().toLocalDate().toString() : null)
+                .peopleQuantity(itinerary.getPeopleQuantity())
+                .budgetEstimate(itinerary.getBudgetEstimate() != null ? itinerary.getBudgetEstimate().toString() : null)
+                .themes(itinerary.getThemes().stream().map(t -> t.getName()).collect(Collectors.toList()))
+                .destination(itinerary.getName())
+                .tripItems(aiAllItems)
+                .build();
+
+        // 6. Build unwanted locations dưới dạng AiTripItemDto
+        List<AiTripItemDto> aiUnwantedItems = unwantedItems.stream()
+                .map(item -> AiTripItemDto.builder()
+                        .startTime(item.getStartTime() != null ? item.getStartTime().toString() : null)
+                        .duration(item.getDuration())
+                        .note(item.getNote())
+                        .locationName(item.getLocation() != null ? item.getLocation().getName() : null)
+                        .placeId(item.getLocation() != null ? item.getLocation().getProviderId() : null)
+                        .build())
+                .collect(Collectors.toList());
+
+        // 7. Gọi AI Service
+        AiModifyItineraryRequestDto aiRequest = AiModifyItineraryRequestDto.builder()
+                .itineraryData(aiItineraryDto)
+                .unwantedLocations(aiUnwantedItems)
+                .coordinate(AiCoordinateDto.builder().latitude(lat).longitude(lng).build())
+                .build();
+
+        AiFinalItineraryDto aiResponse = aiService.modifyItinerary(aiRequest).block();
+
+        if (aiResponse == null || aiResponse.getTripItems() == null) {
+            log.error("AI Service returned empty response for modify-itinerary on ID: {}", itineraryId);
+            throw new AppException(ErrorCode.AI_SERVICE_UNAVAILABLE);
+        }
+
+        // 8. Enrich + save new locations từ AI response
+        Set<String> newPlaceIds = aiResponse.getTripItems().stream()
+                .map(AiTripItemDto::getPlaceId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        enrichAndSaveLocations(newPlaceIds);
+
+        // 9. Tìm các TripItem mới do AI trả về (những item có place_id không trùng với currentItems)
+        //    Chiến lược: AI trả về toàn bộ itinerary đã modified  
+        //    → chỉ những placeId mới (không nằm trong unwantedPlaceIds cũ) được giữ lại từ currentItems
+        //    → những placeId trong unwantedPlaceIds cũ bị xóa + thay thế bằng item từ aiResponse
+
+        // Xóa unwanted trip items
+        tripItemRepository.deleteAll(unwantedItems);
+        log.info("Deleted {} unwanted trip item(s) from itinerary ID: {}", unwantedItems.size(), itineraryId);
+
+        // Lọc ra các TripItem MỚI từ aiResponse (những item có placeId không trùng với keep items)
+        Set<String> keptPlaceIds = currentItems.stream()
+                .filter(item -> !unwantedItems.contains(item))
+                .filter(item -> item.getLocation() != null)
+                .map(item -> item.getLocation().getProviderId())
+                .collect(Collectors.toSet());
+
+        List<TripItem> replacementItems = aiResponse.getTripItems().stream()
+                .filter(aiItem -> aiItem.getPlaceId() != null && !keptPlaceIds.contains(aiItem.getPlaceId()))
+                .map(aiItem -> {
+                    Location location = locationRepository.findByProviderId(aiItem.getPlaceId()).orElse(null);
+                    return TripItem.builder()
+                            .itinerary(itinerary)
+                            .location(location)
+                            .note(aiItem.getNote())
+                            .duration(aiItem.getDuration())
+                            .startTime(aiItem.getStartTime() != null
+                                    ? LocalDateTime.parse(aiItem.getStartTime(), DateTimeFormatter.ISO_DATE_TIME)
+                                    : null)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        tripItemRepository.saveAll(replacementItems);
+        log.info("Saved {} replacement trip item(s) for itinerary ID: {}", replacementItems.size(), itineraryId);
+
+        // 10. Reload itinerary để trả về response cập nhật
+        Itinerary updatedItinerary = itineraryRepository.findById(itineraryId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        return itineraryMapper.toItineraryResponse(updatedItinerary);
     }
 }
