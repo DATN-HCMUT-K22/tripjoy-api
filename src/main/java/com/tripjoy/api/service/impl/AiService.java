@@ -11,7 +11,9 @@ import reactor.core.publisher.Mono;
 
 import com.tripjoy.api.configuration.AiServiceProperties;
 import com.tripjoy.api.dto.ai.AiFinalItineraryDto;
+import com.tripjoy.api.dto.ai.AiGenerateNotebookRequestDto;
 import com.tripjoy.api.dto.ai.AiModifyItineraryRequestDto;
+import com.tripjoy.api.dto.ai.AiNotebookResponseDto;
 import com.tripjoy.api.dto.ai.AiTravelRequestDto;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
@@ -27,6 +29,10 @@ public class AiService implements IAiService {
 
     // The name matches the instance in application.yaml
     private static final String AI_SERVICE_NAME = "aiService";
+
+    // =========================================================================
+    // 1. GENERATE ITINERARY
+    // =========================================================================
 
     @Override
     @CircuitBreaker(name = AI_SERVICE_NAME, fallbackMethod = "generateItineraryFallback")
@@ -44,14 +50,15 @@ public class AiService implements IAiService {
                 .doOnError(e -> log.error("Error communicating with AI Service: {}", e.getMessage()));
     }
 
-    /**
-     * Fallback method called when CircuitBreaker is open or all retries fail.
-     * Must have the same signature plus the Throwable it catches.
-     */
+    /** Fallback — CircuitBreaker open hoặc tất cả retry thất bại. */
     public Mono<AiFinalItineraryDto> generateItineraryFallback(AiTravelRequestDto request, Throwable t) {
         log.error("AI Service fallback triggered for generation request. Reason: {}", t.getMessage());
         return Mono.error(new AppException(ErrorCode.AI_SERVICE_UNAVAILABLE));
     }
+
+    // =========================================================================
+    // 2. MODIFY ITINERARY
+    // =========================================================================
 
     @Override
     @CircuitBreaker(name = AI_SERVICE_NAME, fallbackMethod = "modifyItineraryFallback")
@@ -74,5 +81,30 @@ public class AiService implements IAiService {
         log.error("AI Service fallback triggered for modify request. Reason: {}", t.getMessage());
         return Mono.error(new AppException(ErrorCode.AI_SERVICE_UNAVAILABLE));
     }
-}
 
+    // =========================================================================
+    // 3. GENERATE TRAVEL NOTEBOOK
+    // =========================================================================
+
+    @Override
+    @CircuitBreaker(name = AI_SERVICE_NAME, fallbackMethod = "generateNotebookFallback")
+    @Retry(name = AI_SERVICE_NAME)
+    public Mono<AiNotebookResponseDto> generateNotebook(AiGenerateNotebookRequestDto request) {
+        log.info("Sending generate-notebook request to AI Service for destination: {}", request.getDestination());
+
+        return aiServiceWebClient.post()
+                .uri("/generate-notebook")
+                .header("X-Internal-Api-Key", aiServiceProperties.getApiKey())
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(AiNotebookResponseDto.class)
+                .doOnSuccess(response -> log.info("Successfully received travel notebook from AI Service"))
+                .doOnError(e -> log.error("Error communicating with AI Service (notebook): {}", e.getMessage()));
+    }
+
+    /** Fallback cho notebook — trả về lỗi duyên dáng nếu AI không phản hồi. */
+    public Mono<AiNotebookResponseDto> generateNotebookFallback(AiGenerateNotebookRequestDto request, Throwable t) {
+        log.error("AI Service fallback triggered for notebook request. Reason: {}", t.getMessage());
+        return Mono.error(new AppException(ErrorCode.AI_SERVICE_UNAVAILABLE));
+    }
+}
