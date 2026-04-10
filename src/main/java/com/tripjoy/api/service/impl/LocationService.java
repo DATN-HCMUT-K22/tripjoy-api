@@ -5,12 +5,16 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.locationtech.jts.geom.Point;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tripjoy.api.configuration.redis.RedisCacheConfig;
 import com.tripjoy.api.dto.request.LocationCreateRequest;
 import com.tripjoy.api.dto.request.LocationQueryParams;
 import com.tripjoy.api.dto.response.location.AdministrativeLocationResponse;
@@ -39,6 +43,17 @@ public class LocationService implements ILocationService {
 
     // ==================== Write Operations ====================
 
+    /**
+     * Get or create a location by deduplication strategy:
+     * 1. By providerId (fastest — unique index)
+     * 2. By adminCode + countryCode (Tier-1 administrative)
+     * 3. By coordinates within 50 m (prevents near-duplicate POIs)
+     * 4. Create new if no match found
+     *
+     * <p>Cache is NOT populated here on creation — the {@link #getLocationById}
+     * path will populate on first fetch. The {@code location:provider} cache
+     * is evicted if a providerId is present to avoid stale look-up results.
+     */
     @Override
     @Transactional
     public LocationResponse getOrCreateLocation(LocationCreateRequest request) {
@@ -84,8 +99,17 @@ public class LocationService implements ILocationService {
         return locationMapper.toResponse(saved);
     }
 
+    /**
+     * Update location data and evict all related cache entries.
+     * Evicts both {@code location:id} and {@code location:provider} caches
+     * since the location may be cached under both keys.
+     */
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = RedisCacheConfig.CACHE_LOCATION_BY_ID, key = "#locationId"),
+        @CacheEvict(value = RedisCacheConfig.CACHE_LOCATION_BY_PROVIDER, allEntries = true)
+    })
     public LocationResponse updateLocation(UUID locationId, LocationCreateRequest request) {
         log.info("Updating location: {}", locationId);
         Location location = findOrThrow(locationId);
@@ -95,8 +119,15 @@ public class LocationService implements ILocationService {
         return locationMapper.toResponse(updated);
     }
 
+    /**
+     * Delete location and evict all related cache entries.
+     */
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = RedisCacheConfig.CACHE_LOCATION_BY_ID, key = "#locationId"),
+        @CacheEvict(value = RedisCacheConfig.CACHE_LOCATION_BY_PROVIDER, allEntries = true)
+    })
     public void deleteLocation(UUID locationId) {
         log.info("Deleting location: {}", locationId);
         Location location = findOrThrow(locationId);
@@ -110,6 +141,16 @@ public class LocationService implements ILocationService {
         log.info("Deleted location: {}", location.getName());
     }
 
+    /**
+     * Async batch increment of {@code usage_count} for a list of location IDs.
+     * Called after any user action that references locations
+     * (trip item added, suggestion created, itinerary confirmed, etc.).
+     *
+     * <p>Cache eviction is <b>intentionally skipped</b> here: {@code usage_count}
+     * affects only sort order in search results — not correctness of displayed data.
+     * The cache will naturally refresh after its TTL expires (eventual consistency).
+     * This avoids a cascade of cache misses on high-traffic write paths.
+     */
     @Override
     @Async
     @Transactional
@@ -122,12 +163,22 @@ public class LocationService implements ILocationService {
 
     // ==================== Read Operations ====================
 
+    /**
+     * Get a single location by UUID.
+     * Result is cached in {@code location:id} for 24 hours.
+     */
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = RedisCacheConfig.CACHE_LOCATION_BY_ID, key = "#locationId")
     public LocationResponse getLocationById(UUID locationId) {
+        log.debug("Cache MISS — loading location from DB: {}", locationId);
         return locationMapper.toResponse(findOrThrow(locationId));
     }
 
+    /**
+     * Paginated location list with optional filters and FTS.
+     * NOT cached: too many parameter combinations, spatial queries change frequently.
+     */
     @Override
     @Transactional(readOnly = true)
     public Page<LocationResponse> getLocations(LocationQueryParams params, Pageable pageable) {
@@ -149,10 +200,19 @@ public class LocationService implements ILocationService {
         return result.map(locationMapper::toResponse);
     }
 
+    /**
+     * Get all verified administrative locations (PROVINCE, DISTRICT, etc.) by type.
+     * Result cached in {@code location:admin} for 6 hours.
+     * Cache key format: {@code {type}:{countryCode}} — e.g., {@code PROVINCE:VN}.
+     */
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(
+        value = RedisCacheConfig.CACHE_LOCATION_ADMIN,
+        key = "#type.name() + ':' + (#countryCode != null ? #countryCode.toUpperCase() : 'ALL')"
+    )
     public List<AdministrativeLocationResponse> getAdministrativeLocations(LocationType type, String countryCode) {
-        log.debug("getAdministrativeLocations: type={}, countryCode={}", type, countryCode);
+        log.debug("Cache MISS — loading admin locations from DB: type={}, countryCode={}", type, countryCode);
 
         List<Location> locations = isNotBlank(countryCode)
                 ? locationRepository.findVerifiedByTypeAndCountry(type, countryCode.toUpperCase())
@@ -163,6 +223,10 @@ public class LocationService implements ILocationService {
                 .toList();
     }
 
+    /**
+     * Nearby spatial search.
+     * NOT cached: results are tied to precise lat/lng/radius combination — effectively uncacheable.
+     */
     @Override
     @Transactional(readOnly = true)
     public List<LocationResponse> getNearbyLocations(LocationQueryParams params) {
@@ -185,6 +249,10 @@ public class LocationService implements ILocationService {
         return nearby.stream().map(locationMapper::toResponse).toList();
     }
 
+    /**
+     * Full-text search with pagination — delegates to {@link #getLocations}.
+     * NOT cached (same reasoning as getLocations).
+     */
     @Override
     @Transactional(readOnly = true)
     public Page<LocationResponse> searchLocations(LocationQueryParams params, Pageable pageable) {
