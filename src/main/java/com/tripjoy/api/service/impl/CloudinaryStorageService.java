@@ -61,6 +61,9 @@ public class CloudinaryStorageService implements IStorageService {
         } catch (IOException e) {
             log.error("Failed to upload image to Cloudinary: {}", e.getMessage());
             throw new AppException(ErrorCode.MEDIA_UPLOAD_FAILED);
+        } catch (Exception e) {
+            log.error("Unexpected error during image upload to Cloudinary: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.MEDIA_UPLOAD_FAILED);
         }
     }
 
@@ -86,6 +89,9 @@ public class CloudinaryStorageService implements IStorageService {
 
         } catch (IOException e) {
             log.error("Failed to upload video to Cloudinary: {}", e.getMessage());
+            throw new AppException(ErrorCode.MEDIA_UPLOAD_FAILED);
+        } catch (Exception e) {
+            log.error("Unexpected error during video upload to Cloudinary: {}", e.getMessage(), e);
             throw new AppException(ErrorCode.MEDIA_UPLOAD_FAILED);
         }
     }
@@ -165,8 +171,8 @@ public class CloudinaryStorageService implements IStorageService {
                 .publicId(String.valueOf(result.get("public_id")))
                 .format(String.valueOf(result.get("format")))
                 .resourceType(String.valueOf(result.get("resource_type")))
-                .width(result.get("width") != null ? (Integer) result.get("width") : null)
-                .height(result.get("height") != null ? (Integer) result.get("height") : null)
+                .width(result.get("width") != null ? ((Number) result.get("width")).intValue() : null)
+                .height(result.get("height") != null ? ((Number) result.get("height")).intValue() : null)
                 .bytes(result.get("bytes") != null ? ((Number) result.get("bytes")).longValue() : null)
                 .duration(result.get("duration") != null ? ((Number) result.get("duration")).doubleValue() : null)
                 .build();
