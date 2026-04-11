@@ -77,8 +77,7 @@ public class ConversationController {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
 
         return ApiResponse.<ConversationResponse>builder()
-                // .data(conversationService.getConversationDetail(conversationId,
-                // currentUserId))
+                .data(conversationService.getConversationDetail(conversationId, currentUserId))
                 .build();
     }
 
