@@ -36,7 +36,7 @@ public class UserController {
         @Operation(summary = "Search users by username or email", description = "Searches for users whose username or email contains the given keyword. "
                         + "Uses case-insensitive LIKE matching.")
         @GetMapping(Endpoint.User.SEARCH)
-        public ApiResponse<List<UserSimpleResponse>> searchUsers(@RequestParam String q) {
+        public ApiResponse<List<UserSimpleResponse>> searchUsers(@RequestParam("q") String q) {
                 return ApiResponse.<List<UserSimpleResponse>>builder()
                                 .data(userService.searchUsers(q))
                                 .build();
@@ -61,7 +61,7 @@ public class UserController {
 
         @GetMapping(Endpoint.User.ID + "/profile")
         @Operation(summary = "Get user's public profile", description = "Returns a public, non-sensitive profile of any user (avatar, bio, fullName). Cached 12h.")
-        public ApiResponse<UserPublicResponse> getPublicProfile(@PathVariable UUID userId) {
+        public ApiResponse<UserPublicResponse> getPublicProfile(@PathVariable("userId") UUID userId) {
                 return ApiResponse.<UserPublicResponse>builder()
                                 .data(userService.getPublicProfile(userId))
                                 .build();
@@ -69,7 +69,7 @@ public class UserController {
 
         @GetMapping(Endpoint.User.ID + "/admin-view")
         @Operation(summary = "Admin: Get full user details", description = "Returns complete user data including sensitive fields. Requires ADMIN role. Cached 12h (admin namespace).")
-        public ApiResponse<UserResponse> getUserDetailsForAdmin(@PathVariable UUID userId) {
+        public ApiResponse<UserResponse> getUserDetailsForAdmin(@PathVariable("userId") UUID userId) {
                 return ApiResponse.<UserResponse>builder()
                                 .data(userService.getUserDetailsForAdmin(userId))
                                 .build();
@@ -101,7 +101,7 @@ public class UserController {
         @Operation(summary = "Assign roles to user (Admin only)", description = "Assigns a set of roles to a specific user.")
         @PutMapping(Endpoint.User.ID_ROLES)
         ApiResponse<UserResponse> assignRoles(
-                        @PathVariable UUID userId, @RequestBody @Valid UserRoleUpdateRequest request) {
+                        @PathVariable("userId") UUID userId, @RequestBody @Valid UserRoleUpdateRequest request) {
                 return ApiResponse.<UserResponse>builder()
                                 .data(userService.assignRoles(userId, request))
                                 .build();
@@ -110,7 +110,7 @@ public class UserController {
         @Operation(summary = "Update user locked status (Admin only)", description = "Locks or unlocks a user account.")
         @PatchMapping(Endpoint.User.ID_STATUS)
         ApiResponse<UserResponse> updateUserStatus(
-                        @PathVariable UUID userId, @RequestBody @Valid UserStatusUpdateRequest request) {
+                        @PathVariable("userId") UUID userId, @RequestBody @Valid UserStatusUpdateRequest request) {
                 return ApiResponse.<UserResponse>builder()
                                 .data(userService.updateUserStatus(userId, request.getIsLocked()))
                                 .build();
@@ -118,7 +118,7 @@ public class UserController {
 
         @Operation(summary = "Delete user by ID", description = "Deletes a user account from the system by their unique ID.")
         @DeleteMapping(Endpoint.User.ID)
-        ApiResponse<Void> deleteUser(@PathVariable UUID userId) {
+        ApiResponse<Void> deleteUser(@PathVariable("userId") UUID userId) {
                 userService.deleteUser(userId);
                 return ApiResponse.<Void>builder().message("User has been deleted").build();
         }

@@ -39,7 +39,7 @@ public class TravelNotebookController {
     )
     @PostMapping(Endpoint.TravelNotebook.AI_GENERATE)
     public ResponseEntity<ApiResponse<TravelNotebookResponse>> generateNotebook(
-            @PathVariable UUID itineraryId) {
+            @PathVariable("itineraryId") UUID itineraryId) {
 
         TravelNotebookResponse response = travelNotebookService.generateByItinerary(itineraryId);
 
@@ -57,7 +57,7 @@ public class TravelNotebookController {
     @Operation(summary = "Get travel notebook for a specific itinerary")
     @GetMapping(Endpoint.TravelNotebook.BY_ITINERARY)
     public ApiResponse<TravelNotebookResponse> getNotebookByItinerary(
-            @PathVariable UUID itineraryId) {
+            @PathVariable("itineraryId") UUID itineraryId) {
         return ApiResponse.<TravelNotebookResponse>builder()
                 .data(travelNotebookService.getByItineraryId(itineraryId))
                 .build();
@@ -65,7 +65,7 @@ public class TravelNotebookController {
 
     @Operation(summary = "Get a single travel notebook by ID")
     @GetMapping(Endpoint.TravelNotebook.ID)
-    public ApiResponse<TravelNotebookResponse> getNotebookById(@PathVariable UUID notebookId) {
+    public ApiResponse<TravelNotebookResponse> getNotebookById(@PathVariable("notebookId") UUID notebookId) {
         return ApiResponse.<TravelNotebookResponse>builder()
                 .data(travelNotebookService.getById(notebookId))
                 .build();

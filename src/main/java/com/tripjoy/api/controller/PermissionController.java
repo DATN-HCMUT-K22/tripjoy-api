@@ -44,7 +44,7 @@ public class PermissionController {
 
     @Operation(summary = "Delete a permission by ID - OK")
     @DeleteMapping(Endpoint.Permission.ID)
-    public ApiResponse<Void> delete(@PathVariable String permissionId) {
+    public ApiResponse<Void> delete(@PathVariable("permissionId") String permissionId) {
         permissionService.delete(permissionId);
         return ApiResponse.<Void>builder()
                 .message("Permission has been deleted")

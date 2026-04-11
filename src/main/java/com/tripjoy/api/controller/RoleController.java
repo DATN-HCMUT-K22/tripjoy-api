@@ -44,7 +44,7 @@ public class RoleController {
 
     @Operation(summary = "Delete a role - OK")
     @DeleteMapping(Endpoint.Role.ID)
-    public ApiResponse<Void> delete(@PathVariable String roleId) {
+    public ApiResponse<Void> delete(@PathVariable("roleId") String roleId) {
         roleService.delete(roleId);
         return ApiResponse.<Void>builder().message("Role has been deleted").build();
     }
