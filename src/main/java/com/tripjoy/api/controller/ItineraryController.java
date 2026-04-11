@@ -67,7 +67,7 @@ public class ItineraryController {
 
     @Operation(summary = "Get a single itinerary by ID")
     @GetMapping(Endpoint.Itinerary.ID)
-    public ApiResponse<ItineraryResponse> getItinerary(@PathVariable UUID id) {
+    public ApiResponse<ItineraryResponse> getItinerary(@PathVariable("id") UUID id) {
         return ApiResponse.<ItineraryResponse>builder()
                 .data(itineraryService.getItineraryById(id))
                 .build();
