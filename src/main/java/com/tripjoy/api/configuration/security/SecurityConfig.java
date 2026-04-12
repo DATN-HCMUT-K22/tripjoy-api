@@ -38,7 +38,6 @@ public class SecurityConfig {
 
     private static final String[] PUBLIC_GET_ENDPOINTS = {
         Endpoint.Post.BASE,
-        Endpoint.Post.BASE + Endpoint.Post.SEARCH,
         Endpoint.Post.BASE + Endpoint.Post.ID,
         Endpoint.Post.BASE + Endpoint.Post.COMMENTS,
         // Location endpoints — public search and autocomplete (no auth needed)

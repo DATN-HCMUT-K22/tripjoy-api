@@ -14,8 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.context.ApplicationEventPublisher;
 
 import com.tripjoy.api.dto.event.PostLikedEvent;
+import com.tripjoy.api.dto.request.PostQueryParams;
 import com.tripjoy.api.dto.request.PostRequest;
-import com.tripjoy.api.dto.request.PostSearchRequest;
 import com.tripjoy.api.dto.response.PostResponse;
 import com.tripjoy.api.entity.Itinerary;
 import com.tripjoy.api.entity.Post;
@@ -76,9 +76,42 @@ public class PostService implements IPostService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<PostResponse> getAllPosts(Pageable pageable, UUID currentUserId) {
-        return postRepository.findBySoftDeleteInfoIsDeletedFalse(pageable)
-                .map(post -> getPostResponseWithContext(post, currentUserId));
+    public Page<PostResponse> getPosts(PostQueryParams params, Pageable pageable, UUID currentUserId) {
+        // Fast path: no filter criteria — use simple paginated findAll (no FTS overhead)
+        if (params == null || params.isEmpty()) {
+            return postRepository.findBySoftDeleteInfoIsDeletedFalse(pageable)
+                    .map(post -> getPostResponseWithContext(post, currentUserId));
+        }
+
+        // Filter path: delegate to FTS + multi-criteria native query
+        // The native query manages its own offset/limit for now (uses PostQueryParams.sort internally)
+        int pageNum = pageable.getPageNumber();
+        int size = pageable.getPageSize();
+        int offset = pageNum * size;
+
+        String keyword = params.normalizedKeyword();
+        String hashtag = params.normalizedHashtag();
+
+        List<Post> posts = postRepository.searchPosts(
+                keyword, hashtag, params.getCreatorId(), params.getItineraryId(),
+                params.getStartDate(), params.getEndDate(), params.getMinDays(), params.getMaxDays(),
+                params.getMinBudget(), params.getMaxBudget(), params.getMinPeople(), params.getMaxPeople(),
+                params.getOriginId(), params.getDestinationId(), params.getSort(), size, offset);
+
+        long totalElements = 0;
+        if (!posts.isEmpty() || pageNum > 0) {
+            totalElements = postRepository.countSearchPosts(
+                    keyword, hashtag, params.getCreatorId(), params.getItineraryId(),
+                    params.getStartDate(), params.getEndDate(), params.getMinDays(), params.getMaxDays(),
+                    params.getMinBudget(), params.getMaxBudget(), params.getMinPeople(), params.getMaxPeople(),
+                    params.getOriginId(), params.getDestinationId());
+        }
+
+        List<PostResponse> responses = posts.stream()
+                .map(post -> getPostResponseWithContext(post, currentUserId))
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(responses, pageable, totalElements);
     }
 
     @Override
@@ -194,41 +227,7 @@ public class PostService implements IPostService {
         postRepository.save(post);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public Page<PostResponse> searchPosts(PostSearchRequest request, UUID currentUserId) {
-        int page = Math.max(0, request.getPage());
-        int size = Math.min(50, Math.max(1, request.getSize()));
-        int offset = page * size;
 
-        String keyword = request.getQ() != null && !request.getQ().trim().isEmpty() ? request.getQ().trim() : null;
-        String hashtag = request.getHashtag() != null && !request.getHashtag().trim().isEmpty() ? request.getHashtag().trim() : null;
-        
-        if (hashtag != null && hashtag.startsWith("#")) {
-            hashtag = hashtag.substring(1);
-        }
-
-        List<Post> posts = postRepository.searchPosts(
-                keyword, hashtag, request.getCreatorId(), request.getItineraryId(),
-                request.getStartDate(), request.getEndDate(), request.getMinDays(), request.getMaxDays(),
-                request.getMinBudget(), request.getMaxBudget(), request.getMinPeople(), request.getMaxPeople(),
-                request.getOriginId(), request.getDestinationId(), request.getSort(), size, offset);
-
-        long totalElements = 0;
-        if (!posts.isEmpty() || page > 0) {
-            totalElements = postRepository.countSearchPosts(
-                    keyword, hashtag, request.getCreatorId(), request.getItineraryId(),
-                    request.getStartDate(), request.getEndDate(), request.getMinDays(), request.getMaxDays(),
-                    request.getMinBudget(), request.getMaxBudget(), request.getMinPeople(), request.getMaxPeople(),
-                    request.getOriginId(), request.getDestinationId());
-        }
-
-        List<PostResponse> responses = posts.stream()
-                .map(post -> getPostResponseWithContext(post, currentUserId))
-                .collect(Collectors.toList());
-
-        return new PageImpl<>(responses, PageRequest.of(page, size), totalElements);
-    }
 
     private PostResponse getPostResponseWithContext(Post post, UUID currentUserId) {
         PostResponse response = postMapper.toPostResponse(post);

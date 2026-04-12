@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import com.tripjoy.api.constant.Endpoint;
 import com.tripjoy.api.dto.request.CommentRequest;
+import com.tripjoy.api.dto.request.PostQueryParams;
 import com.tripjoy.api.dto.request.PostRequest;
-import com.tripjoy.api.dto.request.PostSearchRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.CommentResponse;
 import com.tripjoy.api.dto.response.PostResponse;
@@ -35,21 +35,6 @@ public class PostController {
     IPostService postService;
     ICommentService commentService;
 
-    // --- SEARCH ---
-
-    @Operation(
-            summary = "Search posts",
-            description =
-                    "Search posts by content (Full-Text Search), hashtag, creator, and itinerary filters (budget, people, dates, duration, locations)")
-    @GetMapping(Endpoint.Post.SEARCH)
-    public ApiResponse<Page<PostResponse>> searchPosts(@Valid @ModelAttribute PostSearchRequest request) {
-        UUID currentUserId = SecurityUtils.getCurrentUserIdSafe();
-        
-        return ApiResponse.<Page<PostResponse>>builder()
-                .data(postService.searchPosts(request, currentUserId))
-                .build();
-    }
-
     // --- POST CRUD ---
 
     @Operation(summary = "Create a new post")
@@ -60,12 +45,49 @@ public class PostController {
                 .build();
     }
 
-    @Operation(summary = "Get all posts (paginated)")
+    /**
+     * Unified GET /posts — list + filter + full-text search in a single endpoint.
+     *
+     * <p>All query parameters are optional. When no parameters are provided, returns a
+     * paginated feed of all active posts (newest first). When any filter/search
+     * parameter is provided, filtering is applied as AND conditions.
+     *
+     * <p>Replaces the previous split of:
+     * <ul>
+     *   <li>{@code GET /posts} — feed all posts
+     *   <li>{@code GET /posts/search} — filtered/searched posts
+     * </ul>
+     *
+     * <p>Pagination is handled via standard Spring {@code Pageable} params:
+     * {@code ?page=0&size=20&sort=createdAt,desc}
+     *
+     * <p><b>Example requests:</b>
+     * <pre>
+     *   GET /posts                             → feed all posts
+     *   GET /posts?q=Đà%20Nẵng                → FTS on content
+     *   GET /posts?hashtag=dulich              → filter by hashtag
+     *   GET /posts?q=cafe&hashtag=hcm&min_days=2 → combined filter
+     *   GET /posts?creator_id=uuid             → posts by a user
+     * </pre>
+     */
+    @Operation(
+            summary = "Get / search posts (unified)",
+            description = """
+                    Unified collection endpoint. All parameters are optional:
+                    - No params → paginated feed (all active posts, newest first)
+                    - `q` → full-text search on post content
+                    - `hashtag`, `creator_id`, budget/date/people ranges → multi-criteria filter
+                    - All active filters combine as AND conditions
+                    
+                    Pagination: standard Spring params `page`, `size`, `sort`.
+                    """)
     @GetMapping
-    public ApiResponse<Page<PostResponse>> getAllPosts(Pageable pageable) {
+    public ApiResponse<Page<PostResponse>> getPosts(
+            @Valid @ModelAttribute PostQueryParams params,
+            Pageable pageable) {
         UUID currentUserId = SecurityUtils.getCurrentUserIdSafe();
         return ApiResponse.<Page<PostResponse>>builder()
-                .data(postService.getAllPosts(pageable, currentUserId))
+                .data(postService.getPosts(params, pageable, currentUserId))
                 .build();
     }
 
