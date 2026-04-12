@@ -17,6 +17,7 @@ import com.tripjoy.api.dto.request.LocationCreateRequest;
 import com.tripjoy.api.dto.request.LocationQueryParams;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.location.AdministrativeLocationResponse;
+import com.tripjoy.api.dto.response.location.LocationAutocompleteItem;
 import com.tripjoy.api.dto.response.location.LocationResponse;
 import com.tripjoy.api.enums.LocationType;
 import com.tripjoy.api.service.ILocationService;
@@ -159,7 +160,7 @@ public class LocationController {
 
         Pageable sqlPageable = PageableUtils.toSnakeCase(pageable);
         return ApiResponse.<Page<LocationResponse>>builder()
-                .data(locationService.searchLocations(params, sqlPageable))
+                .data(locationService.getLocations(params, sqlPageable))
                 .build();
     }
 
@@ -199,6 +200,61 @@ public class LocationController {
 
         return ApiResponse.<List<LocationResponse>>builder()
                 .data(locationService.getNearbyLocations(params))
+                .build();
+    }
+
+    // ==================== Autocomplete ====================
+
+    /**
+     * Hybrid autocomplete — DB fast-path first, Google Places API fallback.
+     *
+     * <p>Call this while the user is typing in a location search box (debounce ~300ms on FE).
+     * Minimum 2 characters required. Results capped at 10 items.
+     *
+     * <p><b>Frontend flow after user picks a suggestion:</b>
+     * <ol>
+     *   <li>If {@code location_id} is present in the item → use directly in Trip Item / Itinerary.
+     *   <li>If {@code location_id} is null (source = "GOOGLE_MAPS") → call
+     *       {@code POST /locations/resolve} with the {@code provider_id} and coords.
+     * </ol>
+     *
+     * <p><b>Caching:</b> Server-side Redis cache 10 min (key = q:city).
+     *
+     * <p><b>Auth:</b> Public — no token required.
+     */
+    @Operation(
+            summary = "Hybrid location autocomplete (DB + Google Places)",
+            description = """
+                    Autocomplete suggestions for a partial text input.
+                    
+                    **Strategy:**
+                    1. Search TripJoy DB first (fast, free, ranked by popularity)
+                    2. If DB results sparse, call Google Places Autocomplete API
+                    3. Merge and deduplicate results (max 10 items)
+                    
+                    **After picking a result:**
+                    - `location_id` present → use directly
+                    - `location_id` null (source=GOOGLE_MAPS) → call `POST /locations/resolve` first
+                    """)
+    @GetMapping(Endpoint.Location.AUTOCOMPLETE)
+    public ApiResponse<List<LocationAutocompleteItem>> autocomplete(
+            @Parameter(description = "Partial text input (min 2 chars)", example = "Highlands", required = true)
+            @RequestParam String q,
+            @Parameter(description = "City bias for results", example = "Ho Chi Minh City")
+            @RequestParam(required = false) String city,
+            @Parameter(description = "User latitude for proximity ranking", example = "10.762622")
+            @RequestParam(required = false) Double lat,
+            @Parameter(description = "User longitude for proximity ranking", example = "106.660172")
+            @RequestParam(required = false) Double lng) {
+
+        if (q == null || q.trim().length() < 2) {
+            return ApiResponse.<List<LocationAutocompleteItem>>builder()
+                    .data(List.of())
+                    .build();
+        }
+
+        return ApiResponse.<List<LocationAutocompleteItem>>builder()
+                .data(locationService.autocomplete(q.trim(), city, lat, lng))
                 .build();
     }
 

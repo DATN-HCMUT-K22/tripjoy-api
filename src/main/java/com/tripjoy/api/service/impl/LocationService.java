@@ -1,8 +1,13 @@
 package com.tripjoy.api.service.impl;
 
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.locationtech.jts.geom.Point;
 import org.springframework.cache.annotation.CacheEvict;
@@ -10,6 +15,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +24,8 @@ import com.tripjoy.api.configuration.redis.RedisCacheConfig;
 import com.tripjoy.api.dto.request.LocationCreateRequest;
 import com.tripjoy.api.dto.request.LocationQueryParams;
 import com.tripjoy.api.dto.response.location.AdministrativeLocationResponse;
+import com.tripjoy.api.dto.response.location.GoogleAutocompleteResponse;
+import com.tripjoy.api.dto.response.location.LocationAutocompleteItem;
 import com.tripjoy.api.dto.response.location.LocationResponse;
 import com.tripjoy.api.entity.Location;
 import com.tripjoy.api.enums.LocationType;
@@ -25,6 +33,7 @@ import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
 import com.tripjoy.api.mapper.LocationMapper;
 import com.tripjoy.api.repository.LocationRepository;
+import com.tripjoy.api.service.IGooglePlacesService;
 import com.tripjoy.api.service.ILocationService;
 
 import lombok.AccessLevel;
@@ -40,6 +49,12 @@ public class LocationService implements ILocationService {
 
     LocationRepository locationRepository;
     LocationMapper locationMapper;
+    IGooglePlacesService googlePlacesService;
+
+    /** Max autocomplete results to return (DB + Google combined) */
+    private static final int AUTOCOMPLETE_MAX_RESULTS = 10;
+    /** Max DB results to fetch for autocomplete — leave room for Google suggestions */
+    private static final int AUTOCOMPLETE_DB_MAX = 5;
 
     // ==================== Write Operations ====================
 
@@ -250,16 +265,216 @@ public class LocationService implements ILocationService {
     }
 
     /**
-     * Full-text search with pagination — delegates to {@link #getLocations}.
-     * NOT cached (same reasoning as getLocations).
+     * Hybrid autocomplete — Phase 3 of the Location Architecture Blueprint.
+     *
+     * <p><b>Strategy:</b>
+     * <ol>
+     *   <li>Search TripJoy DB with prefix FTS (fast, free, ranked by usage_count)
+     *   <li>If DB returns fewer than {@value #AUTOCOMPLETE_DB_MAX} results, call
+     *       Google Places Autocomplete API in parallel (blocking with 3s timeout).
+     *   <li>Merge results: DB items first, Google items appended — deduplicated by providerId.
+     *   <li>Trim to {@value #AUTOCOMPLETE_MAX_RESULTS} items.
+     * </ol>
+     *
+     * <p><b>Cache:</b> Results cached in Redis for 10 minutes keyed by {@code q:city}.
+     * Short TTL because user interests (e.g., newly added POIs) change frequently.
+     *
+     * <p><b>Auth:</b> Public endpoint — no authentication required.
+     *
+     * @param q    Partial text (min 2 chars enforced at controller layer)
+     * @param city Optional city bias (e.g., "Ho Chi Minh City")
+     * @param lat  Optional user latitude for proximity ranking in Google API
+     * @param lng  Optional user longitude for proximity ranking in Google API
      */
     @Override
     @Transactional(readOnly = true)
-    public Page<LocationResponse> searchLocations(LocationQueryParams params, Pageable pageable) {
-        return getLocations(params, pageable);
+    @Cacheable(
+        value = RedisCacheConfig.CACHE_LOCATION_AUTOCOMPLETE,
+        key = "#q.toLowerCase() + ':' + (#city != null ? #city.toLowerCase() : 'all')",
+        condition = "#q != null && #q.length() >= 2"
+    )
+    public List<LocationAutocompleteItem> autocomplete(String q, String city, Double lat, Double lng) {
+        log.debug("autocomplete: q='{}', city='{}', lat={}, lng={}", q, city, lat, lng);
+
+        // ── Step 1: DB fast-path ──────────────────────────────────────────────
+        List<LocationAutocompleteItem> dbItems = fetchFromDb(q, city, lat, lng);
+        log.debug("Autocomplete DB results: {}", dbItems.size());
+
+        // ── Step 2: Google Places fallback (if DB sparse) ────────────────────
+        if (dbItems.size() >= AUTOCOMPLETE_MAX_RESULTS) {
+            // DB is rich enough — skip Google API call to save quota
+            return dbItems.subList(0, AUTOCOMPLETE_MAX_RESULTS);
+        }
+
+        List<LocationAutocompleteItem> googleItems = fetchFromGoogle(q, city, lat, lng, dbItems);
+        log.debug("Autocomplete Google results (after dedup): {}", googleItems.size());
+
+        // ── Step 3: Merge (DB first, Google appended) ────────────────────────
+        List<LocationAutocompleteItem> merged = new ArrayList<>(dbItems);
+        merged.addAll(googleItems);
+
+        return merged.stream()
+                .limit(AUTOCOMPLETE_MAX_RESULTS)
+                .toList();
     }
 
     // ==================== Private Helpers ====================
+
+    /**
+     * Fetches autocomplete candidates from TripJoy's own database.
+     * Uses the existing {@code searchLocations} repository query (FTS + ILIKE fallback).
+     */
+    private List<LocationAutocompleteItem> fetchFromDb(String q, String city, Double lat, Double lng) {
+        try {
+            String locationType = null; // search all types
+            Page<Location> dbPage = locationRepository.searchLocations(
+                    nullIfBlank(q),
+                    locationType,
+                    null,
+                    nullIfBlank(city),
+                    null,
+                    lat,
+                    lng,
+                    PageRequest.of(0, AUTOCOMPLETE_DB_MAX));
+
+            return dbPage.getContent().stream()
+                    .map(this::toAutocompleteItem)
+                    .toList();
+        } catch (Exception e) {
+            log.warn("DB autocomplete failed, continuing with Google only: {}", e.getMessage());
+            return List.of();
+        }
+    }
+
+    /**
+     * Fetches autocomplete suggestions from Google Places API.
+     * Deduplicates against existing DB results by providerId.
+     * Returns empty list on API failure — graceful degradation.
+     */
+    private List<LocationAutocompleteItem> fetchFromGoogle(
+            String q, String city, Double lat, Double lng,
+            List<LocationAutocompleteItem> existingDbItems) {
+        try {
+            // Collect already-seen providerIds to deduplicate Google results
+            Set<String> seenProviderIds = existingDbItems.stream()
+                    .filter(item -> item.getProviderId() != null)
+                    .map(LocationAutocompleteItem::getProviderId)
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+
+            GoogleAutocompleteResponse googleResponse = googlePlacesService
+                    .autocomplete(q, city, lat, lng)
+                    .block(Duration.ofSeconds(3));
+
+            if (googleResponse == null || googleResponse.getSuggestions() == null) {
+                return List.of();
+            }
+
+            return googleResponse.getSuggestions().stream()
+                    .filter(s -> s.getPlacePrediction() != null)
+                    .map(GoogleAutocompleteResponse.Suggestion::getPlacePrediction)
+                    .filter(p -> !seenProviderIds.contains(p.getPlaceId())) // deduplicate
+                    .map(this::googlePredictionToAutocompleteItem)
+                    .toList();
+
+        } catch (Exception e) {
+            log.warn("Google Places autocomplete failed, returning DB-only results: {}", e.getMessage());
+            return List.of();
+        }
+    }
+
+    /** Converts a TripJoy {@link Location} entity to a slim autocomplete item (DB source). */
+    private LocationAutocompleteItem toAutocompleteItem(Location location) {
+        return LocationAutocompleteItem.builder()
+                .locationId(location.getId() != null ? location.getId().toString() : null)
+                .providerId(location.getProviderId())
+                .name(location.getName())
+                .secondaryText(buildSecondaryText(location))
+                .fullAddress(location.getFullAddress())
+                .latitude(location.getLatitude())
+                .longitude(location.getLongitude())
+                .maki(location.getMaki())
+                .primaryType(location.getPrimaryType())
+                .source("DB")
+                .build();
+    }
+
+    /** Converts a Google Places prediction to an autocomplete item (GOOGLE_MAPS source). */
+    private LocationAutocompleteItem googlePredictionToAutocompleteItem(
+            GoogleAutocompleteResponse.PlacePrediction prediction) {
+
+        String mainText = prediction.getStructuredFormat() != null
+                && prediction.getStructuredFormat().getMainText() != null
+                ? prediction.getStructuredFormat().getMainText().getText()
+                : (prediction.getText() != null ? prediction.getText().getText() : null);
+
+        String secondaryText = prediction.getStructuredFormat() != null
+                && prediction.getStructuredFormat().getSecondaryText() != null
+                ? prediction.getStructuredFormat().getSecondaryText().getText()
+                : null;
+
+        // Infer maki icon from Google place types
+        String maki = inferMaki(prediction.getTypes());
+        String primaryType = prediction.getTypes() != null && !prediction.getTypes().isEmpty()
+                ? prediction.getTypes().get(0)
+                : null;
+
+        return LocationAutocompleteItem.builder()
+                .locationId(null)          // NOT in DB yet — frontend must call POST /resolve
+                .providerId(prediction.getPlaceId())
+                .name(mainText)
+                .secondaryText(secondaryText)
+                .maki(maki)
+                .primaryType(primaryType)
+                .source("GOOGLE_MAPS")
+                .build();
+    }
+
+    /**
+     * Builds a short human-readable secondary text from a Location entity.
+     * Priority: district → city → country.
+     */
+    private String buildSecondaryText(Location location) {
+        if (location.getAddressComponents() == null) {
+            return location.getPlaceFormatted() != null ? location.getPlaceFormatted() : null;
+        }
+        var addr = location.getAddressComponents();
+        String district = addr.getEffectiveDistrict();
+        String city = addr.getEffectiveCity();
+        String country = addr.getCountryName();
+
+        List<String> parts = new ArrayList<>();
+        if (isNotBlank(district) && !district.equals(city)) parts.add(district);
+        if (isNotBlank(city)) parts.add(city);
+        if (isNotBlank(country)) parts.add(country);
+        return parts.isEmpty() ? null : String.join(", ", parts);
+    }
+
+    /**
+     * Maps Google place types to Maki icon names.
+     * Maki icons: https://labs.mapbox.com/maki-icons/
+     */
+    private String inferMaki(List<String> types) {
+        if (types == null || types.isEmpty()) return "marker";
+        for (String type : types) {
+            switch (type) {
+                case "restaurant", "food" -> { return "restaurant"; }
+                case "cafe", "coffee_shop" -> { return "coffee"; }
+                case "lodging", "hotel" -> { return "lodging"; }
+                case "airport" -> { return "airport"; }
+                case "museum" -> { return "museum"; }
+                case "park" -> { return "park"; }
+                case "hospital", "health" -> { return "hospital"; }
+                case "shopping_mall", "store" -> { return "shop"; }
+                case "university", "school" -> { return "college"; }
+                case "tourist_attraction" -> { return "attraction"; }
+                case "bank" -> { return "bank"; }
+                case "pharmacy" -> { return "pharmacy"; }
+                case "gas_station" -> { return "fuel"; }
+                case "locality", "administrative_area_level_1" -> { return "city"; }
+            }
+        }
+        return "marker";
+    }
 
     private Location findOrThrow(UUID id) {
         return locationRepository.findById(id)

@@ -55,6 +55,8 @@ public class RedisCacheConfig {
     public static final String CACHE_LOCATION_BY_ID       = "location:id";
     public static final String CACHE_LOCATION_BY_PROVIDER = "location:provider";
     public static final String CACHE_LOCATION_ADMIN        = "location:admin";
+    /** Autocomplete suggestions: hybrid DB + Google. Short TTL (10min) because POIs change frequently. */
+    public static final String CACHE_LOCATION_AUTOCOMPLETE = "location:autocomplete";
 
     // Auth
     public static final String CACHE_INVALIDATED_TOKEN = "auth:invalidated-token";
@@ -78,9 +80,10 @@ public class RedisCacheConfig {
 
     // ==================== TTL Durations ====================
 
-    private static final Duration TTL_LOCATION_ID       = Duration.ofHours(24);
-    private static final Duration TTL_LOCATION_PROVIDER = Duration.ofHours(24);
-    private static final Duration TTL_LOCATION_ADMIN    = Duration.ofHours(6);
+    private static final Duration TTL_LOCATION_ID           = Duration.ofHours(24);
+    private static final Duration TTL_LOCATION_PROVIDER     = Duration.ofHours(24);
+    private static final Duration TTL_LOCATION_ADMIN        = Duration.ofHours(6);
+    private static final Duration TTL_LOCATION_AUTOCOMPLETE = Duration.ofMinutes(10);
     private static final Duration TTL_INVALIDATED_TOKEN = Duration.ofHours(1); // matches access token expiry
     private static final Duration TTL_PERMISSION_ALL    = Duration.ofHours(24);
     private static final Duration TTL_ROLE_ALL          = Duration.ofHours(24);
@@ -129,6 +132,8 @@ public class RedisCacheConfig {
                 defaults.entryTtl(TTL_LOCATION_PROVIDER));
         cacheConfigs.put(CACHE_LOCATION_ADMIN,
                 defaults.entryTtl(TTL_LOCATION_ADMIN));
+        cacheConfigs.put(CACHE_LOCATION_AUTOCOMPLETE,
+                defaults.entryTtl(TTL_LOCATION_AUTOCOMPLETE));
 
         // Auth — JWT token blacklist
         cacheConfigs.put(CACHE_INVALIDATED_TOKEN,
