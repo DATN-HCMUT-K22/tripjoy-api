@@ -5,6 +5,8 @@ import java.util.UUID;
 
 import jakarta.validation.Valid;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import com.tripjoy.api.constant.Endpoint;
@@ -20,6 +22,7 @@ import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import com.tripjoy.api.service.IUserService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -33,23 +36,24 @@ import lombok.experimental.FieldDefaults;
 public class UserController {
         IUserService userService;
 
-        @Operation(summary = "Search users by username or email", description = "Searches for users whose username or email contains the given keyword. "
-                        + "Uses case-insensitive LIKE matching.")
-        @GetMapping(Endpoint.User.SEARCH)
-        public ApiResponse<List<UserSimpleResponse>> searchUsers(@RequestParam("q") String q) {
-                return ApiResponse.<List<UserSimpleResponse>>builder()
-                                .data(userService.searchUsers(q))
-                                .build();
-        }
-
+        @Operation(
+                summary = "Get users (Admin only)",
+                description = """
+                        Returns a paginated list of all users. Supports optional keyword filter on
+                        username or email (case-insensitive LIKE).
+                        
+                        **No `q` param** → returns all users (paginated).
+                        **With `?q=keyword`** → filters by username OR email.
+                        
+                        Requires `ADMIN` role.
+                        """)
         @GetMapping
-        @Operation(summary = "Get all users", description = "Retrieves a list of all registered users.")
-        // @PreAuthorize("hasRole('SYSTEM_ADMIN')")
-        // @PreAuthorize("hasAuthority('APPROVE_POST')")
-        public ApiResponse<List<UserResponse>> getUsers() {
-
-                return ApiResponse.<List<UserResponse>>builder()
-                                .data(userService.getUsers())
+        public ApiResponse<Page<UserResponse>> getUsers(
+                @Parameter(description = "Optional keyword filter on username or email", example = "nguyen")
+                @RequestParam(required = false) String q,
+                Pageable pageable) {
+                return ApiResponse.<Page<UserResponse>>builder()
+                                .data(userService.getUsers(pageable, q))
                                 .build();
         }
 

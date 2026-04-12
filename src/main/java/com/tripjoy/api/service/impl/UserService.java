@@ -7,6 +7,8 @@ import java.util.UUID;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -128,11 +130,15 @@ public class UserService implements IUserService {
 
     // ==================== Admin Mutations ====================
 
+    @Override
     @PreAuthorize("hasRole('ADMIN')")
-    public List<UserResponse> getUsers() {
-        return userRepository.findAll().stream()
-                .map(userMapper::toUserResponse)
-                .toList();
+    public Page<UserResponse> getUsers(Pageable pageable, String q) {
+        if (q != null && !q.trim().isBlank()) {
+            return userRepository.searchByUsernameOrEmailPaged(q.trim(), pageable)
+                    .map(userMapper::toUserResponse);
+        }
+        return userRepository.findAll(pageable)
+                .map(userMapper::toUserResponse);
     }
 
     public UserResponse createUser(UserCreationRequest request) {
