@@ -6,9 +6,12 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 import com.tripjoy.api.dto.request.LocationCreateRequest;
 import com.tripjoy.api.dto.request.LocationQueryParams;
 import com.tripjoy.api.dto.response.location.AdministrativeLocationResponse;
+import com.tripjoy.api.dto.response.location.LocationAutocompleteItem;
 import com.tripjoy.api.dto.response.location.LocationResponse;
 import com.tripjoy.api.enums.LocationType;
 
@@ -69,7 +72,16 @@ public interface ILocationService {
     List<LocationResponse> getNearbyLocations(LocationQueryParams params);
 
     /**
-     * Full-text search with optional filters and location-aware ranking.
+     * Hybrid autocomplete — DB fast-path first, Google Places API fallback.
+     *
+     * <p>Ranking: DB results (with usageCount) shown first, then Google suggestions appended
+     * without duplicates (deduplicated by providerId).
+     *
+     * @param q       Partial text input (min 2 chars)
+     * @param city    Optional city to bias results
+     * @param lat     Optional user latitude for proximity ranking
+     * @param lng     Optional user longitude for proximity ranking
+     * @return merged, deduplicated list (max 10 items)
      */
-    Page<LocationResponse> searchLocations(LocationQueryParams params, Pageable pageable);
+    List<LocationAutocompleteItem> autocomplete(String q, String city, Double lat, Double lng);
 }

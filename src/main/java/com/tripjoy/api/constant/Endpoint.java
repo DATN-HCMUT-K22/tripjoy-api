@@ -50,6 +50,12 @@ public class Endpoint {
 
         /** GET /locations/search — full-text + filter search (alias for GET /locations with q param) */
         public static final String SEARCH = "/search";
+
+        /**
+         * GET /locations/autocomplete — hybrid autocomplete (DB fast-path + Google Places fallback).
+         * Used while user is typing in the location search box. Min 2 chars.
+         */
+        public static final String AUTOCOMPLETE = "/autocomplete";
     }
 
     public static final class Group {
