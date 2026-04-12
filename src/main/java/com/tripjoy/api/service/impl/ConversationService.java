@@ -2,6 +2,7 @@ package com.tripjoy.api.service.impl;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -121,9 +122,8 @@ public class ConversationService implements IConversationService {
         conversationMemberRepository.save(initiatorMember);
         conversationMemberRepository.save(targetMember);
 
-        // Reload with members populated for enrichment
-        conversation = conversationRepository.findById(conversation.getId())
-                .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_FOUND));
+        // Manually set members before enrichment because L1 cache won't fetch them immediately
+        conversation.setMembers(Set.of(initiatorMember, targetMember));
 
         // 6. Build response
         ConversationResponse response = conversationMapper.toResponse(conversation, initiatorId);

@@ -33,9 +33,9 @@ public class ChatMessageController {
                     + "Results are sorted by relevance and time.")
     @GetMapping(Endpoint.Message.SEARCH)
     public ApiResponse<List<MessageSearchResponse>> searchMessagesGlobal(
-            @RequestParam String q,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam("q") String q,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size) {
 
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         return ApiResponse.<List<MessageSearchResponse>>builder()
@@ -45,7 +45,7 @@ public class ChatMessageController {
 
     @Operation(summary = "Like a message")
     @PostMapping(Endpoint.Message.LIKES)
-    public ApiResponse<Void> likeMessage(@PathVariable UUID messageId) {
+    public ApiResponse<Void> likeMessage(@PathVariable("messageId") UUID messageId) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         messageService.likeMessage(messageId, currentUserId);
 
@@ -54,7 +54,7 @@ public class ChatMessageController {
 
     @Operation(summary = "Unlike a message")
     @DeleteMapping(Endpoint.Message.LIKES)
-    public ApiResponse<Void> unlikeMessage(@PathVariable UUID messageId) {
+    public ApiResponse<Void> unlikeMessage(@PathVariable("messageId") UUID messageId) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         messageService.unlikeMessage(messageId, currentUserId);
 
@@ -65,7 +65,7 @@ public class ChatMessageController {
             summary = "Get users who liked a message",
             description = "Returns a list of users who have liked the specified message")
     @GetMapping(Endpoint.Message.LIKES)
-    public ApiResponse<List<UserSimpleResponse>> getMessageLikes(@PathVariable UUID messageId) {
+    public ApiResponse<List<UserSimpleResponse>> getMessageLikes(@PathVariable("messageId") UUID messageId) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
 
         return ApiResponse.<List<UserSimpleResponse>>builder()
@@ -75,7 +75,7 @@ public class ChatMessageController {
 
     @Operation(summary = "Pin a message in conversation")
     @PostMapping(Endpoint.Message.PIN)
-    public ApiResponse<Void> pinMessage(@PathVariable UUID messageId, @RequestParam UUID conversationId) {
+    public ApiResponse<Void> pinMessage(@PathVariable("messageId") UUID messageId, @RequestParam("conversationId") UUID conversationId) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         messageService.pinMessage(conversationId, messageId, currentUserId);
 
@@ -86,7 +86,7 @@ public class ChatMessageController {
 
     @Operation(summary = "Unpin a message from conversation")
     @DeleteMapping(Endpoint.Message.PIN)
-    public ApiResponse<Void> unpinMessage(@PathVariable UUID messageId, @RequestParam UUID conversationId) {
+    public ApiResponse<Void> unpinMessage(@PathVariable("messageId") UUID messageId, @RequestParam("conversationId") UUID conversationId) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         messageService.unpinMessage(conversationId, messageId, currentUserId);
 

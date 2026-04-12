@@ -30,7 +30,7 @@ public class NotificationController {
     @Operation(summary = "Get all notifications", description = "Get paginated list of notifications for current user")
     @GetMapping
     public ApiResponse<Page<NotificationResponse>> getNotifications(
-            @RequestParam(required = false, defaultValue = "false") Boolean unreadOnly, Pageable pageable) {
+            @RequestParam(value = "unreadOnly", required = false, defaultValue = "false") Boolean unreadOnly, Pageable pageable) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         Page<NotificationResponse> notifications =
                 notificationService.getNotifications(currentUserId, pageable, unreadOnly);
@@ -51,7 +51,7 @@ public class NotificationController {
 
     @Operation(summary = "Get notification by ID", description = "Get specific notification details")
     @GetMapping(Endpoint.Notification.ID)
-    public ApiResponse<NotificationResponse> getNotificationById(@PathVariable UUID notificationId) {
+    public ApiResponse<NotificationResponse> getNotificationById(@PathVariable("notificationId") UUID notificationId) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         NotificationResponse notification = notificationService.getById(notificationId, currentUserId);
 
@@ -60,7 +60,7 @@ public class NotificationController {
 
     @Operation(summary = "Mark notification as read", description = "Mark a single notification as read")
     @PutMapping(Endpoint.Notification.MARK_READ)
-    public ApiResponse<Void> markAsRead(@PathVariable UUID notificationId) {
+    public ApiResponse<Void> markAsRead(@PathVariable("notificationId") UUID notificationId) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         notificationService.markAsRead(notificationId, currentUserId);
 
@@ -83,8 +83,8 @@ public class NotificationController {
     @Operation(summary = "Toggle archive", description = "Archive or unarchive a notification")
     @PutMapping(Endpoint.Notification.ARCHIVE)
     public ApiResponse<Void> toggleArchive(
-            @PathVariable UUID notificationId,
-            @RequestParam(required = false, defaultValue = "true") Boolean archived) {
+            @PathVariable("notificationId") UUID notificationId,
+            @RequestParam(value = "archived", required = false, defaultValue = "true") Boolean archived) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         notificationService.toggleArchive(notificationId, currentUserId, archived);
 
@@ -95,7 +95,7 @@ public class NotificationController {
 
     @Operation(summary = "Delete notification", description = "Hard delete a notification (use archive for history)")
     @DeleteMapping(Endpoint.Notification.ID)
-    public ApiResponse<Void> deleteNotification(@PathVariable UUID notificationId) {
+    public ApiResponse<Void> deleteNotification(@PathVariable("notificationId") UUID notificationId) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         notificationService.deleteNotification(notificationId, currentUserId);
 

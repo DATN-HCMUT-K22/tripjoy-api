@@ -35,6 +35,9 @@ spring:
     locations: classpath:db/migration
 
   data:
+    web:
+      pageable:
+        serialization-mode: via-dto
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}

@@ -95,9 +95,9 @@ public class LocationController {
     @GetMapping(Endpoint.Location.ADMINISTRATIVE)
     public ResponseEntity<ApiResponse<List<AdministrativeLocationResponse>>> getAdministrativeLocations(
             @Parameter(description = "Location type", example = "PROVINCE")
-            @RequestParam LocationType type,
+            @RequestParam("type") LocationType type,
             @Parameter(description = "ISO 3166-1 alpha-2 country code (omit for cross-country)", example = "VN")
-            @RequestParam(required = false) String country) {
+            @RequestParam(value = "country", required = false) String country) {
 
         List<AdministrativeLocationResponse> locations = locationService.getAdministrativeLocations(type, country);
 
@@ -134,21 +134,21 @@ public class LocationController {
     @GetMapping(Endpoint.Location.SEARCH)
     public ApiResponse<Page<LocationResponse>> searchLocations(
             @Parameter(description = "Text search query", example = "Highlands Coffee")
-            @RequestParam(required = false) String q,
+            @RequestParam(value = "q", required = false) String q,
             @Parameter(description = "Location type filter", example = "POI")
-            @RequestParam(required = false) LocationType type,
+            @RequestParam(value = "type", required = false) LocationType type,
             @Parameter(description = "ISO 3166-1 alpha-2 country code", example = "VN")
-            @RequestParam(required = false) String country,
+            @RequestParam(value = "country", required = false) String country,
             @Parameter(description = "City or province name", example = "Ho Chi Minh City")
-            @RequestParam(required = false) String city,
+            @RequestParam(value = "city", required = false) String city,
             @Parameter(description = "District name", example = "Quận 1")
-            @RequestParam(required = false) String district,
+            @RequestParam(value = "district", required = false) String district,
             @Parameter(description = "POI category filter (multi-value)", example = "cafe")
-            @RequestParam(required = false) List<String> categories,
+            @RequestParam(value = "categories", required = false) List<String> categories,
             @Parameter(description = "User latitude for proximity ranking", example = "10.762622")
-            @RequestParam(required = false) Double lat,
+            @RequestParam(value = "lat", required = false) Double lat,
             @Parameter(description = "User longitude for proximity ranking", example = "106.660172")
-            @RequestParam(required = false) Double lng,
+            @RequestParam(value = "lng", required = false) Double lng,
             Pageable pageable) {
 
         LocationQueryParams params = LocationQueryParams.builder()
@@ -180,17 +180,17 @@ public class LocationController {
     @GetMapping(Endpoint.Location.NEARBY)
     public ApiResponse<List<LocationResponse>> getNearbyLocations(
             @Parameter(description = "Latitude", example = "10.762622", required = true)
-            @RequestParam Double lat,
+            @RequestParam("lat") Double lat,
             @Parameter(description = "Longitude", example = "106.660172", required = true)
-            @RequestParam Double lng,
+            @RequestParam("lng") Double lng,
             @Parameter(description = "Radius in meters (default 5000, max 50000)", example = "5000")
-            @RequestParam(required = false, defaultValue = "5000") Integer radius,
+            @RequestParam(value = "radius", required = false, defaultValue = "5000") Integer radius,
             @Parameter(description = "Location type filter", example = "POI")
-            @RequestParam(required = false) LocationType type,
+            @RequestParam(value = "type", required = false) LocationType type,
             @Parameter(description = "POI category filter (multi-value)", example = "cafe")
-            @RequestParam(required = false) List<String> categories,
+            @RequestParam(value = "categories", required = false) List<String> categories,
             @Parameter(description = "Max results (default 50, max 200)", example = "50")
-            @RequestParam(required = false, defaultValue = "50") Integer limit) {
+            @RequestParam(value = "limit", required = false, defaultValue = "50") Integer limit) {
 
         LocationQueryParams params = LocationQueryParams.builder()
                 .lat(lat).lng(lng).radius(radius)
@@ -254,7 +254,7 @@ public class LocationController {
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(Endpoint.Location.ID)
     public ApiResponse<LocationResponse> updateLocation(
-            @PathVariable UUID locationId,
+            @PathVariable("locationId") UUID locationId,
             @Valid @RequestBody LocationCreateRequest request) {
         return ApiResponse.<LocationResponse>builder()
                 .data(locationService.updateLocation(locationId, request))
@@ -267,7 +267,7 @@ public class LocationController {
                     + "location will not appear in new searches.")
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(Endpoint.Location.ID)
-    public ApiResponse<Void> deleteLocation(@PathVariable UUID locationId) {
+    public ApiResponse<Void> deleteLocation(@PathVariable("locationId") UUID locationId) {
         locationService.deleteLocation(locationId);
         return ApiResponse.<Void>builder()
                 .message("Location deleted successfully")
@@ -276,7 +276,7 @@ public class LocationController {
 
     @Operation(summary = "Get a single location by ID")
     @GetMapping(Endpoint.Location.ID)
-    public ApiResponse<LocationResponse> getLocationById(@PathVariable UUID locationId) {
+    public ApiResponse<LocationResponse> getLocationById(@PathVariable("locationId") UUID locationId) {
         return ApiResponse.<LocationResponse>builder()
                 .data(locationService.getLocationById(locationId))
                 .build();
@@ -293,10 +293,10 @@ public class LocationController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ApiResponse<Page<LocationResponse>> getLocations(
-            @RequestParam(required = false) LocationType type,
-            @RequestParam(required = false) String country,
-            @RequestParam(required = false) String q,
-            @RequestParam(required = false) String city,
+            @RequestParam(value = "type", required = false) LocationType type,
+            @RequestParam(value = "country", required = false) String country,
+            @RequestParam(value = "q", required = false) String q,
+            @RequestParam(value = "city", required = false) String city,
             Pageable pageable) {
 
         LocationQueryParams params = LocationQueryParams.builder()
