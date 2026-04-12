@@ -17,6 +17,8 @@ public enum NotificationType {
     GROUP_MEMBER_JOINED, // Someone joined your group
     GROUP_MEMBER_LEFT, // Someone left your group
     GROUP_ROLE_CHANGED, // Your role in a group changed
+    GROUP_UPDATED, // Group information was updated
+    GROUP_LEADERSHIP_TRANSFERRED, // Leadership was transferred to a new member
     GROUP_ITINERARY_CREATED, // New itinerary created in your group
 
     // CHAT INTERACTIONS

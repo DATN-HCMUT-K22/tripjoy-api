@@ -18,6 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tripjoy.api.configuration.redis.RedisCacheConfig;
 
 import com.tripjoy.api.dto.event.GroupCreatedEvent;
+import com.tripjoy.api.dto.event.GroupLeadershipTransferredEvent;
+import com.tripjoy.api.dto.event.GroupRoleChangedEvent;
+import com.tripjoy.api.dto.event.GroupUpdatedEvent;
 import com.tripjoy.api.dto.event.MemberJoinedGroupEvent;
 import com.tripjoy.api.dto.event.MemberRemovedFromGroupEvent;
 import com.tripjoy.api.dto.request.GroupRequest;
@@ -185,6 +188,8 @@ public class GroupService implements IGroupService {
         groupMapper.updateGroup(group, request);
         Group updated = groupRepository.save(group);
 
+        eventPublisher.publishEvent(new GroupUpdatedEvent(updated, currentUser));
+
         return groupMapper.toGroupResponse(updated);
     }
 
@@ -307,9 +312,13 @@ public class GroupService implements IGroupService {
             throw new AppException(ErrorCode.CANNOT_ASSIGN_LEADER_ROLE);
         }
 
+        GroupRole oldRole = memberToUpdate.getRole();
+
         // 5. Update role
         memberToUpdate.setRole(request.getRole());
         GroupMember updated = groupMemberRepository.save(memberToUpdate);
+
+        eventPublisher.publishEvent(new GroupRoleChangedEvent(group, currentUser, memberToUpdate.getUser(), oldRole, request.getRole()));
 
         return groupMapper.toGroupMemberResponse(updated);
     }
@@ -358,6 +367,8 @@ public class GroupService implements IGroupService {
         // New member -> LEADER
         newLeader.setRole(GroupRole.LEADER);
         groupMemberRepository.save(newLeader);
+
+        eventPublisher.publishEvent(new GroupLeadershipTransferredEvent(group, currentUser, newLeaderUser));
     }
 
     // === CASCADE SOFT DELETE METHODS ===
