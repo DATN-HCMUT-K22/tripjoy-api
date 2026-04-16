@@ -28,14 +28,26 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query(value = "SELECT * FROM users WHERE is_deleted = true", nativeQuery = true)
     List<User> findAllOnlyDeleted();
 
+    @Query(value = """
+            SELECT * FROM users u
+            WHERE (lower(unaccent(u.username)) LIKE lower(unaccent(CONCAT('%', :keyword, '%')))
+                OR lower(unaccent(u.full_name)) LIKE lower(unaccent(CONCAT('%', :keyword, '%')))
+                OR lower(unaccent(u.email))     LIKE lower(unaccent(CONCAT('%', :keyword, '%')))
+                OR u.phone_number LIKE CONCAT('%', :keyword, '%'))
+              AND u.is_deleted = false
+            """, nativeQuery = true)
+    Page<User> searchGlobalUsers(@Param("keyword") String keyword, Pageable pageable);
+
     /**
      * Paginated keyword search across username and email.
      * Used by {@code GET /users?q=keyword} (admin panel).
      */
-    @Query("SELECT u FROM User u WHERE "
-            + "(LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')) "
-            + "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%'))) "
-            + "AND u.softDeleteInfo.isDeleted = false")
+    @Query(value = """
+            SELECT * FROM users u
+            WHERE (lower(unaccent(u.username)) LIKE lower(unaccent(CONCAT('%', :keyword, '%')))
+                OR lower(unaccent(u.email))    LIKE lower(unaccent(CONCAT('%', :keyword, '%'))))
+              AND u.is_deleted = false
+            """, nativeQuery = true)
     Page<User> searchByUsernameOrEmailPaged(@Param("keyword") String keyword, Pageable pageable);
 
     boolean existsByUsername(String username);
@@ -44,9 +56,11 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByUsername(String username);
 
-    @Query("SELECT u FROM User u WHERE "
-            + "(LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')) "
-            + "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%'))) "
-            + "AND u.softDeleteInfo.isDeleted = false")
+    @Query(value = """
+            SELECT * FROM users u
+            WHERE (lower(unaccent(u.username)) LIKE lower(unaccent(CONCAT('%', :keyword, '%')))
+                OR lower(unaccent(u.email))    LIKE lower(unaccent(CONCAT('%', :keyword, '%'))))
+              AND u.is_deleted = false
+            """, nativeQuery = true)
     List<User> searchByUsernameOrEmail(@Param("keyword") String keyword);
 }

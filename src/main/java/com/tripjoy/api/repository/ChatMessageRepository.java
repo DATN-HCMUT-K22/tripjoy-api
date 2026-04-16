@@ -62,13 +62,13 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> 
 						SELECT cm.* FROM chat_message cm
 						WHERE cm.conversation_id = :conversationId
 						AND (
-							to_tsvector('simple', coalesce(cm.message_content, ''))
-								@@ plainto_tsquery('simple', :keyword)
-							OR cm.message_content ILIKE '%' || :keyword || '%'
+							to_tsvector('simple', f_unaccent(coalesce(cm.message_content, '')))
+								@@ plainto_tsquery('simple', f_unaccent(:keyword))
+							OR f_unaccent(cm.message_content) ILIKE '%' || f_unaccent(:keyword) || '%'
 						)
 						ORDER BY
-							ts_rank(to_tsvector('simple', coalesce(cm.message_content, '')),
-									plainto_tsquery('simple', :keyword)) DESC,
+							ts_rank(to_tsvector('simple', f_unaccent(coalesce(cm.message_content, ''))),
+									plainto_tsquery('simple', f_unaccent(:keyword))) DESC,
 							cm.created_at DESC
 						LIMIT :limit OFFSET :offset
 						""",
@@ -88,9 +88,9 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> 
 						SELECT COUNT(*) FROM chat_message cm
 						WHERE cm.conversation_id = :conversationId
 						AND (
-							to_tsvector('simple', coalesce(cm.message_content, ''))
-								@@ plainto_tsquery('simple', :keyword)
-							OR cm.message_content ILIKE '%' || :keyword || '%'
+							to_tsvector('simple', f_unaccent(coalesce(cm.message_content, '')))
+								@@ plainto_tsquery('simple', f_unaccent(:keyword))
+							OR f_unaccent(cm.message_content) ILIKE '%' || f_unaccent(:keyword) || '%'
 						)
 						""",
             nativeQuery = true)
@@ -109,13 +109,13 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> 
 							WHERE cmb.user_id = :userId
 						)
 						AND (
-							to_tsvector('simple', coalesce(cm.message_content, ''))
-								@@ plainto_tsquery('simple', :keyword)
-							OR cm.message_content ILIKE '%' || :keyword || '%'
+							to_tsvector('simple', f_unaccent(coalesce(cm.message_content, '')))
+								@@ plainto_tsquery('simple', f_unaccent(:keyword))
+							OR f_unaccent(cm.message_content) ILIKE '%' || f_unaccent(:keyword) || '%'
 						)
 						ORDER BY
-							ts_rank(to_tsvector('simple', coalesce(cm.message_content, '')),
-									plainto_tsquery('simple', :keyword)) DESC,
+							ts_rank(to_tsvector('simple', f_unaccent(coalesce(cm.message_content, ''))),
+									plainto_tsquery('simple', f_unaccent(:keyword))) DESC,
 							cm.created_at DESC
 						LIMIT :limit OFFSET :offset
 						""",
@@ -138,9 +138,9 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> 
 							WHERE cmb.user_id = :userId
 						)
 						AND (
-							to_tsvector('simple', coalesce(cm.message_content, ''))
-								@@ plainto_tsquery('simple', :keyword)
-							OR cm.message_content ILIKE '%' || :keyword || '%'
+							to_tsvector('simple', f_unaccent(coalesce(cm.message_content, '')))
+								@@ plainto_tsquery('simple', f_unaccent(:keyword))
+							OR f_unaccent(cm.message_content) ILIKE '%' || f_unaccent(:keyword) || '%'
 						)
 						""",
             nativeQuery = true)

@@ -31,8 +31,8 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
         LEFT JOIN itinerary i ON p.itinerary_id = i.id
         WHERE p.is_deleted = false
         AND (:keyword IS NULL OR (
-            to_tsvector('simple', coalesce(p.content, '')) @@ plainto_tsquery('simple', CAST(:keyword AS text))
-            OR p.content ILIKE '%' || CAST(:keyword AS text) || '%'
+            to_tsvector('simple', unaccent(coalesce(p.content, ''))) @@ plainto_tsquery('simple', unaccent(CAST(:keyword AS text)))
+            OR unaccent(p.content) ILIKE '%' || unaccent(CAST(:keyword AS text)) || '%'
         ))
         AND (:hashtag IS NULL OR LOWER(h.name) = LOWER(CAST(:hashtag AS text)))
         AND (CAST(:creatorId AS uuid) IS NULL OR p.creator_id = CAST(:creatorId AS uuid))
@@ -49,7 +49,7 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
         AND (CAST(:destinationId AS uuid) IS NULL OR i.destination = CAST(:destinationId AS uuid))
         GROUP BY p.id
         ORDER BY
-            CASE WHEN :sortBy = 'relevance' THEN ts_rank(to_tsvector('simple', coalesce(p.content, '')), plainto_tsquery('simple', coalesce(CAST(:keyword AS text), ''))) END DESC,
+            CASE WHEN :sortBy = 'relevance' THEN ts_rank(to_tsvector('simple', unaccent(coalesce(p.content, ''))), plainto_tsquery('simple', unaccent(coalesce(CAST(:keyword AS text), '')))) END DESC,
             p.created_at DESC
         LIMIT :limit OFFSET :offset
         """,
@@ -85,8 +85,8 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
         LEFT JOIN itinerary i ON p.itinerary_id = i.id
         WHERE p.is_deleted = false
         AND (:keyword IS NULL OR (
-            to_tsvector('simple', coalesce(p.content, '')) @@ plainto_tsquery('simple', CAST(:keyword AS text))
-            OR p.content ILIKE '%' || CAST(:keyword AS text) || '%'
+            to_tsvector('simple', unaccent(coalesce(p.content, ''))) @@ plainto_tsquery('simple', unaccent(CAST(:keyword AS text)))
+            OR unaccent(p.content) ILIKE '%' || unaccent(CAST(:keyword AS text)) || '%'
         ))
         AND (:hashtag IS NULL OR LOWER(h.name) = LOWER(CAST(:hashtag AS text)))
         AND (CAST(:creatorId AS uuid) IS NULL OR p.creator_id = CAST(:creatorId AS uuid))

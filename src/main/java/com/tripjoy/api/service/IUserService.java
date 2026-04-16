@@ -52,4 +52,6 @@ public interface IUserService {
     void deleteUser(UUID userId);
 
     List<UserSimpleResponse> searchUsers(String keyword);
+
+    Page<UserSimpleResponse> searchUsersGlobal(String keyword, Pageable pageable);
 }
