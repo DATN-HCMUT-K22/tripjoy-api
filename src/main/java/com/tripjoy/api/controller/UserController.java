@@ -36,22 +36,19 @@ import lombok.experimental.FieldDefaults;
 public class UserController {
         IUserService userService;
 
-        @Operation(
-                summary = "Get users (Admin only)",
-                description = """
+        @Operation(summary = "Get users (Admin only)", description = """
                         Returns a paginated list of all users. Supports optional keyword filter on
                         username or email (case-insensitive LIKE).
-                        
+
                         **No `q` param** → returns all users (paginated).
                         **With `?q=keyword`** → filters by username OR email.
-                        
+
                         Requires `ADMIN` role.
                         """)
         @GetMapping
         public ApiResponse<Page<UserResponse>> getUsers(
-                @Parameter(description = "Optional keyword filter on username or email", example = "nguyen")
-                @RequestParam(required = false) String q,
-                Pageable pageable) {
+                        @Parameter(description = "Optional keyword filter on username or email", example = "nguyen") @RequestParam(required = false) String q,
+                        Pageable pageable) {
                 return ApiResponse.<Page<UserResponse>>builder()
                                 .data(userService.getUsers(pageable, q))
                                 .build();
@@ -61,6 +58,16 @@ public class UserController {
         @Operation(summary = "Get current user's info", description = "Retrieves the profile information of the currently authenticated user. Full data including credits and email.")
         public ApiResponse<UserResponse> getMyInfo() {
                 return ApiResponse.<UserResponse>builder().data(userService.getMyInfo()).build();
+        }
+
+        @Operation(summary = "Global User Search", description = "Search users by username, fullName, email or phoneNumber. Use for search bar in end-user mode.")
+        @GetMapping(Endpoint.User.SEARCH)
+        public ApiResponse<Page<UserSimpleResponse>> searchUsers(
+                        @Parameter(description = "Keyword: username, fullName, email, phoneNumber") @RequestParam("q") String q,
+                        Pageable pageable) {
+                return ApiResponse.<Page<UserSimpleResponse>>builder()
+                                .data(userService.searchUsersGlobal(q, pageable))
+                                .build();
         }
 
         @GetMapping(Endpoint.User.ID + "/profile")

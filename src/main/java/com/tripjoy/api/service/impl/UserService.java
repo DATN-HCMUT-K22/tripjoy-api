@@ -226,4 +226,13 @@ public class UserService implements IUserService {
                 .map(userMapper::toUserSimpleResponse)
                 .toList();
     }
+
+    @Override
+    public Page<UserSimpleResponse> searchUsersGlobal(String keyword, Pageable pageable) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return Page.empty();
+        }
+        return userRepository.searchGlobalUsers(keyword.trim(), pageable)
+                .map(userMapper::toUserSimpleResponse);
+    }
 }
