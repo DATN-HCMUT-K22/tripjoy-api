@@ -22,6 +22,8 @@ import com.tripjoy.api.entity.Post;
 import com.tripjoy.api.entity.User;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
+import com.tripjoy.api.enums.PostVisibility;
+import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 import com.tripjoy.api.mapper.PostMapper;
 import com.tripjoy.api.repository.ItineraryRepository;
 import com.tripjoy.api.repository.PostRepository;
@@ -58,6 +60,8 @@ public class PostService implements IPostService {
                 .mediaUrls(request.getMediaUrls())
                 .creator(user)
                 .shareQuantity(0)
+                .visibility(request.getVisibility() != null ? request.getVisibility() : PostVisibility.PUBLIC)
+                .softDeleteInfo(new SoftDeleteInfo())
                 .build();
 
         if (request.getItineraryId() != null) {
