@@ -119,6 +119,9 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
                 return;
             }
 
+            // 2.5 Resolve missing place_ids via Google Places Autocomplete API
+            resolveMissingPlaceIds(aiResponse.getTripItems(), request.getDestination(), request.getLatitude(), request.getLongitude());
+
             // 3. Extract all place_ids and enrich data concurrently
             Set<String> placeIds = aiResponse.getTripItems().stream()
                     .map(item -> item.getPlaceId())
@@ -323,6 +326,9 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
             throw new AppException(ErrorCode.AI_SERVICE_UNAVAILABLE);
         }
 
+        // 7.5 Resolve missing place_ids
+        resolveMissingPlaceIds(aiResponse.getTripItems(), itinerary.getName(), lat, lng);
+
         // 8. Enrich + save new locations từ AI response
         Set<String> newPlaceIds = aiResponse.getTripItems().stream()
                 .map(AiTripItemDto::getPlaceId)
@@ -370,5 +376,34 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
         return itineraryMapper.toItineraryResponse(updatedItinerary);
+    }
+
+    /**
+     * Finds items missing a place_id and queries the Google Places Autocomplete API
+     * using the locationName to attempt auto-resolution before inserting into DB.
+     * Essential because the AI model may generate places without explicit place_ids.
+     */
+    private void resolveMissingPlaceIds(List<AiTripItemDto> items, String cityBias, Double lat, Double lng) {
+        log.info("Resolving missing place_ids for locations via Google Autocomplete API...");
+        Flux.fromIterable(items)
+                .filter(item -> (item.getPlaceId() == null || item.getPlaceId().isBlank())
+                        && item.getLocationName() != null && !item.getLocationName().isBlank())
+                .flatMap(item -> {
+                    log.debug("Auto-resolving location: {}", item.getLocationName());
+                    return googlePlacesService.autocomplete(item.getLocationName(), cityBias, lat, lng)
+                            .map(resp -> {
+                                if (resp != null && resp.getSuggestions() != null && !resp.getSuggestions().isEmpty()) {
+                                    String resolvedPlaceId = resp.getSuggestions().get(0).getPlacePrediction().getPlaceId();
+                                    item.setPlaceId(resolvedPlaceId);
+                                    log.info("Resolved '{}' -> place_id: {}", item.getLocationName(), resolvedPlaceId);
+                                } else {
+                                    log.warn("Could not resolve '{}' on Google Maps.", item.getLocationName());
+                                }
+                                return item;
+                            })
+                            .subscribeOn(Schedulers.boundedElastic());
+                })
+                .collectList()
+                .block(); // Wait for all resolving to finish
     }
 }
