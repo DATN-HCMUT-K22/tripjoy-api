@@ -30,6 +30,9 @@ public class GroupResponse extends BaseResponse {
     @JsonProperty("chatbot_count")
     Integer chatbotCount;
 
+    @JsonProperty("iti_count")
+    Integer itiCount;
+
     Boolean isDeleted;
 
     // Lồng danh sách thành viên
