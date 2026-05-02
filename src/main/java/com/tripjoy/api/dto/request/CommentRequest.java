@@ -18,7 +18,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CommentRequest {
 
-    @NotBlank
+    @NotBlank(message = "INVALID_REQUEST")
     @Schema(
             name = "content",
             description = "The text content of the comment",
@@ -28,7 +28,7 @@ public class CommentRequest {
     String content;
 
     // Bắt buộc phải biết Comment vào Post nào
-    @NotNull
+    @NotNull(message = "MISSING_PARAMETER")
     @JsonProperty("post_id")
     UUID postId;
 
