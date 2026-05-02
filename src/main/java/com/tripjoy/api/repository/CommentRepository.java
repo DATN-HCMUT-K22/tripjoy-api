@@ -17,6 +17,10 @@ import java.util.List;
 public interface CommentRepository extends JpaRepository<Comment, UUID> {
     Page<Comment> findByPostIdAndParentCommentIsNullAndIsDeletedFalse(UUID postId, Pageable pageable);
 
+    Page<Comment> findByParentCommentIdAndIsDeletedFalseOrderByCreatedAtAsc(UUID parentCommentId, Pageable pageable);
+
+    List<Comment> findTop2ByParentCommentIdAndIsDeletedFalseOrderByCreatedAtAsc(UUID parentCommentId);
+
     @Query("SELECT DISTINCT c.user FROM Comment c WHERE c.post.id = :postId AND c.parentComment IS NULL")
     List<User> findDistinctCommentersByPostId(@Param("postId") UUID postId);
 
