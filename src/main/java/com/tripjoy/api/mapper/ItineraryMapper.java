@@ -33,7 +33,6 @@ public interface ItineraryMapper {
     @Mapping(source = "name", target = "title")
     @Mapping(source = "group.id", target = "groupId")
     @Mapping(target = "themes", source = "themes", qualifiedByName = "mapThemesToStrings")
-    @Mapping(target = "groupMemberCount", expression = "java(countActiveGroupMembers(itinerary))")
     ItineraryResponse toItineraryResponse(Itinerary itinerary);
 
     @Mapping(target = "user", ignore = true)
@@ -55,13 +54,5 @@ public interface ItineraryMapper {
         }
         return themes.stream().map(Theme::getName).collect(Collectors.toSet());
     }
-
-    default Integer countActiveGroupMembers(Itinerary itinerary) {
-        if (itinerary == null || itinerary.getGroup() == null || itinerary.getGroup().getMembers() == null) {
-            return 0;
-        }
-        return (int) itinerary.getGroup().getMembers().stream()
-                .filter(m -> m.getSoftDeleteInfo() == null || !m.getSoftDeleteInfo().isDeleted())
-                .count();
     }
 }
