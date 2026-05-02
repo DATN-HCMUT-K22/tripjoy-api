@@ -41,4 +41,7 @@ public class ItineraryResponse extends BaseResponse {
     UserSimpleResponse createdByUser;
 
     Set<String> themes;
+
+    @JsonProperty("group_member_count")
+    Integer groupMemberCount;
 }
