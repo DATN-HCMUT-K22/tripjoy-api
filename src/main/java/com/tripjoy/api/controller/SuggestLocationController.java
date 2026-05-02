@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping
+@RequestMapping(Endpoint.Group.BASE)
 @RequiredArgsConstructor
 @Tag(name = "Location Suggestions", description = "APIs for managing location suggestions in groups")
 public class SuggestLocationController {
