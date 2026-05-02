@@ -54,5 +54,4 @@ public interface ItineraryMapper {
         }
         return themes.stream().map(Theme::getName).collect(Collectors.toSet());
     }
-    }
 }
