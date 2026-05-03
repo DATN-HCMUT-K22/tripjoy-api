@@ -155,6 +155,8 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
                                 return TripItem.builder()
                                                 .itinerary(itinerary)
                                                 .location(location)
+                                                .rawLocationName(aiItem.getLocationName())
+                                                .rawPlaceId(aiItem.getPlaceId())
                                                 .note(aiItem.getNote())
                                                 .duration(aiItem.getDuration())
                                                 .startTime(LocalDateTime.parse(aiItem.getStartTime(),
@@ -390,6 +392,8 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
                                         return TripItem.builder()
                                                         .itinerary(itinerary)
                                                         .location(location)
+                                                        .rawLocationName(aiItem.getLocationName())
+                                                        .rawPlaceId(aiItem.getPlaceId())
                                                         .note(aiItem.getNote())
                                                         .duration(aiItem.getDuration())
                                                         .startTime(aiItem.getStartTime() != null

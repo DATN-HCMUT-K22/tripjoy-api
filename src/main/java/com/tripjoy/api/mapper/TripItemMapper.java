@@ -17,6 +17,8 @@ public interface TripItemMapper {
     TripItem toTripItem(TripItemRequest request);
 
     @Mapping(source = "location", target = "location")
+    @Mapping(target = "locationName", expression = "java(tripItem.getLocation() != null ? tripItem.getLocation().getName() : tripItem.getRawLocationName())")
+    @Mapping(target = "placeId", expression = "java(tripItem.getLocation() != null ? tripItem.getLocation().getProviderId() : tripItem.getRawPlaceId())")
     TripItemResponse toTripItemResponse(TripItem tripItem);
 
     @Mapping(target = "location", ignore = true)
