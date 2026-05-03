@@ -267,7 +267,7 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
 
         if (unwantedItems.isEmpty()) {
             log.warn("No matching TripItems found for place IDs: {}", unwantedPlaceIds);
-            return itineraryMapper.toItineraryResponse(itinerary);
+            throw new AppException(ErrorCode.INVALID_REQUEST, "No matching trip items found for the provided place IDs. Please provide valid Google place_ids.");
         }
 
         // 4. Lấy tọa độ destination từ TripItem đầu tiên còn lại (hoặc từ unwanted nếu không có)
@@ -341,10 +341,6 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
         //    → chỉ những placeId mới (không nằm trong unwantedPlaceIds cũ) được giữ lại từ currentItems
         //    → những placeId trong unwantedPlaceIds cũ bị xóa + thay thế bằng item từ aiResponse
 
-        // Xóa unwanted trip items
-        tripItemRepository.deleteAll(unwantedItems);
-        log.info("Deleted {} unwanted trip item(s) from itinerary ID: {}", unwantedItems.size(), itineraryId);
-
         // Lọc ra các TripItem MỚI từ aiResponse (những item có placeId không trùng với keep items)
         Set<String> keptPlaceIds = currentItems.stream()
                 .filter(item -> !unwantedItems.contains(item))
@@ -368,14 +364,20 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
                 })
                 .collect(Collectors.toList());
 
-        tripItemRepository.saveAll(replacementItems);
-        log.info("Saved {} replacement trip item(s) for itinerary ID: {}", replacementItems.size(), itineraryId);
+        // Update itinerary tripItems collection directly for correct L1 cache state and mapper behavior
+        itinerary.getTripItems().removeAll(unwantedItems);
+        log.info("Removed {} unwanted trip item(s) from itinerary ID: {}", unwantedItems.size(), itineraryId);
 
-        // 10. Reload itinerary để trả về response cập nhật
-        Itinerary updatedItinerary = itineraryRepository.findById(itineraryId)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        replacementItems.forEach(item -> {
+            item.setItinerary(itinerary);
+            itinerary.getTripItems().add(item);
+        });
+        log.info("Added {} replacement trip item(s) for itinerary ID: {}", replacementItems.size(), itineraryId);
 
-        return itineraryMapper.toItineraryResponse(updatedItinerary);
+        // 10. Save and return response cập nhật
+        itineraryRepository.save(itinerary);
+
+        return itineraryMapper.toItineraryResponse(itinerary);
     }
 
     /**

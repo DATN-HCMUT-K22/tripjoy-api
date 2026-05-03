@@ -50,6 +50,7 @@ public class Post extends BaseEntity {
 
     @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnore
+    @Builder.Default
     private Set<Comment> comments = new HashSet<>();
 
     @ManyToMany
@@ -67,6 +68,7 @@ public class Post extends BaseEntity {
             name = "save_post",
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @Builder.Default
     private Set<User> saveUsers = new HashSet<>();
 
     @ManyToMany
@@ -74,5 +76,6 @@ public class Post extends BaseEntity {
             name = "like_post",
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @Builder.Default
     private Set<User> likeUsers = new HashSet<>();
 }

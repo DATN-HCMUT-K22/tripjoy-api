@@ -18,4 +18,6 @@ public interface ICommentService {
     void unlikeComment(UUID commentId);
 
     void deleteComment(UUID commentId);
+
+    Page<CommentResponse> getRepliesForComment(UUID commentId, Pageable pageable, UUID currentUserId);
 }
