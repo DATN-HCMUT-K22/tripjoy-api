@@ -122,7 +122,7 @@ public class GooglePlacesService implements IGooglePlacesService {
         log.debug("Fetching Google Place Details for place_id: {}", placeId);
 
         return webClient.get()
-                .uri("/{placeId}?fields={fields}", placeId, PLACE_DETAILS_FIELDS)
+                .uri("/places/{placeId}?fields={fields}", placeId, PLACE_DETAILS_FIELDS)
                 .retrieve()
                 .bodyToMono(GooglePlaceDetailsDto.class)
                 .timeout(TIMEOUT)
