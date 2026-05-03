@@ -172,8 +172,18 @@ public class ItineraryService implements IItineraryService {
 
         validateOwnership(itinerary);
 
-        Location location = locationRepository.findById(request.getLocationId())
-                .orElseThrow(() -> new AppException(ErrorCode.LOCATION_NOT_FOUND));
+        Location location;
+        if (request.getLocationId() != null) {
+            location = locationRepository.findById(request.getLocationId())
+                    .orElseThrow(() -> new AppException(ErrorCode.LOCATION_NOT_FOUND));
+        } else if (request.getPlaceId() != null) {
+            // Auto-enrichment flow for AI Suggestions
+            com.tripjoy.api.dto.response.location.LocationResponse locResponse = locationService.resolveByPlaceId(request.getPlaceId());
+            location = locationRepository.findById(locResponse.getId())
+                    .orElseThrow(() -> new AppException(ErrorCode.LOCATION_NOT_FOUND));
+        } else {
+            throw new AppException(ErrorCode.INVALID_REQUEST, "Either location_id or place_id must be provided");
+        }
 
         TripItem tripItem = tripItemMapper.toTripItem(request);
         tripItem.setItinerary(itinerary);
@@ -217,6 +227,14 @@ public class ItineraryService implements IItineraryService {
              Location location = locationRepository.findById(request.getLocationId())
                 .orElseThrow(() -> new AppException(ErrorCode.LOCATION_NOT_FOUND));
              tripItem.setLocation(location);
+        } else if (request.getLocationId() == null && request.getPlaceId() != null) {
+             // AI suggestion resolution
+             com.tripjoy.api.dto.response.location.LocationResponse locResponse = locationService.resolveByPlaceId(request.getPlaceId());
+             if (!locResponse.getId().equals(tripItem.getLocation().getId())) {
+                 Location location = locationRepository.findById(locResponse.getId())
+                    .orElseThrow(() -> new AppException(ErrorCode.LOCATION_NOT_FOUND));
+                 tripItem.setLocation(location);
+             }
         }
 
         tripItem = tripItemRepository.save(tripItem);

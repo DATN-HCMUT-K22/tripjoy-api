@@ -32,4 +32,18 @@ public class TripItemResponse extends BaseResponse {
 
     // Lồng thông tin Location, không chỉ trả về ID
     LocationResponse location;
+
+    /**
+     * Tên địa điểm — dùng trong AI suggestion response khi Location chưa được lưu vào DB.
+     * Sẽ null nếu đây là TripItem đã được persist (dùng location thay thế).
+     */
+    @JsonProperty("location_name")
+    String locationName;
+
+    /**
+     * Google Place ID — dùng trong AI suggestion response.
+     * Null nếu AI chưa resolve được place_id cho địa điểm này.
+     */
+    @JsonProperty("place_id")
+    String placeId;
 }

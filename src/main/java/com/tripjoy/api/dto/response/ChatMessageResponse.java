@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tripjoy.api.dto.response.simple.ChatMessageSimpleResponse;
+import com.tripjoy.api.dto.response.simple.PostSimpleResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -30,8 +31,8 @@ public class ChatMessageResponse extends BaseResponse {
     @JsonProperty("media_url")
     String mediaUrl;
 
-    @JsonProperty("share_post_url")
-    String sharePostUrl;
+    @JsonProperty("shared_post")
+    PostSimpleResponse sharedPost;
 
     @JsonProperty("is_bot")
     Boolean isBot;

@@ -10,10 +10,11 @@ import com.tripjoy.api.entity.ChatMessage;
 
 @Mapper(
         config = BaseMapperConfig.class,
-        uses = {UserMapper.class}) // uses: Để tái sử dụng UserMapper
+        uses = {UserMapper.class, PostMapper.class})
 public interface ChatMessageMapper {
 
     // 1. Request -> Entity
+    @Mapping(target = "sharedPost", ignore = true)
     ChatMessage toEntity(ChatMessageRequest request);
 
     // 2. Entity -> Response

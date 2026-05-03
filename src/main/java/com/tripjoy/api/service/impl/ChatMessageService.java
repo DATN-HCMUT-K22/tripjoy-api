@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tripjoy.api.configuration.redis.RedisCacheConfig;
 
+import com.tripjoy.api.dto.event.AiChatRequestedEvent;
 import com.tripjoy.api.dto.event.MessageLikedEvent;
 import com.tripjoy.api.dto.event.MessagePinnedEvent;
 import com.tripjoy.api.dto.event.MessageSentEvent;
@@ -28,6 +29,7 @@ import com.tripjoy.api.dto.response.MessageSearchResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import com.tripjoy.api.entity.ChatMessage;
 import com.tripjoy.api.entity.Conversation;
+import com.tripjoy.api.entity.Post;
 import com.tripjoy.api.entity.User;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
@@ -36,6 +38,7 @@ import com.tripjoy.api.mapper.UserMapper;
 import com.tripjoy.api.repository.ChatMessageRepository;
 import com.tripjoy.api.repository.ConversationMemberRepository;
 import com.tripjoy.api.repository.ConversationRepository;
+import com.tripjoy.api.repository.PostRepository;
 import com.tripjoy.api.repository.UserRepository;
 import com.tripjoy.api.service.IChatMessageService;
 
@@ -54,6 +57,7 @@ public class ChatMessageService implements IChatMessageService {
     ChatMessageRepository chatMessageRepository;
     ConversationRepository conversationRepository;
     ConversationMemberRepository conversationMemberRepository;
+    PostRepository postRepository;
     ChatMessageMapper chatMessageMapper;
     UserMapper userMapper;
     ApplicationEventPublisher eventPublisher;
@@ -120,6 +124,18 @@ public class ChatMessageService implements IChatMessageService {
         message.setConversation(conversation);
         message.setSender(sender);
         message.setCreatedAt(LocalDateTime.now());
+        
+        if ("SHARE_POST".equals(request.getMessageType()) && request.getSharedPostId() != null) {
+            try {
+                UUID postId = UUID.fromString(request.getSharedPostId());
+                Post post = postRepository.findById(postId)
+                        .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
+                message.setSharedPost(post);
+            } catch (IllegalArgumentException e) {
+                // Ignore invalid UUID or throw exception
+            }
+        }
+        
         // SoftDeleteInfo is already initialized by default
 
         ChatMessage savedMessage = chatMessageRepository.save(message);
@@ -135,6 +151,60 @@ public class ChatMessageService implements IChatMessageService {
 
         // Run bulk update for unread count fan-out
         conversationMemberRepository.incrementUnreadCountForOthers(conversationId, senderId);
+
+        ChatMessageResponse response = chatMessageMapper.toResponse(savedMessage);
+
+        MessageSentEvent event = MessageSentEvent.builder()
+                .conversationId(conversationId)
+                .messageResponse(response)
+                .build();
+
+        eventPublisher.publishEvent(event);
+
+        // --- AI CHATBOT TRIGGER ---
+        // Kích hoạt event gọi AI nếu tin nhắn chứa cú pháp @Tripjoy
+        if (request.getMessageContent() != null && request.getMessageContent().toLowerCase().contains("@tripjoy")) {
+            log.info("AI Trigger detected in conversation: {}", conversationId);
+            AiChatRequestedEvent aiEvent = AiChatRequestedEvent.builder()
+                    .conversationId(conversationId)
+                    .senderId(senderId)
+                    .messageContent(request.getMessageContent())
+                    .build();
+            eventPublisher.publishEvent(aiEvent);
+        }
+
+        return response;
+    }
+
+    @Transactional
+    public ChatMessageResponse sendBotMessage(UUID conversationId, UUID botId, String content) {
+        User sender = userRepository.findById(botId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        Conversation conversation = conversationRepository
+                .findById(conversationId)
+                .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_FOUND));
+
+        ChatMessage message = ChatMessage.builder()
+                .messageContent(content)
+                .messageType("TEXT")
+                .build();
+                
+        message.setConversation(conversation);
+        message.setSender(sender);
+        message.setCreatedAt(LocalDateTime.now());
+
+        ChatMessage savedMessage = chatMessageRepository.save(message);
+
+        conversation.setLastMessageTimestamp(LocalDateTime.now());
+        conversation.setLastMessageId(savedMessage.getId());
+        conversation.setLastMessageContent(savedMessage.getMessageContent());
+        conversation.setLastMessageType(savedMessage.getMessageType());
+        conversation.setLastMessageSenderId(sender.getId());
+        conversation.setLastMessageSenderName(sender.getFullName());
+        conversation.setLastMessageSenderAvatar(sender.getAvatarUrl());
+        conversationRepository.save(conversation);
+
+        conversationMemberRepository.incrementUnreadCountForOthers(conversationId, botId);
 
         ChatMessageResponse response = chatMessageMapper.toResponse(savedMessage);
 

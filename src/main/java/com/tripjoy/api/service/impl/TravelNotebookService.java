@@ -48,7 +48,7 @@ public class TravelNotebookService implements ITravelNotebookService {
     public TravelNotebookResponse generateByItinerary(UUID itineraryId) {
         log.info("Generating travel notebook for itinerary ID: {}", itineraryId);
 
-        // 1. Load itinerary (để lấy destination, budget, themes, dates)
+        // 1. Load itinerary
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
@@ -72,7 +72,7 @@ public class TravelNotebookService implements ITravelNotebookService {
                         ? itinerary.getEndDate().toLocalDate().toString() : null)
                 .peopleQuantity(itinerary.getPeopleQuantity())
                 .budgetEstimate(itinerary.getBudgetEstimate() != null
-                        ? itinerary.getBudgetEstimate().toString() : null)
+                        ? itinerary.getBudgetEstimate().longValue() : null)
                 .themes(itinerary.getThemes().stream()
                         .map(t -> t.getName()).collect(Collectors.toList()))
                 // destination: dùng tên lịch trình — AI sẽ tra Wikipedia theo tên này
@@ -101,7 +101,8 @@ public class TravelNotebookService implements ITravelNotebookService {
                 : "Travel Notebook - " + aiRequest.getDestination());
         notebook.setFood(aiResponse.getFood());
         notebook.setClimate(aiResponse.getClimate());
-        notebook.setCultureEtiquette(aiResponse.getCulture());
+        notebook.setCulture(aiResponse.getCulture());
+        notebook.setEmergencyContacts(aiResponse.getEmergencyContacts());
 
         TravelNotebook saved = travelNotebookRepository.save(notebook);
         log.info("Travel notebook saved/updated for itinerary ID: {}", itineraryId);
@@ -129,4 +130,3 @@ public class TravelNotebookService implements ITravelNotebookService {
         return travelNotebookMapper.toResponse(notebook);
     }
 }
-

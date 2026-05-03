@@ -1,5 +1,7 @@
 package com.tripjoy.api.dto.ai;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.*;
@@ -8,8 +10,8 @@ import lombok.*;
  * DTO gửi sang AI Service cho endpoint POST /generate-notebook.
  * Khớp 1:1 với Python model {@code FinalItinerary} mà AI Service nhận vào.
  *
- * <p>AI Service sẽ dùng {@code destination} để tra cứu Wikipedia
- * rồi kết hợp với Gemini để tạo ra nội dung Notebook.</p>
+ * <p>AI Service dùng {@code destination} để tra cứu Wikipedia rồi kết hợp
+ * với Gemini để tạo ra nội dung Travel Notebook.</p>
  */
 @Data
 @Builder
@@ -17,7 +19,6 @@ import lombok.*;
 @AllArgsConstructor
 public class AiGenerateNotebookRequestDto {
 
-    /** Tên lịch trình */
     private String name;
 
     @JsonProperty("start_date")
@@ -29,22 +30,18 @@ public class AiGenerateNotebookRequestDto {
     @JsonProperty("people_quantity")
     private Integer peopleQuantity;
 
+    /** Budget estimate as number (VND) */
     @JsonProperty("budget_estimate")
-    private String budgetEstimate;
+    private Long budgetEstimate;
 
-    /** Danh sách theme (ví dụ: ["beach", "food"]) */
-    private java.util.List<String> themes;
+    private List<String> themes;
 
     /**
-     * Tên địa điểm đến (tiếng Anh) — AI dùng để tra Wikipedia.
-     * Ví dụ: "Da Lat", "Hoi An", "Hanoi"
+     * Tên điểm đến — AI dùng để tra Wikipedia.
+     * Ví dụ: "Da Lat", "Hoi An", "Nha Trang"
      */
     private String destination;
 
-    /**
-     * Danh sách TripItem — AI không dùng nhiều cho notebook
-     * nhưng cần theo đúng contract của Python model.
-     */
     @JsonProperty("trip_items")
-    private java.util.List<AiTripItemDto> tripItems;
+    private List<AiTripItemDto> tripItems;
 }
