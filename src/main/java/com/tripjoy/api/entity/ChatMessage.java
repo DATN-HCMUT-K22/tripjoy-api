@@ -21,7 +21,9 @@ public class ChatMessage extends BaseEntity {
     private String messageType;
     private String messageContent;
     private String mediaUrl;
-    private String sharedPostUrl;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shared_post_id")
+    private Post sharedPost;
     private Boolean isBot;
     private String status;
 

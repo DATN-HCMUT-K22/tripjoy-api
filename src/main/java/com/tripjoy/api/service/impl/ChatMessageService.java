@@ -29,6 +29,7 @@ import com.tripjoy.api.dto.response.MessageSearchResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import com.tripjoy.api.entity.ChatMessage;
 import com.tripjoy.api.entity.Conversation;
+import com.tripjoy.api.entity.Post;
 import com.tripjoy.api.entity.User;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
@@ -37,6 +38,7 @@ import com.tripjoy.api.mapper.UserMapper;
 import com.tripjoy.api.repository.ChatMessageRepository;
 import com.tripjoy.api.repository.ConversationMemberRepository;
 import com.tripjoy.api.repository.ConversationRepository;
+import com.tripjoy.api.repository.PostRepository;
 import com.tripjoy.api.repository.UserRepository;
 import com.tripjoy.api.service.IChatMessageService;
 
@@ -55,6 +57,7 @@ public class ChatMessageService implements IChatMessageService {
     ChatMessageRepository chatMessageRepository;
     ConversationRepository conversationRepository;
     ConversationMemberRepository conversationMemberRepository;
+    PostRepository postRepository;
     ChatMessageMapper chatMessageMapper;
     UserMapper userMapper;
     ApplicationEventPublisher eventPublisher;
@@ -121,6 +124,18 @@ public class ChatMessageService implements IChatMessageService {
         message.setConversation(conversation);
         message.setSender(sender);
         message.setCreatedAt(LocalDateTime.now());
+        
+        if ("SHARE_POST".equals(request.getMessageType()) && request.getSharedPostId() != null) {
+            try {
+                UUID postId = UUID.fromString(request.getSharedPostId());
+                Post post = postRepository.findById(postId)
+                        .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
+                message.setSharedPost(post);
+            } catch (IllegalArgumentException e) {
+                // Ignore invalid UUID or throw exception
+            }
+        }
+        
         // SoftDeleteInfo is already initialized by default
 
         ChatMessage savedMessage = chatMessageRepository.save(message);
