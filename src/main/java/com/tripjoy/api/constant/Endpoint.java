@@ -199,6 +199,11 @@ public class Endpoint {
         public static final String ARCHIVE = ID + "/archive";
     }
 
+    public static final class SystemConfig {
+        public static final String BASE = API_PREFIX + "/admin/configs";
+        public static final String KEY = "/{key}";
+    }
+
     public static final class Admin {
         public static final String BASE = API_PREFIX + "/admin";
     }

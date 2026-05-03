@@ -41,6 +41,7 @@ import com.tripjoy.api.repository.ConversationRepository;
 import com.tripjoy.api.repository.PostRepository;
 import com.tripjoy.api.repository.UserRepository;
 import com.tripjoy.api.service.IChatMessageService;
+import com.tripjoy.api.service.ISystemConfigService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -61,6 +62,7 @@ public class ChatMessageService implements IChatMessageService {
     ChatMessageMapper chatMessageMapper;
     UserMapper userMapper;
     ApplicationEventPublisher eventPublisher;
+    ISystemConfigService configService;
 
     @Transactional
     public void likeMessage(UUID messageId, UUID userId) {
@@ -219,6 +221,7 @@ public class ChatMessageService implements IChatMessageService {
     }
 
     @Transactional
+    @CacheEvict(value = RedisCacheConfig.CACHE_CHAT_PINNED, key = "#conversationId")
     public void pinMessage(UUID conversationId, UUID messageId, UUID userId) {
         // 1. Verify message exists
         ChatMessage message = chatMessageRepository
@@ -241,18 +244,17 @@ public class ChatMessageService implements IChatMessageService {
             throw new AppException(ErrorCode.MESSAGE_ALREADY_PINNED);
         }
 
-        // 5. Check pin limit (50 max)
+        // 5. Check pin limit
         long pinnedCount = chatMessageRepository.countPinnedByConversationId(conversationId);
-        if (pinnedCount >= 50) {
-            throw new AppException(ErrorCode.PIN_LIMIT_EXCEEDED);
+        int maxPinned = configService.getIntValue("CHAT_MAX_PINNED_MESSAGES", 50);
+        if (pinnedCount >= maxPinned) {
+            throw new AppException(ErrorCode.PIN_LIMIT_EXCEEDED, "Maximum " + maxPinned + " pinned messages allowed");
         }
 
         // 6. Pin the message
         message.setIsPinned(true);
         chatMessageRepository.save(message);
 
-        // Evict pinned message cache for this conversation
-        evictPinnedCache(conversationId);
 
         MessagePinnedEvent event = MessagePinnedEvent.builder()
                 .conversationId(conversationId)
@@ -264,6 +266,7 @@ public class ChatMessageService implements IChatMessageService {
     }
 
     @Transactional
+    @CacheEvict(value = RedisCacheConfig.CACHE_CHAT_PINNED, key = "#conversationId")
     public void unpinMessage(UUID conversationId, UUID messageId, UUID userId) {
         // 1. Verify message exists
         ChatMessage message = chatMessageRepository
@@ -285,8 +288,6 @@ public class ChatMessageService implements IChatMessageService {
         message.setIsPinned(false);
         chatMessageRepository.save(message);
 
-        // Evict pinned message cache for this conversation
-        evictPinnedCache(conversationId);
 
         MessageUnpinnedEvent event = MessageUnpinnedEvent.builder()
                 .conversationId(conversationId)
@@ -317,15 +318,6 @@ public class ChatMessageService implements IChatMessageService {
         return pinnedMessages.stream().map(chatMessageMapper::toResponse).collect(Collectors.toList());
     }
 
-    /**
-     * Programmatic cache eviction helper for pinned messages.
-     * Used by {@link #pinMessage} and {@link #unpinMessage} to clear stale cache
-     * without requiring Spring AOP proxy (avoids self-invocation problem).
-     */
-    @CacheEvict(value = RedisCacheConfig.CACHE_CHAT_PINNED, key = "#conversationId")
-    public void evictPinnedCache(UUID conversationId) {
-        log.debug("Evicting pinned message cache for conversation: {}", conversationId);
-    }
 
     @Override
     @Transactional(readOnly = true)
@@ -447,7 +439,8 @@ public class ChatMessageService implements IChatMessageService {
         }
 
         // 3. Clamp pagination params
-        int pageSize = Math.min(Math.max(size, 1), 50);
+        int maxPageSize = configService.getIntValue("SYSTEM_MAX_PAGE_SIZE", 200);
+        int pageSize = Math.min(Math.max(size, 1), maxPageSize);
         int offset = Math.max(page, 0) * pageSize;
 
         // 4. Search via PostgreSQL Full-Text Search
@@ -481,7 +474,8 @@ public class ChatMessageService implements IChatMessageService {
         }
 
         // 2. Clamp pagination params
-        int pageSize = Math.min(Math.max(size, 1), 50);
+        int maxPageSize = configService.getIntValue("SYSTEM_MAX_PAGE_SIZE", 200);
+        int pageSize = Math.min(Math.max(size, 1), maxPageSize);
         int offset = Math.max(page, 0) * pageSize;
 
         // 3. Global search across all user's conversations
