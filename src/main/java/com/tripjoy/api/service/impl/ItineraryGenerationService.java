@@ -155,8 +155,6 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
                                 return TripItem.builder()
                                                 .itinerary(itinerary)
                                                 .location(location)
-                                                .rawLocationName(aiItem.getLocationName())
-                                                .rawPlaceId(aiItem.getPlaceId())
                                                 .note(aiItem.getNote())
                                                 .duration(aiItem.getDuration())
                                                 .startTime(LocalDateTime.parse(aiItem.getStartTime(),
@@ -230,14 +228,22 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
                                 .block(); // Block since we are already in an Async thread
 
                 if (newLocations != null && !newLocations.isEmpty()) {
+                        log.info("Successfully fetched {} new locations from Google Maps. Saving to DB...", newLocations.size());
                         locationRepository.saveAll(newLocations);
+                } else {
+                        log.warn("Failed to fetch any new locations from Google Maps for IDs: {}", missingPlaceIds);
                 }
         }
 
         private Location mapGooglePlaceToLocation(GooglePlaceDetailsDto dto) {
-                Location location = Location.builder()
+                String rawId = dto.getId();
+        String normalizedId = (rawId != null && rawId.startsWith("places/"))
+                        ? rawId.substring(7)
+                        : rawId;
+
+        Location location = Location.builder()
                                 .provider(MapProvider.GOOGLE_MAPS)
-                                .providerId(dto.getId())
+                                .providerId(normalizedId)
                                 .name(dto.getDisplayName() != null ? dto.getDisplayName().getText()
                                                 : "Unknown Location")
                                 .fullAddress(dto.getFormattedAddress())
@@ -392,8 +398,6 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
                                         return TripItem.builder()
                                                         .itinerary(itinerary)
                                                         .location(location)
-                                                        .rawLocationName(aiItem.getLocationName())
-                                                        .rawPlaceId(aiItem.getPlaceId())
                                                         .note(aiItem.getNote())
                                                         .duration(aiItem.getDuration())
                                                         .startTime(aiItem.getStartTime() != null
@@ -530,8 +534,10 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
                                                                 ? LocalDateTime.parse(ai.getStartTime(),
                                                                                 DateTimeFormatter.ISO_DATE_TIME)
                                                                 : null)
-                                                .locationName(ai.getLocationName())
-                                                .placeId(ai.getPlaceId())
+                                                .location(com.tripjoy.api.dto.response.location.LocationResponse.builder()
+                                                                .name(ai.getLocationName())
+                                                                .providerId(ai.getPlaceId())
+                                                                .build())
                                                 .build())
                                 .collect(Collectors.toList());
         }
