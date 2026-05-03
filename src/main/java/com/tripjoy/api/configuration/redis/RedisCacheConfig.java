@@ -68,6 +68,9 @@ public class RedisCacheConfig {
     // Chat
     public static final String CACHE_CHAT_PINNED = "chat:pinned";
 
+    // System
+    public static final String CACHE_SYSTEM_CONFIG = "system:config";
+
     // User — split into two separate namespaces
     /** Public profile: visible to any authenticated user, no sensitive fields. TTL 12h. */
     public static final String CACHE_USER_PUBLIC     = "user:public";
@@ -88,6 +91,7 @@ public class RedisCacheConfig {
     private static final Duration TTL_PERMISSION_ALL    = Duration.ofHours(24);
     private static final Duration TTL_ROLE_ALL          = Duration.ofHours(24);
     private static final Duration TTL_CHAT_PINNED       = Duration.ofMinutes(5);
+    private static final Duration TTL_SYSTEM_CONFIG      = Duration.ofHours(24);
     private static final Duration TTL_USER_PUBLIC     = Duration.ofHours(12);
     private static final Duration TTL_USER_ADMIN_VIEW = Duration.ofHours(12);
     private static final Duration TTL_GROUP_BY_ID       = Duration.ofHours(6);
@@ -148,6 +152,10 @@ public class RedisCacheConfig {
         // Chat
         cacheConfigs.put(CACHE_CHAT_PINNED,
                 defaults.entryTtl(TTL_CHAT_PINNED));
+
+        // System
+        cacheConfigs.put(CACHE_SYSTEM_CONFIG,
+                defaults.entryTtl(TTL_SYSTEM_CONFIG));
 
         // User
         cacheConfigs.put(CACHE_USER_PUBLIC,

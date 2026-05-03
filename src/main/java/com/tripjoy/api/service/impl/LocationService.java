@@ -35,6 +35,7 @@ import com.tripjoy.api.mapper.LocationMapper;
 import com.tripjoy.api.repository.LocationRepository;
 import com.tripjoy.api.service.IGooglePlacesService;
 import com.tripjoy.api.service.ILocationService;
+import com.tripjoy.api.service.ISystemConfigService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +51,7 @@ public class LocationService implements ILocationService {
     LocationRepository locationRepository;
     LocationMapper locationMapper;
     IGooglePlacesService googlePlacesService;
+    ISystemConfigService configService;
 
     /** Max autocomplete results to return (DB + Google combined) */
     private static final int AUTOCOMPLETE_MAX_RESULTS = 10;
@@ -306,11 +308,20 @@ public class LocationService implements ILocationService {
         Point searchPoint = locationMapper.createPoint(params.getLng(), params.getLat());
         String locationType = params.getType() != null ? params.getType().name() : null;
 
+        int defaultRadius = configService.getIntValue("SYSTEM_DEFAULT_SEARCH_RADIUS", 5000);
+        int maxRadius = configService.getIntValue("SYSTEM_MAX_SEARCH_RADIUS", 50000);
+        int maxLimit = configService.getIntValue("SYSTEM_MAX_PAGE_SIZE", 200);
+
+        int effectiveRadius = (params.getRadius() == null || params.getRadius() <= 0) 
+                ? defaultRadius : Math.min(params.getRadius(), maxRadius);
+        int effectiveLimit = (params.getLimit() == null || params.getLimit() <= 0) 
+                ? 50 : Math.min(params.getLimit(), maxLimit);
+
         List<Location> nearby = locationRepository.findNearby(
                 searchPoint,
-                params.getEffectiveRadius(),
+                effectiveRadius,
                 locationType,
-                params.getEffectiveLimit());
+                effectiveLimit);
 
         return nearby.stream().map(locationMapper::toResponse).toList();
     }

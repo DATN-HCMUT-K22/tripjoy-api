@@ -1,5 +1,6 @@
 package com.tripjoy.api.service.impl;
 
+import java.time.Duration;
 import java.util.List;
 
 import org.springframework.core.ParameterizedTypeReference;
@@ -25,6 +26,7 @@ import com.tripjoy.api.dto.ai.AiTripItemDto;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
 import com.tripjoy.api.service.IAiService;
+import com.tripjoy.api.service.ISystemConfigService;
 
 @Slf4j
 @Service
@@ -33,6 +35,7 @@ public class AiService implements IAiService {
 
     private final WebClient aiServiceWebClient;
     private final AiServiceProperties aiServiceProperties;
+    private final ISystemConfigService configService;
 
     // The name matches the instance in application.yaml
     private static final String AI_SERVICE_NAME = "aiService";
@@ -53,6 +56,7 @@ public class AiService implements IAiService {
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(AiFinalItineraryDto.class)
+                .timeout(Duration.ofSeconds(configService.getIntValue("AI_TIMEOUT_SECONDS", 120)))
                 .doOnSuccess(response -> log.info("Successfully received itinerary from AI Service"))
                 .doOnError(e -> log.error("Error communicating with AI Service: {}", e.getMessage()));
     }
@@ -79,6 +83,7 @@ public class AiService implements IAiService {
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(AiFinalItineraryDto.class)
+                .timeout(Duration.ofSeconds(configService.getIntValue("AI_TIMEOUT_SECONDS", 120)))
                 .doOnSuccess(response -> log.info("Successfully received modified itinerary from AI Service"))
                 .doOnError(e -> log.error("Error communicating with AI Service (modify): {}", e.getMessage()));
     }
@@ -104,6 +109,7 @@ public class AiService implements IAiService {
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(AiNotebookResponseDto.class)
+                .timeout(Duration.ofSeconds(configService.getIntValue("AI_TIMEOUT_SECONDS", 120)))
                 .doOnSuccess(response -> log.info("Successfully received travel notebook from AI Service"))
                 .doOnError(e -> log.error("Error communicating with AI Service (notebook): {}", e.getMessage()));
     }
@@ -131,6 +137,7 @@ public class AiService implements IAiService {
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(String.class)
+                .timeout(Duration.ofSeconds(configService.getIntValue("AI_TIMEOUT_SECONDS", 120)))
                 .map(raw -> AiChatResponseDto.builder().message(raw).build())
                 .doOnSuccess(response -> log.info("Successfully received chat response from AI Service"))
                 .doOnError(e -> log.error("Error communicating with AI Service (chat): {}", e.getMessage()));
@@ -158,6 +165,7 @@ public class AiService implements IAiService {
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<List<AiTripItemDto>>() {})
+                .timeout(Duration.ofSeconds(configService.getIntValue("AI_TIMEOUT_SECONDS", 120)))
                 .doOnSuccess(response -> log.info("Successfully received {} suggested locations from AI Service",
                         response != null ? response.size() : 0))
                 .doOnError(e -> log.error("Error communicating with AI Service (suggest-locations): {}", e.getMessage()));

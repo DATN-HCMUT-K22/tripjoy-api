@@ -6,9 +6,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Component;
 
+import com.tripjoy.api.service.ISystemConfigService;
+
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Refill;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -17,13 +22,17 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class SocketRateLimiter {
 
-    private final Map<String, Bucket> messageBuckets = new ConcurrentHashMap<>();
-    private final Map<String, Bucket> typingBuckets = new ConcurrentHashMap<>();
+    ISystemConfigService configService;
 
-    private static final int MESSAGE_LIMIT = 10; // messages per second
-    private static final int TYPING_LIMIT = 1; // typing events per second
+    Map<String, Bucket> messageBuckets = new ConcurrentHashMap<>();
+    Map<String, Bucket> typingBuckets = new ConcurrentHashMap<>();
+
+    static int DEFAULT_MESSAGE_LIMIT = 10;
+    static int DEFAULT_TYPING_LIMIT = 1;
 
     /**
      * Check if message event is allowed for user.
@@ -50,12 +59,14 @@ public class SocketRateLimiter {
     }
 
     private Bucket createMessageBucket() {
-        Bandwidth limit = Bandwidth.classic(MESSAGE_LIMIT, Refill.intervally(MESSAGE_LIMIT, Duration.ofSeconds(1)));
+        int limitValue = configService.getIntValue("CHAT_MSG_RATE_LIMIT", DEFAULT_MESSAGE_LIMIT);
+        Bandwidth limit = Bandwidth.classic(limitValue, Refill.intervally(limitValue, Duration.ofSeconds(1)));
         return Bucket.builder().addLimit(limit).build();
     }
 
     private Bucket createTypingBucket() {
-        Bandwidth limit = Bandwidth.classic(TYPING_LIMIT, Refill.intervally(TYPING_LIMIT, Duration.ofSeconds(1)));
+        int limitValue = configService.getIntValue("CHAT_TYPING_RATE_LIMIT", DEFAULT_TYPING_LIMIT);
+        Bandwidth limit = Bandwidth.classic(limitValue, Refill.intervally(limitValue, Duration.ofSeconds(1)));
         return Bucket.builder().addLimit(limit).build();
     }
 
