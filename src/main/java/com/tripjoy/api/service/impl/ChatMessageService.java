@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tripjoy.api.configuration.redis.RedisCacheConfig;
 
+import com.tripjoy.api.dto.event.AiChatRequestedEvent;
 import com.tripjoy.api.dto.event.MessageLikedEvent;
 import com.tripjoy.api.dto.event.MessagePinnedEvent;
 import com.tripjoy.api.dto.event.MessageSentEvent;
@@ -135,6 +136,60 @@ public class ChatMessageService implements IChatMessageService {
 
         // Run bulk update for unread count fan-out
         conversationMemberRepository.incrementUnreadCountForOthers(conversationId, senderId);
+
+        ChatMessageResponse response = chatMessageMapper.toResponse(savedMessage);
+
+        MessageSentEvent event = MessageSentEvent.builder()
+                .conversationId(conversationId)
+                .messageResponse(response)
+                .build();
+
+        eventPublisher.publishEvent(event);
+
+        // --- AI CHATBOT TRIGGER ---
+        // Kích hoạt event gọi AI nếu tin nhắn chứa cú pháp @Tripjoy
+        if (request.getMessageContent() != null && request.getMessageContent().toLowerCase().contains("@tripjoy")) {
+            log.info("AI Trigger detected in conversation: {}", conversationId);
+            AiChatRequestedEvent aiEvent = AiChatRequestedEvent.builder()
+                    .conversationId(conversationId)
+                    .senderId(senderId)
+                    .messageContent(request.getMessageContent())
+                    .build();
+            eventPublisher.publishEvent(aiEvent);
+        }
+
+        return response;
+    }
+
+    @Transactional
+    public ChatMessageResponse sendBotMessage(UUID conversationId, UUID botId, String content) {
+        User sender = userRepository.findById(botId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        Conversation conversation = conversationRepository
+                .findById(conversationId)
+                .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_FOUND));
+
+        ChatMessage message = ChatMessage.builder()
+                .messageContent(content)
+                .messageType("TEXT")
+                .build();
+                
+        message.setConversation(conversation);
+        message.setSender(sender);
+        message.setCreatedAt(LocalDateTime.now());
+
+        ChatMessage savedMessage = chatMessageRepository.save(message);
+
+        conversation.setLastMessageTimestamp(LocalDateTime.now());
+        conversation.setLastMessageId(savedMessage.getId());
+        conversation.setLastMessageContent(savedMessage.getMessageContent());
+        conversation.setLastMessageType(savedMessage.getMessageType());
+        conversation.setLastMessageSenderId(sender.getId());
+        conversation.setLastMessageSenderName(sender.getFullName());
+        conversation.setLastMessageSenderAvatar(sender.getAvatarUrl());
+        conversationRepository.save(conversation);
+
+        conversationMemberRepository.incrementUnreadCountForOthers(conversationId, botId);
 
         ChatMessageResponse response = chatMessageMapper.toResponse(savedMessage);
 

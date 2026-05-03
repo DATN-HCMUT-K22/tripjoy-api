@@ -115,6 +115,57 @@ public class LocationService implements ILocationService {
     }
 
     /**
+     * Resolves a location by Google Place ID. 
+     * If it doesn't exist in DB, fetches from Google Places API and saves it.
+     */
+    @Override
+    @Transactional
+    public LocationResponse resolveByPlaceId(String placeId) {
+        if (placeId == null || placeId.isBlank()) {
+            throw new AppException(ErrorCode.INVALID_REQUEST, "place_id is required");
+        }
+
+        // 1. Check DB first
+        Optional<Location> existing = locationRepository.findByProviderId(placeId);
+        if (existing.isPresent()) {
+            return locationMapper.toResponse(existing.get());
+        }
+
+        // 2. Fetch from Google Places API
+        log.info("Resolving missing place_id from Google Places API: {}", placeId);
+        var googleDetails = googlePlacesService.getPlaceDetails(placeId).block();
+
+        if (googleDetails == null) {
+            throw new AppException(ErrorCode.LOCATION_NOT_FOUND, "Could not resolve place details from Google");
+        }
+
+        // 3. Create Location Entity
+        Location location = Location.builder()
+                .provider(com.tripjoy.api.enums.MapProvider.GOOGLE_MAPS)
+                .providerId(googleDetails.getId())
+                .name(googleDetails.getDisplayName() != null ? googleDetails.getDisplayName().getText() : "Unknown Location")
+                .fullAddress(googleDetails.getFormattedAddress())
+                .poiCategories(googleDetails.getTypes())
+                .primaryType(googleDetails.getPrimaryType())
+                .isVerified(false)
+                .usageCount(0)
+                .locationType(LocationType.POI)
+                .build();
+
+        if (googleDetails.getLocation() != null && googleDetails.getLocation().getLatitude() != null
+                && googleDetails.getLocation().getLongitude() != null) {
+            location.setLatitude(googleDetails.getLocation().getLatitude());
+            location.setLongitude(googleDetails.getLocation().getLongitude());
+            location.setCoordinates(locationMapper.createPoint(
+                    googleDetails.getLocation().getLongitude(), 
+                    googleDetails.getLocation().getLatitude()));
+        }
+
+        Location saved = locationRepository.save(location);
+        return locationMapper.toResponse(saved);
+    }
+
+    /**
      * Update location data and evict all related cache entries.
      * Evicts both {@code location:id} and {@code location:provider} caches
      * since the location may be cached under both keys.

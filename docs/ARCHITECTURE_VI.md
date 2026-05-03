@@ -142,10 +142,10 @@ Backend được thiết kế theo kiến trúc phân tầng (Layered Architectu
 - Image optimization và transformation
 - CDN delivery cho tốc độ cao
 
-**PyVector** (Nếu có):
-- Vector database cho AI features
-- Similarity search
-- Recommendation system
+**AI Service (FastAPI)**:
+- Service độc lập xử lý các tác vụ AI
+- Tích hợp Google Vertex AI (Gemini)
+- Quản lý prompt và LLM chain
 
 ### 4. **External Services & Integrations**
 
@@ -160,21 +160,22 @@ Backend được thiết kế theo kiến trúc phân tầng (Layered Architectu
 - Notification emails
 - Newsletter (nếu có)
 
-#### 🤖 AI Service (FastAPI)
+#### 🤖 AI Service (FastAPI / Python)
 
 **API Layer**:
-- **ChatGPT API**: Tích hợp GPT cho chatbot tư vấn du lịch
-- **Agent API**: AI agents cho các tác vụ tự động
+- **Vertex AI (Gemini)**: Tích hợp Gemini 2.5 Flash cho chatbot tư vấn và sinh lịch trình tự động
+- **Google Places API**: Cào dữ liệu địa điểm du lịch nearby
+- **Wikipedia API**: Truy xuất thông tin bách khoa về văn hóa, ẩm thực
 
 **Business Logic Layer**:
-- Trip recommendation
-- Smart itinerary planning
-- Natural language processing
+- Sinh lịch trình thông minh (Smart itinerary planning)
+- Gợi ý thay đổi địa điểm (Modify & Suggest Locations)
+- Sinh cẩm nang du lịch (Travel Notebook)
 
 **Infrastructure**:
-- Vector databases (ChromaDB, FAISS)
-- LLM integration (OpenAI, LocalAI)
-- Caching layer
+- FastAPI (Async Web Server)
+- LangGraph / Pydantic (AI Agent workflow)
+- LLM Integration (Google Vertex AI)
 
 ## 🔄 Luồng Dữ Liệu (Data Flow)
 
@@ -224,10 +225,11 @@ Mobile Client
 ```
 Mobile Client
   → ItineraryController
-  → ItineraryService
-  → AI Service (HTTP call to FastAPI)
-  → ChatGPT API
+  → ItineraryGenerationService
+  → AI Service (HTTP call to FastAPI / WebClient)
+  → Vertex AI (Gemini)
   ← AI-generated itinerary suggestions
+  → Data Enrichment (Google Places)
   → Save to PostgreSQL
 ```
 
@@ -370,7 +372,7 @@ Cloud Infrastructure:
 | **Database** | PostgreSQL 17 + PostGIS | Relational & spatial data |
 | **Caching** | Redis 7.2, Redisson | Distributed cache & pub/sub |
 | **Security** | Spring Security, JWT | Authentication & authorization |
-| **External APIs** | Mapbox, Cloudinary, ChatGPT | Maps, Media, AI |
+| **External APIs** | Mapbox, Cloudinary, Vertex AI | Maps, Media, AI (Gemini) |
 | **AI/ML** | FastAPI, Python | AI-powered features |
 | **DevOps** | Docker, Docker Compose | Containerization |
 

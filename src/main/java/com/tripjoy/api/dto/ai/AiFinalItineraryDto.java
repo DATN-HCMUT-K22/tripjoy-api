@@ -23,8 +23,9 @@ public class AiFinalItineraryDto {
     @JsonProperty("people_quantity")
     private Integer peopleQuantity;
 
+    /** Budget estimate as number (VND) */
     @JsonProperty("budget_estimate")
-    private String budgetEstimate;
+    private Long budgetEstimate;
 
     private List<String> themes;
 

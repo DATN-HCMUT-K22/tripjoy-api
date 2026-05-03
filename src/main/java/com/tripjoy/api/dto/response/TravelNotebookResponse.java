@@ -16,9 +16,9 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TravelNotebookResponse extends BaseResponse {
+
     UUID id;
     String name;
-    String description;
 
     /** Thông tin ẩm thực địa phương do AI tổng hợp */
     String food;
@@ -29,19 +29,10 @@ public class TravelNotebookResponse extends BaseResponse {
     /** Văn hóa, phong tục tập quán, lễ hội */
     String culture;
 
-    @JsonProperty("weather_forecast")
-    String weatherForecast;
-
-    @JsonProperty("culture_etiquette")
-    String cultureEtiquette;
-
+    /** Số điện thoại khẩn cấp, bệnh viện, đại sứ quán */
     @JsonProperty("emergency_contacts")
     String emergencyContacts;
 
-    @JsonProperty("packing_guide")
-    String packingGuide;
-
-    // createdAt từ BaseResponse
+    // Liên kết lịch trình
     ItinerarySimpleResponse itinerary;
 }
-

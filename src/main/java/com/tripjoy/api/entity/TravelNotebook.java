@@ -4,6 +4,11 @@ import jakarta.persistence.*;
 
 import lombok.*;
 
+/**
+ * Travel Notebook entity — lưu nội dung do AI sinh ra về điểm đến.
+ * Khớp với Python model {@code TravelNotebook}:
+ *   name, food, climate, culture, emergency_contacts
+ */
 @Getter
 @Setter
 @Entity
@@ -14,9 +19,6 @@ public class TravelNotebook extends BaseEntity {
 
     private String name;
 
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
     /** Ẩm thực địa phương — do AI sinh ra từ Wikipedia + Gemini */
     @Column(columnDefinition = "TEXT")
     private String food;
@@ -25,20 +27,15 @@ public class TravelNotebook extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String climate;
 
-    @Column(name = "weather_forecast", columnDefinition = "TEXT")
-    private String weatherForecast;
+    /** Văn hóa, phong tục tập quán địa phương — do AI sinh ra */
+    @Column(columnDefinition = "TEXT")
+    private String culture;
 
-    @Column(name = "culture_etiquette", columnDefinition = "TEXT")
-    private String cultureEtiquette;
-
+    /** Số điện thoại khẩn cấp, bệnh viện, đại sứ quán — do AI sinh ra */
     @Column(name = "emergency_contacts", columnDefinition = "TEXT")
     private String emergencyContacts;
-
-    @Column(name = "packing_guide", columnDefinition = "TEXT")
-    private String packingGuide;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "itinerary_id")
     private Itinerary itinerary;
 }
-

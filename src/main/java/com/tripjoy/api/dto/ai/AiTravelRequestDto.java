@@ -20,14 +20,22 @@ public class AiTravelRequestDto {
     @JsonProperty("travel_type")
     private List<String> travelType;
 
-    private String budget;
+    /** Budget as number (VND), e.g. 10000000 */
+    private Long budget;
 
     @JsonProperty("start_date")
-    private String startDate; // AI Python model expects date string (YYYY-MM-DD)
+    private String startDate; // YYYY-MM-DD
 
     @JsonProperty("end_date")
-    private String endDate; // AI Python model expects date string (YYYY-MM-DD)
+    private String endDate; // YYYY-MM-DD
 
     @JsonProperty("people_quantity")
     private Integer peopleQuantity;
+
+    /**
+     * Optional: list of place_ids to suggest/prefer in the generated itinerary.
+     * Taken from the group's SuggestLocation list.
+     */
+    @JsonProperty("suggest_locations")
+    private List<String> suggestLocations;
 }

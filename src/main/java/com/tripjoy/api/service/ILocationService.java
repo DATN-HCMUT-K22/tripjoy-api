@@ -40,6 +40,11 @@ public interface ILocationService {
 
     LocationResponse updateLocation(UUID locationId, LocationCreateRequest request);
 
+    /**
+     * Resolves a location by Google Place ID. If it doesn't exist in DB, fetches from Google Places API and saves it.
+     */
+    LocationResponse resolveByPlaceId(String placeId);
+
     void deleteLocation(UUID locationId);
 
     /**

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.tripjoy.api.constant.Endpoint;
 import com.tripjoy.api.dto.request.AiModifyItineraryRequest;
+import com.tripjoy.api.dto.request.AiSuggestLocationRequest;
 import com.tripjoy.api.dto.request.GenerateItineraryRequest;
 import com.tripjoy.api.dto.request.ItineraryRequest;
 import com.tripjoy.api.dto.request.TripItemRequest;
@@ -176,4 +177,23 @@ public class ItineraryController {
                         .data(response)
                         .build());
     }
+
+    @Operation(
+            summary = "AI Suggest Location — get alternative location suggestions for a single trip item",
+            description = "Provide the place_id of the trip item to replace. "
+                    + "AI returns candidate locations without modifying the itinerary.")
+    @PostMapping(Endpoint.Itinerary.AI_SUGGEST_LOCATION)
+    public ResponseEntity<ApiResponse<List<TripItemResponse>>> aiSuggestLocation(
+            @PathVariable("itineraryId") UUID itineraryId,
+            @Valid @RequestBody AiSuggestLocationRequest request) {
+
+        List<TripItemResponse> suggestions = itineraryGenerationService.suggestLocation(itineraryId, request);
+
+        return ResponseEntity.ok(
+                ApiResponse.<List<TripItemResponse>>builder()
+                        .message("AI suggested " + suggestions.size() + " alternative location(s)")
+                        .data(suggestions)
+                        .build());
+    }
 }
+

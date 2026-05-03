@@ -55,13 +55,21 @@ public class TripItemRequest {
             example = "Remember to buy sunscreen.")
     String note;
 
-    @NotNull(message = "INVALID_REQUEST")
     @JsonProperty("location_id")
     @Schema(
             name = "location_id",
-            description = "UUID of the Location for this trip item",
+            description = "UUID of the Location for this trip item (if already in DB)",
             type = "String",
-            requiredMode = Schema.RequiredMode.REQUIRED,
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
             example = "f1g2h3i4-j5k6-7890-1234-567890lmn-op")
     UUID locationId;
+
+    @JsonProperty("place_id")
+    @Schema(
+            name = "place_id",
+            description = "Google Place ID (used when picking AI suggestion not yet in DB)",
+            type = "String",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            example = "ChIJ0T2NLikpdTERgJJ6o5gX1Kw")
+    String placeId;
 }
