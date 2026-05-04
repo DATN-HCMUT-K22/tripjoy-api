@@ -1,0 +1,30 @@
+# ================================================================
+# Grafana Dashboard Provider Provisioning
+# Đường dẫn: docker/grafana/provisioning/dashboards/dashboard.yml
+#
+# File này chỉ định cho Grafana biết:
+# - Đọc dashboard JSON files từ đường dẫn nào trong container
+# - Bao lâu scan lại để pickup dashboard mới
+#
+# Dashboard JSON thực tế nằm ở: docker/grafana/dashboards/*.json
+# (được mount vào /var/lib/grafana/dashboards trong container)
+# ================================================================
+
+apiVersion: 1
+
+providers:
+  - name: 'TripJoy Dashboards'
+    # orgId: 1 là default org trong Grafana
+    orgId: 1
+    # folder: tên folder hiển thị trong Grafana UI sidebar
+    folder: 'TripJoy'
+    folderUid: 'tripjoy-folder'
+    # type: file → đọc từ local filesystem
+    type: file
+    # disableDeletion: true → không cho xóa dashboard qua UI (chỉ xóa qua file)
+    disableDeletion: false
+    # updateIntervalSeconds: cứ 30s Grafana scan lại folder để pickup dashboard mới
+    updateIntervalSeconds: 30
+    options:
+      # path: đường dẫn trong container (khớp với mount trong docker-compose)
+      path: /var/lib/grafana/dashboards
