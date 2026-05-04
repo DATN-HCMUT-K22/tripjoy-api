@@ -1,0 +1,63 @@
+# ================================================================
+# Prometheus Configuration — docker/prometheus/prometheus.yml
+#
+# File này định nghĩa:
+# 1. Global config (scrape interval, timeout)
+# 2. Scrape jobs (target nào Prometheus sẽ thu thập metrics)
+#
+# Prometheus hoạt động theo mô hình PULL:
+#   → Prometheus chủ động gọi HTTP vào /actuator/prometheus của app
+#   → Không phải app push metrics ra
+# ================================================================
+
+global:
+  # Tần suất scrape: cứ 15s Prometheus gọi vào endpoint một lần
+  scrape_interval: 15s
+  # Timeout mỗi lần scrape: nếu quá 10s không phản hồi → bỏ qua lần đó
+  scrape_timeout: 10s
+  # Tần suất Prometheus tính toán lại các rules (alerts)
+  evaluation_interval: 15s
+
+# ================================================================
+# Scrape Jobs — Danh sách các target cần thu thập metrics
+# ================================================================
+scrape_configs:
+
+  # ----------------------------------------------------------
+  # Job 1: Thu thập metrics của chính Prometheus
+  # Giúp monitor xem Prometheus có đang healthy không
+  # ----------------------------------------------------------
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # ----------------------------------------------------------
+  # Job 2: Thu thập metrics từ TripJoy Spring Boot API
+  #
+  # metrics_path: '/actuator/prometheus' (Spring Boot Actuator endpoint)
+  # target: 'tripjoy-api:8080' (tên service trong docker-compose network)
+  #
+  # Prometheus sẽ gọi:
+  #   GET http://tripjoy-api:8080/actuator/prometheus
+  # và nhận về text/plain chứa hàng nghìn dòng metrics
+  # ----------------------------------------------------------
+  - job_name: 'tripjoy-api'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['tripjoy-api:8080']
+        # Labels giúp filter trong Grafana khi nhiều instance chạy
+        labels:
+          application: 'tripjoy-api'
+          environment: 'production'
+
+  # ----------------------------------------------------------
+  # [OPTIONAL] Job 3: Node Exporter — System metrics của EC2
+  # Uncomment khi bạn đã cài node_exporter trên EC2
+  # Cho phép monitor CPU, RAM, Disk của máy chủ
+  # ----------------------------------------------------------
+  # - job_name: 'node-exporter'
+  #   static_configs:
+  #     - targets: ['node-exporter:9100']
+  #       labels:
+  #         instance: 'ec2-production'
