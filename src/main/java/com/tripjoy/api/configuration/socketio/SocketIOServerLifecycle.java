@@ -5,6 +5,8 @@ import jakarta.annotation.PreDestroy;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import org.springframework.context.annotation.Profile;
+
 import com.corundumstudio.socketio.SocketIOServer;
 
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@Profile("!test")
 public class SocketIOServerLifecycle implements CommandLineRunner {
 
     private final SocketIOServer server;

@@ -8,12 +8,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import org.springframework.context.annotation.Profile;
+
 /**
  * Redisson Configuration for Socket.IO
  * Uses Database 0 to separate from Spring Cache (Database 1)
  * This prevents cache evictions from affecting real-time Socket.IO data
  */
 @Configuration
+@Profile("!test")
 public class RedissonConfig {
 
     @Value("${spring.data.redis.host:localhost}")

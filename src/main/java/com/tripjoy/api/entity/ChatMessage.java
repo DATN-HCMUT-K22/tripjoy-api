@@ -6,11 +6,12 @@ import java.util.Set;
 import jakarta.persistence.*;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @Entity
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(
@@ -36,6 +37,7 @@ public class ChatMessage extends BaseEntity {
     private ChatMessage parentMessage;
 
     @OneToMany(mappedBy = "parentMessage", fetch = FetchType.LAZY)
+    @Builder.Default
     private Set<ChatMessage> replies = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)

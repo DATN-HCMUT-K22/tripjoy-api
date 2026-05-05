@@ -11,9 +11,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tripjoy.api.dto.request.UserCreationRequest;
@@ -22,6 +24,8 @@ import com.tripjoy.api.service.impl.UserService;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
+@WithMockUser(roles = "ADMIN")
 public class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -75,7 +79,6 @@ public class UserControllerTest {
     public void createUser_invalidUsername_fail() throws Exception {
         // GIVEN:
         request.setUsername("joh"); // Invalid username (too short)
-        ObjectMapper mapper = new ObjectMapper();
         String content = objectMapper.writeValueAsString(request);
 
         Mockito.when(userService.createUser(ArgumentMatchers.any())).thenReturn(response);
@@ -84,7 +87,7 @@ public class UserControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(content))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("code").value("1000"));
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("code").value("2010"));
     }
 }

@@ -10,11 +10,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @Entity
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "users")
@@ -50,5 +51,6 @@ public class User extends BaseEntity {
 
     @ManyToMany(mappedBy = "favouriteUsers")
     @JsonIgnore
+    @Builder.Default
     private Set<Itinerary> favouriteItineraries = new HashSet<>();
 }

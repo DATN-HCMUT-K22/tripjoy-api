@@ -36,5 +36,6 @@ public class AddMemberRequest {
             allowableValues = {"LEADER", "CO_LEADER", "MEMBER"},
             requiredMode = Schema.RequiredMode.REQUIRED,
             example = "CO_LEADER")
+    @Builder.Default
     GroupRole role = GroupRole.MEMBER;
 }

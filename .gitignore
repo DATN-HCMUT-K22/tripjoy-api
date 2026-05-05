@@ -38,3 +38,5 @@ build/
 /infra/redis/data/
 /docs
 /temp
+
+.env.prod.real

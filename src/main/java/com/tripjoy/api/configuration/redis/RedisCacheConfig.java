@@ -19,6 +19,8 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import org.springframework.context.annotation.Profile;
+
 /**
  * Redis Cache Configuration for Spring @Cacheable / @CacheEvict.
  *
@@ -47,6 +49,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
  */
 @Configuration
 @EnableCaching
+@Profile("!test")
 public class RedisCacheConfig {
 
     // ==================== Cache Names ====================
