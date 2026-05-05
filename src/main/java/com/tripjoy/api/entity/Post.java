@@ -13,11 +13,12 @@ import org.hibernate.annotations.BatchSize;
 import com.tripjoy.api.enums.PostVisibility;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @Entity
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Post extends BaseEntity {
@@ -30,6 +31,7 @@ public class Post extends BaseEntity {
     private List<String> mediaUrls = new ArrayList<>();
 
     @Embedded
+    @Builder.Default
     private SoftDeleteInfo softDeleteInfo = new SoftDeleteInfo();
 
     private String content;

@@ -15,12 +15,15 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.tripjoy.api.configuration.security.JwtUtils;
 
+import org.springframework.context.annotation.Profile;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @RequiredArgsConstructor
 @Slf4j
+@Profile("!test")
 public class SocketIOConfig {
 
     private final RedissonClient redissonClient;

@@ -5,11 +5,12 @@ import java.util.UUID;
 import jakarta.persistence.*;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @Entity
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(
@@ -28,12 +29,15 @@ public class ConversationMember extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Builder.Default
     private Long unreadCount = 0L;
 
+    @Builder.Default
     private Boolean isMuted = false;
 
     // pin conversation to top
     @Column(nullable = false)
+    @Builder.Default
     private Boolean isPinned = false;
 
     private UUID lastReadMessageId;
