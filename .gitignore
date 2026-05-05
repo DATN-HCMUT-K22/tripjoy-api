@@ -40,3 +40,4 @@ build/
 /temp
 
 .env.prod.real
+.env.staging.real
