@@ -216,6 +216,22 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- ====================================================== -->
+		<!-- DevOps: Monitoring & Observability                       -->
+		<!-- ====================================================== -->
+
+		<!-- Actuator: exposes /actuator/health, /actuator/prometheus -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+		<!-- Micrometer Prometheus: formats metrics for Prometheus scraping -->
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<profiles>
@@ -315,6 +331,22 @@
 				<!--					</execution>-->
 				<!--				</executions>-->
 			</plugin>
+
+			<!-- SonarCloud: static analysis gate used in CI pipeline -->
+			<plugin>
+				<groupId>org.sonarsource.scanner.maven</groupId>
+				<artifactId>sonar-maven-plugin</artifactId>
+				<version>3.11.0.3922</version>
+			</plugin>
+
+
+			<!-- SonarCloud: static analysis gate used in CI pipeline -->
+			<plugin>
+				<groupId>org.sonarsource.scanner.maven</groupId>
+				<artifactId>sonar-maven-plugin</artifactId>
+				<version>3.11.0.3922</version>
+			</plugin>
+
 <!--			plugin nay de up len swagger hub-->
 			<plugin>
 				<groupId>io.swagger</groupId>
