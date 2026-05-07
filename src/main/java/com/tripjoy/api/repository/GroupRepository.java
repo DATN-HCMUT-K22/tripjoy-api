@@ -21,7 +21,7 @@ public interface GroupRepository extends JpaRepository<Group, UUID> {
     List<Group> findAllNotDeleted();
 
     @Query(value = """
-            SELECT * FROM "group" g
+            SELECT * FROM "groups" g
             WHERE lower(unaccent(g.name)) LIKE lower(unaccent(CONCAT('%', :keyword, '%')))
               AND g.is_deleted = false
             """, nativeQuery = true)

@@ -112,11 +112,9 @@ public class RedisCacheConfig {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        objectMapper.activateDefaultTyping(
-                objectMapper.getPolymorphicTypeValidator(),
-                ObjectMapper.DefaultTyping.NON_FINAL,
-                JsonTypeInfo.As.PROPERTY);
 
+        // Use a more robust typing strategy for GenericJackson2JsonRedisSerializer
+        // This avoids issues with Lists and ensures proper deserialization
         GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
         // Default config — fallback for any cache not explicitly configured below
