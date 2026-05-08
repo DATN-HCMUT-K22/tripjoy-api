@@ -72,6 +72,10 @@ public class ItineraryService implements IItineraryService {
             Group group = groupRepository.findById(UUID.fromString(request.getGroupId()))
                     .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
             itinerary.setGroup(group);
+            
+            // Increment denormalized count
+            group.setItiCount(group.getItiCount() + 1);
+            groupRepository.save(group);
         }
 
         itinerary = itineraryRepository.save(itinerary);
@@ -104,9 +108,30 @@ public class ItineraryService implements IItineraryService {
         }
 
         if (request.getGroupId() != null) {
-            Group group = groupRepository.findById(UUID.fromString(request.getGroupId()))
-                    .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
-            itinerary.setGroup(group);
+            UUID newGroupId = UUID.fromString(request.getGroupId());
+            Group oldGroup = itinerary.getGroup();
+            
+            // Handle group change logic
+            if (oldGroup == null || !oldGroup.getId().equals(newGroupId)) {
+                // 1. Decrement old group
+                if (oldGroup != null) {
+                    oldGroup.setItiCount(Math.max(0, oldGroup.getItiCount() - 1));
+                    groupRepository.save(oldGroup);
+                }
+                
+                // 2. Increment new group
+                Group newGroup = groupRepository.findById(newGroupId)
+                        .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+                itinerary.setGroup(newGroup);
+                newGroup.setItiCount(newGroup.getItiCount() + 1);
+                groupRepository.save(newGroup);
+            }
+        } else if (itinerary.getGroup() != null) {
+            // Itinerary moved out of a group
+            Group oldGroup = itinerary.getGroup();
+            oldGroup.setItiCount(Math.max(0, oldGroup.getItiCount() - 1));
+            groupRepository.save(oldGroup);
+            itinerary.setGroup(null);
         }
 
         itinerary = itineraryRepository.save(itinerary);
@@ -122,6 +147,13 @@ public class ItineraryService implements IItineraryService {
 
         itinerary.getSoftDeleteInfo().markAsDeleted(SecurityUtils.getCurrentUserId().toString());
         
+        // Decrement group count if soft-deleted
+        if (itinerary.getGroup() != null) {
+            Group group = itinerary.getGroup();
+            group.setItiCount(Math.max(0, group.getItiCount() - 1));
+            groupRepository.save(group);
+        }
+
         itineraryRepository.save(itinerary);
     }
 

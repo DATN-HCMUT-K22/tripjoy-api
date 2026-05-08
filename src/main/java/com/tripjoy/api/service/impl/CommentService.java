@@ -66,6 +66,10 @@ public class CommentService implements ICommentService {
 
         comment = commentRepository.save(comment);
 
+        // Sync post comment count
+        post.setCommentCount(post.getCommentCount() + 1);
+        postRepository.save(post);
+
         eventPublisher.publishEvent(new CommentCreatedEvent(comment, user));
 
         return getCommentResponseWithContext(comment, userId, true);
@@ -119,6 +123,13 @@ public class CommentService implements ICommentService {
 
         comment.setIsDeleted(true);
         commentRepository.save(comment);
+        
+        // Sync post comment count
+        Post post = comment.getPost();
+        if (post != null) {
+            post.setCommentCount(Math.max(0, post.getCommentCount() - 1));
+            postRepository.save(post);
+        }
     }
 
     @Override
@@ -130,8 +141,8 @@ public class CommentService implements ICommentService {
 
     private CommentResponse getCommentResponseWithContext(Comment comment, UUID currentUserId, boolean includeReplies) {
         CommentResponse response = commentMapper.toCommentResponse(comment);
-        if (currentUserId != null && comment.getLikeUsers() != null) {
-            response.setIsLiked(comment.getLikeUsers().stream().anyMatch(u -> u.getId().equals(currentUserId)));
+        if (currentUserId != null) {
+            response.setIsLiked(commentRepository.existsLike(comment.getId(), currentUserId));
         } else {
             response.setIsLiked(false);
         }

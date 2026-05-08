@@ -18,9 +18,18 @@ public interface ItineraryRepository extends JpaRepository<Itinerary, UUID> {
     @Query("SELECT i FROM Itinerary i WHERE i.group.id = :groupId AND i.softDeleteInfo.isDeleted = false")
     List<Itinerary> findByGroupIdAndNotDeleted(@Param("groupId") UUID groupId);
 
-    List<Itinerary> findByUserIdAndSoftDeleteInfoIsDeletedFalse(UUID userId);
+    @Query("SELECT DISTINCT i FROM Itinerary i " +
+           "LEFT JOIN FETCH i.user " +
+           "LEFT JOIN FETCH i.group " +
+           "WHERE i.user.id = :userId AND i.softDeleteInfo.isDeleted = false")
+    List<Itinerary> findByUserIdAndSoftDeleteInfoIsDeletedFalse(@Param("userId") UUID userId);
 
-    List<Itinerary> findByFavouriteUsersIdAndSoftDeleteInfoIsDeletedFalse(UUID userId);
+    @Query("SELECT DISTINCT i FROM Itinerary i " +
+           "JOIN i.favouriteUsers u " +
+           "LEFT JOIN FETCH i.user " +
+           "LEFT JOIN FETCH i.group " +
+           "WHERE u.id = :userId AND i.softDeleteInfo.isDeleted = false")
+    List<Itinerary> findByFavouriteUsersIdAndSoftDeleteInfoIsDeletedFalse(@Param("userId") UUID userId);
 
     // === SOFT DELETE CASCADE METHODS ===
 

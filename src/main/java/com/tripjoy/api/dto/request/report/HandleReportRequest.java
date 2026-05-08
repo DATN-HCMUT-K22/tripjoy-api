@@ -15,7 +15,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class HandleReportRequest {
 
-    @NotBlank
+    @NotBlank(message = "INVALID_REQUEST")
     @Schema(
             name = "status",
             description = "The new status of the report",

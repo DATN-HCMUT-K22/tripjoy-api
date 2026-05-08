@@ -26,12 +26,12 @@ public class ReportRequest {
             requiredMode = Schema.RequiredMode.REQUIRED)
     UUID contentId;
 
-    @NotBlank(message = "{not_blank}")
+    @NotBlank(message = "INVALID_REQUEST")
     @JsonProperty("content_type")
     @Schema(description = "Type of the reported content", example = "POST", requiredMode = Schema.RequiredMode.REQUIRED)
     String contentType; // "POST", "COMMENT", "USER" (to let service know which table to join)
 
-    @NotBlank(message = "{not_blank}")
+    @NotBlank(message = "INVALID_REQUEST")
     @JsonProperty("report_type")
     @Schema(
             description = "Reason for reporting (from the Report_to table)",

@@ -21,9 +21,20 @@ public interface GroupRepository extends JpaRepository<Group, UUID> {
     List<Group> findAllNotDeleted();
 
     @Query(value = """
-            SELECT * FROM "group" g
-            WHERE lower(unaccent(g.name)) LIKE lower(unaccent(CONCAT('%', :keyword, '%')))
+            SELECT * FROM "groups" g
+            WHERE lower(f_unaccent(g.name)) LIKE lower(f_unaccent(CONCAT('%', :keyword, '%')))
               AND g.is_deleted = false
             """, nativeQuery = true)
     List<Group> searchByName(@Param("keyword") String keyword);
+
+    @Query("""
+            SELECT DISTINCT g FROM Group g
+            LEFT JOIN FETCH g.members m
+            LEFT JOIN FETCH m.user
+            JOIN g.members m2
+            WHERE m2.user.id = :userId
+              AND g.softDeleteInfo.isDeleted = false
+              AND m2.softDeleteInfo.isDeleted = false
+            """)
+    List<Group> findByMemberUserId(@Param("userId") UUID userId);
 }

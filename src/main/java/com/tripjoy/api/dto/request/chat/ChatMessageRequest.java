@@ -15,7 +15,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ChatMessageRequest {
 
-    @NotBlank
+    @NotBlank(message = "INVALID_REQUEST")
     @JsonProperty("message_content")
     @Schema(description = "Text content of the message", example = "Hello!")
     String messageContent;

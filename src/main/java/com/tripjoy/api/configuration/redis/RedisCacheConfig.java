@@ -103,7 +103,7 @@ public class RedisCacheConfig {
 
     // ==================== Key prefix ====================
 
-    private static final String KEY_PREFIX = "tripjoy:";
+    private static final String KEY_PREFIX = "tripjoy:v2:";
 
     // ==================== Bean ====================
 
@@ -112,11 +112,16 @@ public class RedisCacheConfig {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        
+        // Enable default typing to include class names in JSON
+        // This prevents ClassCastException (LinkedHashMap cannot be cast to DTO) when reading from cache
         objectMapper.activateDefaultTyping(
                 objectMapper.getPolymorphicTypeValidator(),
                 ObjectMapper.DefaultTyping.NON_FINAL,
                 JsonTypeInfo.As.PROPERTY);
 
+        // Use a more robust typing strategy for GenericJackson2JsonRedisSerializer
+        // This avoids issues with Lists and ensures proper deserialization
         GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
         // Default config — fallback for any cache not explicitly configured below

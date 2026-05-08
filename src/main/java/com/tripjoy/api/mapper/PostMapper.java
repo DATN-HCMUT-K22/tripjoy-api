@@ -27,13 +27,24 @@ public interface PostMapper {
     @Mapping(target = "updatedAt", source = "updatedAt")
     @Mapping(target = "itinerary", source = "itinerary")
     @Mapping(target = "createdByUser", source = "creator")
-    @Mapping(target = "likeCount", expression = "java((long) (post.getLikeUsers() != null ? post.getLikeUsers().size() : 0))")
-    @Mapping(target = "commentCount", expression = "java((long) (post.getComments() != null ? post.getComments().size() : 0))")
+    @Mapping(target = "likeCount", source = "likeCount")
+    @Mapping(target = "commentCount", source = "commentCount")
     @Mapping(target = "hashtags", source = "hashtags", qualifiedByName = "mapHashtagsToStrings")
-    @Mapping(target = "isLiked", ignore = true) // Set manually in service
-    @Mapping(target = "isSaved", ignore = true) // Set manually in service
-    @Mapping(target = "latestComments", ignore = true) // Handled separately if needed
-    PostResponse toPostResponse(Post post);
+    @Mapping(target = "isLiked", ignore = true)
+    @Mapping(target = "isSaved", ignore = true)
+    @Mapping(target = "latestComments", ignore = true)
+    PostResponse toPostResponse(Post post, @Context com.tripjoy.api.dto.context.PostMappingContext context);
+
+    @AfterMapping
+    default void setContextFields(@MappingTarget PostResponse response, Post post, @Context com.tripjoy.api.dto.context.PostMappingContext context) {
+        if (context != null) {
+            response.setIsLiked(context.isLiked(post.getId()));
+            response.setIsSaved(context.isSaved(post.getId()));
+        } else {
+            response.setIsLiked(false);
+            response.setIsSaved(false);
+        }
+    }
 
     @Mapping(target = "author", source = "creator")
     @Mapping(target = "contentSnippet", expression = "java(post.getContent() != null ? (post.getContent().length() > 50 ? post.getContent().substring(0, 50) + \"...\" : post.getContent()) : \"\")")

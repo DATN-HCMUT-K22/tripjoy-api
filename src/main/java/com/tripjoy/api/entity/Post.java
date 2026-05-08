@@ -21,6 +21,12 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(
+        name = "post",
+        indexes = {
+                @Index(name = "idx_post_creator_deleted", columnList = "creator_id, is_deleted"),
+                @Index(name = "idx_post_created_at", columnList = "created_at DESC")
+        })
 public class Post extends BaseEntity {
 
     @Builder.Default
@@ -28,6 +34,7 @@ public class Post extends BaseEntity {
     @CollectionTable(name = "post_media", joinColumns = @JoinColumn(name = "post_id"))
     @Column(name = "media_url", length = 1024)
     @OrderColumn(name = "media_order")
+    @BatchSize(size = 20)
     private List<String> mediaUrls = new ArrayList<>();
 
     @Embedded
@@ -41,6 +48,14 @@ public class Post extends BaseEntity {
     @Column(nullable = false, length = 20)
     @Builder.Default
     private PostVisibility visibility = PostVisibility.PUBLIC;
+
+    @Builder.Default
+    @Column(name = "like_count")
+    private Long likeCount = 0L;
+
+    @Builder.Default
+    @Column(name = "comment_count")
+    private Long commentCount = 0L;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "itinerary_id")

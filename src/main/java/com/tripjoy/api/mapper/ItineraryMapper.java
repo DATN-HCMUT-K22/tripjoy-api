@@ -18,7 +18,7 @@ import com.tripjoy.api.entity.Expense;
 import com.tripjoy.api.entity.Itinerary;
 import com.tripjoy.api.entity.Theme;
 
-@Mapper(config = BaseMapperConfig.class, uses = {UserMapper.class})
+@Mapper(config = BaseMapperConfig.class, uses = { UserMapper.class })
 public interface ItineraryMapper {
 
     @Mapping(target = "user", ignore = true)
@@ -37,18 +37,8 @@ public interface ItineraryMapper {
     @Mapping(source = "group.id", target = "groupId")
     @Mapping(target = "themes", source = "themes", qualifiedByName = "mapThemesToStrings")
     @Mapping(source = "budgetEstimate", target = "budgetEstimate")
-    @Mapping(target = "totalExpense", expression = "java(calculateTotalExpense(itinerary))")
+    @Mapping(source = "totalExpense", target = "totalExpense")
     ItineraryResponse toItineraryResponse(Itinerary itinerary);
-
-    default BigDecimal calculateTotalExpense(Itinerary itinerary) {
-        if (itinerary.getExpenses() == null || itinerary.getExpenses().isEmpty()) {
-            return BigDecimal.ZERO;
-        }
-        return itinerary.getExpenses().stream()
-                .map(Expense::getAmount)
-                .filter(Objects::nonNull)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
 
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "group", ignore = true)

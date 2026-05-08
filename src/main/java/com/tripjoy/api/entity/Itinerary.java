@@ -22,7 +22,11 @@ import lombok.*;
 @AllArgsConstructor
 @Table(
         name = "itinerary",
-        indexes = {@Index(name = "idx_itinerary_group", columnList = "group_id, is_deleted")})
+        indexes = {
+                @Index(name = "idx_itinerary_group", columnList = "group_id, is_deleted"),
+                @Index(name = "idx_itinerary_user_deleted", columnList = "user_id, is_deleted")
+        })
+@BatchSize(size = 20)
 public class Itinerary extends BaseEntity {
 
     private String name;
@@ -41,6 +45,10 @@ public class Itinerary extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private ItineraryStatus status;
+
+    @Column(name = "total_expense", precision = 19, scale = 2)
+    @Builder.Default
+    private BigDecimal totalExpense = BigDecimal.ZERO;
 
     @Embedded
     @Builder.Default
@@ -73,11 +81,13 @@ public class Itinerary extends BaseEntity {
     private Set<Theme> themes = new HashSet<>();
 
     @OneToMany(mappedBy = "itinerary", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 20)
     @JsonIgnore
     @Builder.Default
     private Set<TripItem> tripItems = new HashSet<>();
 
     @OneToMany(mappedBy = "itinerary", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 20)
     @JsonIgnore
     @Builder.Default
     private Set<Expense> expenses = new HashSet<>();

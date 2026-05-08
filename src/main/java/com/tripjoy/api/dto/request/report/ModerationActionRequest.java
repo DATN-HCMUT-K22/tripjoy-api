@@ -16,7 +16,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ModerationActionRequest {
 
-    @NotNull(message = "User ID is required")
+    @NotNull(message = "INVALID_REQUEST")
     @Schema(
             name = "userId",
             description = "The unique ID of the users receiving the action",
@@ -24,7 +24,7 @@ public class ModerationActionRequest {
             requiredMode = Schema.RequiredMode.REQUIRED)
     String userId;
 
-    @NotBlank
+    @NotBlank(message = "INVALID_REQUEST")
     @Schema(
             name = "actionType",
             description = "The type of moderation action",

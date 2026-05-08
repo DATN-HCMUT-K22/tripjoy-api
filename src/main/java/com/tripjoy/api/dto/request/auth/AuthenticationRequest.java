@@ -13,7 +13,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AuthenticationRequest {
 
-    @NotBlank(message = "{not_blank}")
+    @NotBlank(message = "INVALID_REQUEST")
     @Schema(
             name = "username",
             description = "Username for login",
@@ -22,7 +22,7 @@ public class AuthenticationRequest {
             example = "user")
     String username;
 
-    @NotBlank(message = "{not_blank}")
+    @NotBlank(message = "INVALID_REQUEST")
     @Schema(
             name = "password",
             description = "Users's password",

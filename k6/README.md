@@ -1,177 +1,91 @@
-# TripJoy API - k6 Load Testing
+# TripJoy API - K6 Performance Test Suite v2.0
 
-Stress testing suite for TripJoy REST API using Grafana k6.
+> Production-ready performance evaluation framework using Grafana k6.
+> Full documentation: [../docs/K6_PERFORMANCE_TESTING_GUIDE.md](../docs/K6_PERFORMANCE_TESTING_GUIDE.md)
 
-## 🚀 Quick Start
+---
+
+## Quick Start
 
 ### Prerequisites
-- k6 installed (`win get install k6` or download from [k6.io](https://k6.io/))
-- TripJoy API running (default: `http://localhost:8080`)
+- k6 ≥ 0.50.0 installed (`winget install k6` or [k6.io](https://k6.io))
+- TripJoy API running at `http://localhost:8080`
+- Test users created (see [docs guide](../docs/K6_PERFORMANCE_TESTING_GUIDE.md#2-cài-đặt-và-yêu-cầu))
 
-### Run Smoke Test (1 minute)
+### First run — Smoke Test (1 VU, 2 min)
 ```bash
-cd d:/devspace/datn/tripjoy-project/tripjoy-api
-k6 run k6/scenarios/smoke-test.js
+cd k6/
+npm run test:smoke
 ```
 
-### Run Auth Flow Test
+---
+
+## Available Tests
+
+| Command | Type | VUs | Duration | Purpose |
+|---|---|---|---|---|
+| `npm run test:smoke` | Smoke | 1 | 2m | Health check after deploy |
+| `npm run test:load` | Load | 0→50 | 20m | Normal traffic simulation |
+| `npm run test:stress` | Stress | 0→200 | 18m | Find breaking point |
+| `npm run test:soak` | Soak | 30 | 30m | Memory leak detection |
+| `npm run test:spike` | Spike | 5→200 | 7m | Burst traffic / launch day |
+| `npm run test:ai` | AI | 3 | 10m | AI endpoint validation |
+
+### With JSON report output
 ```bash
-k6 run k6/tests/auth-test.js
+npm run test:smoke:report    # → reports/smoke-results.json
+npm run test:load:report     # → reports/load-results.json
+npm run test:all:report      # Run all + save reports
 ```
 
-## 📁 Project Structure
+### Staging environment
+```bash
+npm run test:smoke:staging
+npm run test:load:staging
+```
+
+---
+
+## Structure
 
 ```
 k6/
 ├── config/
-│   ├── dev.js          # Environment configuration
-│   └── thresholds.js   # Performance thresholds
+│   ├── environments.js   # URL + credentials per environment
+│   └── thresholds.js     # SLO definitions (smoke/load/stress/soak/spike)
 ├── lib/
-│   ├── auth.js         # Authentication helpers
-│   ├── utils.js        # Common utilities
-│   └── check-utils.js  # Response validation
-├── tests/
-│   ├── auth-test.js    # Auth endpoints (5)
-│   ├── user-test.js    # User management (5)
-│   ├── admin-test.js   # Roles + Permissions (6)
-│   ├── location-test.js # Location APIs (7)
-│   ├── group-test.js   # Groups + Suggestions (14)
-│   ├── conversation-test.js # Chat (4)
-│   ├── message-test.js # Message actions (4)
-│   └── notification-test.js # Notifications (7)
-└── scenarios/
-    ├── smoke-test.js   # Quick validation
-    ├── load-test.js    # Expected traffic
-    └── stress-test.js  # Peak traffic
+│   ├── auth.js           # login, register, introspect, refresh, logout
+│   ├── http.js           # tagged HTTP wrappers + custom metrics
+│   ├── generators.js     # realistic fake data generators
+│   └── scenarios.js      # domain-level reusable user journeys
+├── scenarios/
+│   ├── smoke-test.js
+│   ├── load-test.js
+│   ├── stress-test.js
+│   ├── soak-test.js
+│   ├── spike-test.js
+│   └── ai-test.js
+├── reports/              # JSON output (auto-created)
+└── package.json
 ```
 
-## 🧪 Test Scenarios
+---
 
-### Smoke Test
-Quick validation that the system is working.
-- **VUs**: 2
-- **Duration**: 1 minute
-- **Endpoints**: Critical paths only (auth, user, groups, notifications)
-- **Purpose**: CI/CD health check
+## Performance SLOs
 
-```bash
-k6 run k6/scenarios/smoke-test.js
-```
+| Test | p(95) target | Error rate limit | Checks |
+|---|---|---|---|
+| Smoke | < 500ms | < 0.1% | > 99% |
+| Load | < 1500ms | < 1% | > 95% |
+| Stress | < 3000ms | < 5% | > 90% |
+| Soak | < 2000ms (no drift) | < 1% | > 95% |
+| Spike | < 5000ms | < 10% | > 85% |
 
-### Load Test
-Test with expected normal traffic.
-- **VUs**: Ramp 0 → 20 → 0
-- **Duration**: 7 minutes
-- **Endpoints**: All implemented APIs
-- **Purpose**: Validate performance under normal load
+---
 
-```bash
-k6 run k6/scenarios/load-test.js
-```
+## API Coverage
 
-### Stress Test
-Find the breaking point.
-- **VUs**: Ramp 0 → 100 → 0
-- **Duration**: 10 minutes
-- **Purpose**: Identify maximum capacity
+**Fully tested:** Auth, Users, Groups, Locations, Posts, Comments, Itinerary, Expenses, Notifications, Conversations, Messages, Travel Notebooks, Media  
+**Excluded (not implemented):** Feedback, Report, Admin moderation, OAuth2  
 
-```bash
-k6 run k6/scenarios/stress-test.js
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-```bash
-# Change base URL
-k6 run --env BASE_URL=http://api.tripjoy.com k6/scenarios/smoke-test.js
-
-# Enable verbose logging
-k6 run --env VERBOSE=true k6/tests/auth-test.js
-```
-
-### Default Test Users
-Configured in `k6/config/dev.js`:
-- **Admin**: `admin` / `admin123`
-- **User 1**: `testuser1` / `Test123!`
-- **User 2**: `testuser2` / `Test123!`
-
-## 📊 Performance Thresholds
-
-### Success Criteria
-- **p95 response time**: < 1000ms
-- **p99 response time**: < 2000ms
-- **Error rate**: < 1%
-- **Max response time**: < 5000ms
-
-## 🎯 Implemented Endpoints (51 total)
-
-### Core (16 endpoints)
-- ✅ Auth: 5 endpoints
-- ✅ User: 5 endpoints
-- ✅ Roles: 3 endpoints
-- ✅ Permissions: 3 endpoints
-
-### Business Logic (24 endpoints)
-- ✅ Location: 7 endpoints
-- ✅ Group: 11 endpoints
-- ✅ Location Suggestions: 3 endpoints
-- ✅ Conversation: 3 endpoints (partial)
-
-### Social & Notifications (11 endpoints)
-- ✅ Message Actions: 4 endpoints
-- ✅ Notifications: 7 endpoints
-
-## 📖 Reading Results
-
-### Key Metrics
-- `http_req_duration`: Response time (avg, p95, p99, max)
-- `http_req_failed`: Error rate
-- `http_reqs`: Requests per second
-- `vus`: Virtual users
-
-### Example Output
-```
-✓ login: status 200
-✓ login: has token
-
-checks.........................: 100.00% ✓ 450   ✗ 0
-http_req_duration..............: avg=234ms p95=456ms p99=678ms max=1.2s
-http_req_failed................: 0.00%   ✓ 0     ✗ 450
-http_reqs......................: 450     7.5/s
-```
-
-## 🛠️ Best Practices
-
-1. **Start Small**: Run smoke test first before load/stress tests
-2. **Isolated Environment**: Test against a dedicated test server
-3. **Data Cleanup**: Tests create data - clean up periodically
-4. **Monitor Server**: Watch server CPU/memory during tests
-5. **Gradual Ramp**: Use ramp-up/down to avoid shocking the system
-
-## 🐛 Troubleshooting
-
-### "Connection refused"
-- Check if API is running on `localhost:8080`
-- Set correct `BASE_URL` environment variable
-
-### "Login failed"
-- Verify test users exist in database
-- Check credentials in `k6/config/dev.js`
-
-### High error rates
-- Server may be overloaded
-- Reduce VUs or check server logs
-
-## 🔗 Resources
-
-- [k6 Documentation](https://k6.io/docs/)
-- [k6 Examples](https://k6.io/docs/examples/)
-- [TripJoy API Documentation](../docs/)
-
-## 📝 Notes
-
-- Test data is generated with random usernames/emails
-- Each VU (virtual user) simulates one concurrent user
-- Tests are stateless - each iteration is independent
-- Default users should exist in DB before running tests
+See [API Coverage Map](../docs/K6_PERFORMANCE_TESTING_GUIDE.md#4-api-coverage-map) for full table.

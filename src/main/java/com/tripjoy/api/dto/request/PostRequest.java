@@ -31,7 +31,7 @@ public class PostRequest {
             example = "[\"https://res.cloudinary.com/tripjoy/image/upload/v1/tripjoy/posts/img1.webp\"]")
     private List<String> mediaUrls;
 
-    @NotBlank(message = "{not_blank}")
+    @NotBlank(message = "INVALID_REQUEST")
     @Schema(
             name = "content",
             description = "Content of the post",
@@ -41,7 +41,7 @@ public class PostRequest {
     private String content;
 
     @JsonProperty("itinerary_id")
-    @NotNull
+    @NotNull(message = "INVALID_REQUEST")
     @Schema(
             name = "itinerary_id",
             description = "UUID of the Itinerary this post is linked to (from Create_post table)",

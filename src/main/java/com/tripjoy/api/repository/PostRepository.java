@@ -31,8 +31,8 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
         LEFT JOIN itinerary i ON p.itinerary_id = i.id
         WHERE p.is_deleted = false
         AND (:keyword IS NULL OR (
-            to_tsvector('simple', unaccent(coalesce(p.content, ''))) @@ plainto_tsquery('simple', unaccent(CAST(:keyword AS text)))
-            OR unaccent(p.content) ILIKE '%' || unaccent(CAST(:keyword AS text)) || '%'
+            to_tsvector('simple', f_unaccent(coalesce(p.content, ''))) @@ plainto_tsquery('simple', f_unaccent(CAST(:keyword AS text)))
+            OR f_unaccent(p.content) ILIKE '%' || f_unaccent(CAST(:keyword AS text)) || '%'
         ))
         AND (:hashtag IS NULL OR LOWER(h.name) = LOWER(CAST(:hashtag AS text)))
         AND (CAST(:creatorId AS uuid) IS NULL OR p.creator_id = CAST(:creatorId AS uuid))
@@ -49,7 +49,7 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
         AND (CAST(:destinationId AS uuid) IS NULL OR i.destination = CAST(:destinationId AS uuid))
         GROUP BY p.id
         ORDER BY
-            CASE WHEN :sortBy = 'relevance' THEN ts_rank(to_tsvector('simple', unaccent(coalesce(p.content, ''))), plainto_tsquery('simple', unaccent(coalesce(CAST(:keyword AS text), '')))) END DESC,
+            CASE WHEN :sortBy = 'relevance' THEN ts_rank(to_tsvector('simple', f_unaccent(coalesce(p.content, ''))), plainto_tsquery('simple', f_unaccent(coalesce(CAST(:keyword AS text), '')))) END DESC,
             p.created_at DESC
         LIMIT :limit OFFSET :offset
         """,
@@ -85,8 +85,8 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
         LEFT JOIN itinerary i ON p.itinerary_id = i.id
         WHERE p.is_deleted = false
         AND (:keyword IS NULL OR (
-            to_tsvector('simple', unaccent(coalesce(p.content, ''))) @@ plainto_tsquery('simple', unaccent(CAST(:keyword AS text)))
-            OR unaccent(p.content) ILIKE '%' || unaccent(CAST(:keyword AS text)) || '%'
+            to_tsvector('simple', f_unaccent(coalesce(p.content, ''))) @@ plainto_tsquery('simple', f_unaccent(CAST(:keyword AS text)))
+            OR f_unaccent(p.content) ILIKE '%' || f_unaccent(CAST(:keyword AS text)) || '%'
         ))
         AND (:hashtag IS NULL OR LOWER(h.name) = LOWER(CAST(:hashtag AS text)))
         AND (CAST(:creatorId AS uuid) IS NULL OR p.creator_id = CAST(:creatorId AS uuid))
@@ -119,7 +119,28 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
             @Param("originId") UUID originId,
             @Param("destinationId") UUID destinationId);
 
+    @Query("SELECT DISTINCT p FROM Post p " +
+           "LEFT JOIN FETCH p.creator " +
+           "LEFT JOIN FETCH p.itinerary " +
+           "WHERE p.softDeleteInfo.isDeleted = false")
     Page<Post> findBySoftDeleteInfoIsDeletedFalse(Pageable pageable);
 
-    Page<Post> findBySaveUsersIdAndSoftDeleteInfoIsDeletedFalse(UUID userId, Pageable pageable);
+    @Query("SELECT DISTINCT p FROM Post p " +
+           "JOIN p.saveUsers u " +
+           "LEFT JOIN FETCH p.creator " +
+           "LEFT JOIN FETCH p.itinerary " +
+           "WHERE u.id = :userId AND p.softDeleteInfo.isDeleted = false")
+    Page<Post> findBySaveUsersIdAndSoftDeleteInfoIsDeletedFalse(@Param("userId") UUID userId, Pageable pageable);
+
+    @Query(value = "SELECT EXISTS(SELECT 1 FROM like_post WHERE post_id = :postId AND user_id = :userId)", nativeQuery = true)
+    boolean existsLike(@Param("postId") UUID postId, @Param("userId") UUID userId);
+
+    @Query(value = "SELECT post_id FROM like_post WHERE user_id = :userId AND post_id IN :postIds", nativeQuery = true)
+    List<UUID> findLikedPostIds(@Param("postIds") List<UUID> postIds, @Param("userId") UUID userId);
+
+    @Query(value = "SELECT post_id FROM save_post WHERE user_id = :userId AND post_id IN :postIds", nativeQuery = true)
+    List<UUID> findSavedPostIds(@Param("postIds") List<UUID> postIds, @Param("userId") UUID userId);
+
+    @Query(value = "SELECT EXISTS(SELECT 1 FROM save_post WHERE post_id = :postId AND user_id = :userId)", nativeQuery = true)
+    boolean existsSave(@Param("postId") UUID postId, @Param("userId") UUID userId);
 }
