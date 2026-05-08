@@ -1,72 +1,89 @@
-// Smoke Test - Quick validation that system is working
-// Minimal load, tests only critical endpoints
+/**
+ * TripJoy k6 — SMOKE TEST
+ *
+ * Purpose: Verify the system is alive and all critical endpoints respond.
+ * Load:    1 VU, 2 minutes, extremely strict thresholds.
+ * Run:     k6 run scenarios/smoke-test.js [-e ENV=local]
+ */
 
-import http from 'k6/http';
-import { check, sleep } from 'k6';
-import { buildURL, config } from '../config/dev.js';
+import { sleep } from 'k6';
 import { smokeThresholds } from '../config/thresholds.js';
-import { login, getAuthHeaders } from '../lib/auth.js';
-import { checkSuccess } from '../lib/check-utils.js';
+import { env } from '../config/environments.js';
+import { login, authHeaders, introspect } from '../lib/auth.js';
+import {
+    scenarioGetMyProfile,
+    scenarioGetMyGroups,
+    scenarioGetAdministrativeLocations,
+    scenarioSearchLocations,
+    scenarioNearbyLocations,
+    scenarioBrowseFeed,
+    scenarioCheckNotifications,
+    scenarioGetConversations,
+    scenarioSearchUsers,
+} from '../lib/scenarios.js';
 
 export const options = {
-    vus: 2,
-    duration: '1m',
-    thresholds: smokeThresholds
+    vus: 1,
+    duration: '2m',
+    thresholds: smokeThresholds,
+    tags: { testType: 'smoke', project: 'tripjoy' },
 };
 
+// ──────────────────────────────────────────────────────────────
+// SETUP: login once, share token
+// ──────────────────────────────────────────────────────────────
 export function setup() {
-    // Login to get auth token for tests
-    const token = login(config.defaultUsers.user1.username, config.defaultUsers.user1.password);
+    const result = login(env.users.regular.username, env.users.regular.password);
+    if (!result) throw new Error('[smoke] Cannot login — aborting smoke test');
 
-    if (!token) {
-        console.error('Setup failed: Could not login with default user');
-        return null;
-    }
-
-    return { token };
+    console.log('[smoke] Setup complete. Token acquired.');
+    return { access_token: result.access_token };
 }
 
+// ──────────────────────────────────────────────────────────────
+// MAIN: run one complete health check per iteration
+// ──────────────────────────────────────────────────────────────
 export default function (data) {
-    if (!data || !data.token) {
-        console.error('No auth token available, skipping tests');
+    if (!data?.access_token) {
+        console.error('[smoke] No token available, skipping iteration');
         return;
     }
 
-    const headers = getAuthHeaders(data.token);
+    const headers = authHeaders(data.access_token);
 
-    // Test 1: Get my info
-    const myInfoRes = http.get(
-        buildURL('/users/me'),
-        { headers, tags: { name: 'get-me' } }
-    );
+    // ─── Auth ───────────────────────────────────────────
+    introspect(data.access_token);
+    sleep(0.2);
 
-    checkSuccess(myInfoRes, 'get-me');
-    sleep(0.5);
+    // ─── Users ──────────────────────────────────────────
+    scenarioGetMyProfile(headers);
 
-    // Test 2: Get my groups
-    const myGroupsRes = http.get(
-        buildURL('/groups'),
-        { headers, tags: { name: 'get-my-groups' } }
-    );
+    // ─── Groups ─────────────────────────────────────────
+    scenarioGetMyGroups(headers);
 
-    checkSuccess(myGroupsRes, 'get-my-groups');
-    sleep(0.5);
+    // ─── Location ───────────────────────────────────────
+    scenarioGetAdministrativeLocations(headers);
+    scenarioSearchLocations(headers);
+    scenarioNearbyLocations(headers);
 
-    // Test 3: Get locations (paginated)
-    const locationsRes = http.get(
-        buildURL('/locations?page=0&size=10'),
-        { headers, tags: { name: 'get-locations' } }
-    );
+    // ─── Posts ──────────────────────────────────────────
+    scenarioBrowseFeed(headers);
 
-    checkSuccess(locationsRes, 'get-locations');
-    sleep(0.5);
+    // ─── Notifications ──────────────────────────────────
+    scenarioCheckNotifications(headers);
 
-    // Test 4: Get notifications
-    const notificationsRes = http.get(
-        buildURL('/notifications?page=0&size=10'),
-        { headers, tags: { name: 'get-notifications' } }
-    );
+    // ─── Conversations ──────────────────────────────────
+    scenarioGetConversations(headers);
 
-    checkSuccess(notificationsRes, 'get-notifications');
-    sleep(1);
+    // ─── User Search ─────────────────────────────────────
+    scenarioSearchUsers(headers);
+
+    sleep(1); // Think time between iterations
+}
+
+// ──────────────────────────────────────────────────────────────
+// TEARDOWN: print summary
+// ──────────────────────────────────────────────────────────────
+export function teardown(data) {
+    console.log('[smoke] Smoke test completed.');
 }

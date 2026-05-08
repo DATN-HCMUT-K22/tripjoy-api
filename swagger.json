@@ -1,27 +1,22 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "Tripjoy API Service Documentation",
-    "description": "This API exposes Tripjoy endpoints.",
+    "title": "Tripjoy API",
     "contact": {
-      "name": "Nguyen Dinh Duc",
-      "url": "https://www.linkedin.com/in/dinhduc0794",
-      "email": "dinhduc0794.work@gmail.com"
+
     },
     "license": {
-      "name": "API License",
-      "url": "https://springdoc.org"
+
     },
     "version": "v1.0.0"
   },
   "servers": [
     {
       "url": "http://localhost:8080",
-      "description": "Local Environment"
+      "description": "Local Development Environment"
     },
     {
-      "url": "https://api.tripjoy.com",
-      "description": "Production Environment"
+
     }
   ],
   "security": [
@@ -35,16 +30,32 @@
       "description": "Manage travel groups (Core business)"
     },
     {
-      "name": "Travel Notebook",
-      "description": "Endpoints for managing travel notebooks"
+      "name": "Location",
+      "description": "Location management — Two-Tier Model (Administrative + POI)"
+    },
+    {
+      "name": "Expense",
+      "description": "Endpoints for managing itinerary expenses"
+    },
+    {
+      "name": "Messages",
+      "description": "Actions on specific messages (Like, Unlike, Search...)"
     },
     {
       "name": "Users",
       "description": "Endpoints for managing user accounts"
     },
     {
-      "name": "Messages",
-      "description": "Actions on specific messages (Like, Revoke...)"
+      "name": "Location Suggestions",
+      "description": "APIs for managing location suggestions in groups"
+    },
+    {
+      "name": "Media",
+      "description": "Upload, delete, and sign media files via Cloudinary"
+    },
+    {
+      "name": "System Config",
+      "description": "Endpoints for managing dynamic system parameters"
     },
     {
       "name": "Comment",
@@ -57,6 +68,10 @@
     {
       "name": "Feedback",
       "description": "Endpoints for submitting and managing feedback"
+    },
+    {
+      "name": "Notification",
+      "description": "Endpoints for managing user notifications"
     },
     {
       "name": "Itinerary",
@@ -79,12 +94,12 @@
       "description": "Endpoints for user authentication"
     },
     {
-      "name": "Location",
-      "description": "Endpoints for managing locations"
-    },
-    {
       "name": "Report",
       "description": "Endpoints for reporting inappropriate content"
+    },
+    {
+      "name": "Travel Notebook",
+      "description": "AI-powered travel guide: food, climate, culture for each itinerary"
     },
     {
       "name": "Admin",
@@ -92,14 +107,14 @@
     }
   ],
   "paths": {
-    "/api/v1/users/{userId}": {
+    "/api/v1/users/{userId}/roles": {
       "put": {
         "tags": [
           "Users"
         ],
-        "summary": "Update user by ID",
-        "description": "Updates an existing user's information by their unique ID.",
-        "operationId": "updateUser",
+        "summary": "Assign roles to user (Admin only)",
+        "description": "Assigns a set of roles to a specific user.",
+        "operationId": "assignRoles",
         "parameters": [
           {
             "name": "userId",
@@ -115,7 +130,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UserUpdateRequest"
+                "$ref": "#/components/schemas/UserRoleUpdateRequest"
               }
             }
           },
@@ -133,25 +148,26 @@
             }
           }
         }
-      },
-      "delete": {
+      }
+    },
+    "/api/v1/users/me/password": {
+      "put": {
         "tags": [
           "Users"
         ],
-        "summary": "Delete user by ID",
-        "description": "Deletes a user account from the system by their unique ID.",
-        "operationId": "deleteUser",
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
+        "summary": "Change my password",
+        "description": "Changes the authenticated user's password securely.",
+        "operationId": "changeMyPassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
+              }
             }
-          }
-        ],
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -268,46 +284,17 @@
         }
       }
     },
-    "/api/v1/notebooks/{notebookId}": {
-      "get": {
-        "tags": [
-          "Travel Notebook"
-        ],
-        "summary": "Get a single travel notebook by ID",
-        "operationId": "getNotebookById",
-        "parameters": [
-          {
-            "name": "notebookId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseTravelNotebookResponse"
-                }
-              }
-            }
-          }
-        }
-      },
+    "/api/v1/notifications/{notificationId}/read": {
       "put": {
         "tags": [
-          "Travel Notebook"
+          "Notification"
         ],
-        "summary": "Update a travel notebook",
-        "operationId": "updateNotebook",
+        "summary": "Mark notification as read",
+        "description": "Mark a single notification as read",
+        "operationId": "markAsRead",
         "parameters": [
           {
-            "name": "notebookId",
+            "name": "notificationId",
             "in": "path",
             "required": true,
             "schema": {
@@ -316,46 +303,70 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TravelNotebookRequest"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiResponseTravelNotebookResponse"
+                  "$ref": "#/components/schemas/ApiResponseVoid"
                 }
               }
             }
           }
         }
-      },
-      "delete": {
+      }
+    },
+    "/api/v1/notifications/{notificationId}/archive": {
+      "put": {
         "tags": [
-          "Travel Notebook"
+          "Notification"
         ],
-        "summary": "Delete a travel notebook",
-        "operationId": "deleteNotebook",
+        "summary": "Toggle archive",
+        "description": "Archive or unarchive a notification",
+        "operationId": "toggleArchive",
         "parameters": [
           {
-            "name": "notebookId",
+            "name": "notificationId",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/mark-all-read": {
+      "put": {
+        "tags": [
+          "Notification"
+        ],
+        "summary": "Mark all as read",
+        "description": "Mark all notifications as read for current user",
+        "operationId": "markAllAsRead",
         "responses": {
           "200": {
             "description": "OK",
@@ -405,7 +416,7 @@
         "tags": [
           "Location"
         ],
-        "summary": "Update a location",
+        "summary": "[ADMIN] Update location metadata",
         "operationId": "updateLocation",
         "parameters": [
           {
@@ -422,7 +433,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/LocationRequest"
+                "$ref": "#/components/schemas/LocationCreateRequest"
               }
             }
           },
@@ -445,7 +456,8 @@
         "tags": [
           "Location"
         ],
-        "summary": "Delete a location",
+        "summary": "[ADMIN] Soft-delete a location",
+        "description": "Marks location as deleted. Existing trips retain data; location will not appear in new searches.",
         "operationId": "deleteLocation",
         "parameters": [
           {
@@ -472,85 +484,13 @@
         }
       }
     },
-    "/api/v1/locations/{locationId}/info": {
-      "get": {
-        "tags": [
-          "Location"
-        ],
-        "summary": "Get detailed info (content) for a location",
-        "operationId": "getLocationInfo",
-        "parameters": [
-          {
-            "name": "locationId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseLocationInfoResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Location"
-        ],
-        "summary": "Update detailed info (content) for a location",
-        "operationId": "updateLocationInfo",
-        "parameters": [
-          {
-            "name": "locationId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LocationInfoRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseLocationInfoResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/itineraries/{itineraryId}": {
       "get": {
         "tags": [
           "Itinerary"
         ],
         "summary": "Get a single itinerary by ID",
-        "operationId": "getItineraryById",
+        "operationId": "getItinerary",
         "parameters": [
           {
             "name": "itineraryId",
@@ -739,9 +679,9 @@
     "/api/v1/itineraries/{itineraryId}/expenses/{expenseId}": {
       "put": {
         "tags": [
-          "Itinerary"
+          "Expense"
         ],
-        "summary": "Update a specific expense entry",
+        "summary": "Update an expense in an itinerary",
         "operationId": "updateExpense",
         "parameters": [
           {
@@ -788,9 +728,9 @@
       },
       "delete": {
         "tags": [
-          "Itinerary"
+          "Expense"
         ],
-        "summary": "Remove an expense entry",
+        "summary": "Remove an expense from an itinerary",
         "operationId": "removeExpense",
         "parameters": [
           {
@@ -901,7 +841,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Delete group (soft delete with cascade) - Only LEADER",
+        "summary": "Delete group (soft delete with cascade) - Only LEADER - OK",
         "operationId": "deleteGroup",
         "parameters": [
           {
@@ -996,6 +936,110 @@
           },
           {
             "name": "memberId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/conversations/{conversationId}": {
+      "get": {
+        "tags": [
+          "Conversations (Chat)"
+        ],
+        "summary": "Get conversation details",
+        "operationId": "getConversationById",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseConversationResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Conversations (Chat)"
+        ],
+        "summary": "Update conversation settings (name for group chats, isPinned)",
+        "operationId": "updateConversation",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConversationUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseConversationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/conversations/{conversationId}/read": {
+      "put": {
+        "tags": [
+          "Conversations (Chat)"
+        ],
+        "summary": "Reset unread count to 0 when user opens a chat",
+        "operationId": "resetUnreadCount",
+        "parameters": [
+          {
+            "name": "conversationId",
             "in": "path",
             "required": true,
             "schema": {
@@ -1125,16 +1169,36 @@
         "tags": [
           "Users"
         ],
-        "summary": "Get all users",
-        "description": "Retrieves a list of all registered users.",
+        "summary": "Get users (Admin only)",
+        "description": "Returns a paginated list of all users. Supports optional keyword filter on\nusername or email (case-insensitive LIKE).\n\n**No `q` param** → returns all users (paginated).\n**With `?q=keyword`** → filters by username OR email.\n\nRequires `ADMIN` role.\n",
         "operationId": "getUsers",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Optional keyword filter on username or email",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "nguyen"
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiResponseListUserResponse"
+                  "$ref": "#/components/schemas/ApiResponsePageUserResponse"
                 }
               }
             }
@@ -1177,7 +1241,7 @@
         "tags": [
           "Role"
         ],
-        "summary": "Get all roles",
+        "summary": "Get all roles - OK",
         "operationId": "getAll",
         "responses": {
           "200": {
@@ -1196,7 +1260,7 @@
         "tags": [
           "Role"
         ],
-        "summary": "Create a new role",
+        "summary": "Create a new role - OK",
         "operationId": "create",
         "requestBody": {
           "content": {
@@ -1329,9 +1393,18 @@
         "tags": [
           "Post"
         ],
-        "summary": "Get all posts (paginated)",
-        "operationId": "getAllPosts",
+        "summary": "Get / search posts (unified)",
+        "description": "Unified collection endpoint. All parameters are optional:\n- No params → paginated feed (all active posts, newest first)\n- `q` → full-text search on post content\n- `hashtag`, `creator_id`, budget/date/people ranges → multi-criteria filter\n- All active filters combine as AND conditions\n\nPagination: standard Spring params `page`, `size`, `sort`.\n",
+        "operationId": "getPosts",
         "parameters": [
+          {
+            "name": "params",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PostQueryParams"
+            }
+          },
           {
             "name": "pageable",
             "in": "query",
@@ -1385,25 +1458,6 @@
       }
     },
     "/api/v1/posts/{postId}/saves": {
-      "get": {
-        "tags": [
-          "Post"
-        ],
-        "summary": "Get saved posts for the current user",
-        "operationId": "getSavedPosts",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponsePostResponse"
-                }
-              }
-            }
-          }
-        }
-      },
       "post": {
         "tags": [
           "Post"
@@ -1612,7 +1666,7 @@
         "tags": [
           "Permission"
         ],
-        "summary": "Get all available permissions",
+        "summary": "Get all available permissions - OK",
         "operationId": "getAll_1",
         "responses": {
           "200": {
@@ -1631,7 +1685,7 @@
         "tags": [
           "Permission"
         ],
-        "summary": "Create a new permission",
+        "summary": "Create a new permission - OK",
         "operationId": "create_1",
         "requestBody": {
           "content": {
@@ -1657,23 +1711,25 @@
         }
       }
     },
-    "/api/v1/notebooks": {
+    "/api/v1/notebooks/{itineraryId}/ai-generate": {
       "post": {
         "tags": [
           "Travel Notebook"
         ],
-        "summary": "Create a new travel notebook",
-        "operationId": "createNotebook",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TravelNotebookRequest"
-              }
+        "summary": "AI Generate Travel Notebook",
+        "description": "Gọi AI Service (Gemini via Vertex AI) để sinh Travel Notebook cho lịch trình: ẩm thực, khí hậu, văn hóa. Nếu notebook đã tồn tại thì nội dung sẽ được cập nhật lại.",
+        "operationId": "generateNotebook",
+        "parameters": [
+          {
+            "name": "itineraryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
             }
-          },
-          "required": true
-        },
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -1688,13 +1744,154 @@
         }
       }
     },
-    "/api/v1/messages/{messageId}/likes": {
+    "/api/v1/messages/{messageId}/pin": {
       "post": {
         "tags": [
           "Messages"
         ],
-        "summary": "Like / Unlike message (Toggle)",
-        "operationId": "toggleLikeMessage",
+        "summary": "Pin a message in conversation",
+        "operationId": "pinMessage",
+        "parameters": [
+          {
+            "name": "messageId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "conversationId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Unpin a message from conversation",
+        "operationId": "unpinMessage",
+        "parameters": [
+          {
+            "name": "messageId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "conversationId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/messages/{messageId}/likes": {
+      "get": {
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Get users who liked a message",
+        "description": "Returns a list of users who have liked the specified message",
+        "operationId": "getMessageLikes",
+        "parameters": [
+          {
+            "name": "messageId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListUserSimpleResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Like a message",
+        "operationId": "likeMessage",
+        "parameters": [
+          {
+            "name": "messageId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Unlike a message",
+        "operationId": "unlikeMessage",
         "parameters": [
           {
             "name": "messageId",
@@ -1720,14 +1917,161 @@
         }
       }
     },
+    "/api/v1/media/upload/video": {
+      "post": {
+        "tags": [
+          "Media"
+        ],
+        "summary": "Upload a video (server-side)",
+        "description": "Uploads a video directly through the backend to Cloudinary.\nAccepts: MP4, MOV, AVI, WEBM. Max size: 50 MB.\nVideo is transcoded to MP4 with quality_auto.\nReturns a secure HTTPS URL to store in the entity (mediaUrls, etc.).\n",
+        "operationId": "uploadVideo",
+        "parameters": [
+          {
+            "name": "folder",
+            "in": "query",
+            "description": "Target folder on Cloudinary (e.g. 'tripjoy/messages/conversationId')",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "tripjoy/misc"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "file"
+                ],
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "description": "Video file (MP4/MOV/AVI/WEBM, max 50MB)",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseMediaUploadResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/media/upload/image": {
+      "post": {
+        "tags": [
+          "Media"
+        ],
+        "summary": "Upload an image (server-side)",
+        "description": "Uploads an image directly through the backend to Cloudinary.\nAccepts: JPG, PNG, WEBP, GIF, HEIC. Max size: 10 MB.\nImage is automatically converted to WebP/AVIF, resized to max 1080px width.\nReturns a secure HTTPS URL to store in the entity (avatarUrl, mediaUrls, etc.).\n",
+        "operationId": "uploadImage",
+        "parameters": [
+          {
+            "name": "folder",
+            "in": "query",
+            "description": "Target folder on Cloudinary (e.g. 'tripjoy/avatars/users')",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "tripjoy/misc"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "file"
+                ],
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "description": "Image file (JPG/PNG/WEBP/GIF/HEIC, max 10MB)",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseMediaUploadResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/locations": {
       "get": {
         "tags": [
           "Location"
         ],
-        "summary": "Get all locations (paginated)",
-        "operationId": "getAllLocations",
+        "summary": "[ADMIN] Paginated location list with filters",
+        "description": "For admin dashboards. Use /administrative, /search, or /nearby for user-facing flows.",
+        "operationId": "getLocations",
         "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CONTINENT",
+                "COUNTRY",
+                "REGION",
+                "PROVINCE",
+                "DISTRICT",
+                "POI"
+              ]
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "pageable",
             "in": "query",
@@ -1754,13 +2098,46 @@
         "tags": [
           "Location"
         ],
-        "summary": "Create a new location",
+        "summary": "[ADMIN] Create a location manually",
+        "description": "Admin-only. For pre-populating hot/trending locations or batch import. Automatically deduplicates by providerId or coordinates.",
         "operationId": "createLocation",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/LocationRequest"
+                "$ref": "#/components/schemas/LocationCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseLocationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/locations/resolve": {
+      "post": {
+        "tags": [
+          "Location"
+        ],
+        "summary": "Resolve (upsert) a location from map autocomplete",
+        "description": "Called by the frontend when a user picks a place from map autocomplete.\n\nBackend performs deduplication:\n1. If `provider_id` matches an existing record → return it\n2. If `admin_code` + `country_code` matches → return it\n3. If coordinates are within 50m of an existing record → return it\n4. Otherwise → create a new Location record\n\nReturns the canonical TripJoy location ID to use in trip_item / suggest_location.\n",
+        "operationId": "resolveLocation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocationCreateRequest"
               }
             }
           },
@@ -1884,6 +2261,24 @@
       }
     },
     "/api/v1/itineraries/{itineraryId}/favorites": {
+      "get": {
+        "tags": [
+          "Itinerary"
+        ],
+        "operationId": "getMyFavoriteItineraries",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListItineraryResponse"
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "Itinerary"
@@ -1948,9 +2343,9 @@
     "/api/v1/itineraries/{itineraryId}/expenses": {
       "get": {
         "tags": [
-          "Itinerary"
+          "Expense"
         ],
-        "summary": "Get all expenses for the itinerary",
+        "summary": "Get all expenses of an itinerary",
         "operationId": "getExpenses",
         "parameters": [
           {
@@ -1978,9 +2373,9 @@
       },
       "post": {
         "tags": [
-          "Itinerary"
+          "Expense"
         ],
-        "summary": "Add an expense to the itinerary",
+        "summary": "Add an expense to an itinerary",
         "operationId": "addExpense",
         "parameters": [
           {
@@ -2010,6 +2405,123 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiResponseExpenseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/itineraries/{itineraryId}/ai-suggest-location": {
+      "post": {
+        "tags": [
+          "Itinerary"
+        ],
+        "summary": "AI Suggest Location — get alternative location suggestions for a single trip item",
+        "description": "Provide the place_id of the trip item to replace. AI returns candidate locations without modifying the itinerary.",
+        "operationId": "aiSuggestLocation",
+        "parameters": [
+          {
+            "name": "itineraryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiSuggestLocationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListTripItemResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/itineraries/{itineraryId}/ai-modify": {
+      "post": {
+        "tags": [
+          "Itinerary"
+        ],
+        "summary": "AI Modify Itinerary — replace unwanted locations with AI-suggested alternatives",
+        "description": "Provide a list of Google Place IDs you don't want. The AI will pick suitable replacements and update the itinerary synchronously.",
+        "operationId": "aiModifyItinerary",
+        "parameters": [
+          {
+            "name": "itineraryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiModifyItineraryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseItineraryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/itineraries/ai-generate": {
+      "post": {
+        "tags": [
+          "Itinerary"
+        ],
+        "summary": "Generate AI Itinerary (Async)",
+        "operationId": "generateItinerary",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateItineraryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseItineraryResponse"
                 }
               }
             }
@@ -2184,10 +2696,10 @@
     "/api/v1/groups/{groupId}/location-suggestions": {
       "get": {
         "tags": [
-          "Groups"
+          "Location Suggestions"
         ],
-        "summary": "Get list of suggested locations",
-        "operationId": "getSuggestedLocations",
+        "summary": "Get all location suggestions for a group - OK",
+        "operationId": "getGroupSuggestions",
         "parameters": [
           {
             "name": "groupId",
@@ -2214,10 +2726,10 @@
       },
       "post": {
         "tags": [
-          "Groups"
+          "Location Suggestions"
         ],
-        "summary": "Suggest location for group",
-        "operationId": "suggestLocation",
+        "summary": "Suggest a location for the group - OK",
+        "operationId": "createSuggestion",
         "parameters": [
           {
             "name": "groupId",
@@ -2379,7 +2891,8 @@
         "tags": [
           "Conversations (Chat)"
         ],
-        "summary": "Create 1-on-1 conversation (Direct Chat)",
+        "summary": "Create or get existing 1-on-1 Direct conversation",
+        "description": "Idempotent: if a DIRECT conversation between the two users already exists,\nthe existing conversation is returned — no duplicate is created.\n\nOn creation, both users receive a `new_conversation` Socket.IO event on their\npersonal room (`user_{userId}`). The client should:\n1. Add the conversation to the inbox.\n2. Emit `join_conversation` with the conversationId to start receiving messages.\n",
         "operationId": "createDirectConversation",
         "requestBody": {
           "content": {
@@ -2410,7 +2923,8 @@
         "tags": [
           "Conversations (Chat)"
         ],
-        "summary": "Get message history (Paginated)",
+        "summary": "Get message history with cursor-based pagination",
+        "description": "Load messages in conversation using cursor-based pagination.\n- No params: Load latest 30 messages\n- ?before={timestamp}: Load older messages (scroll up)\n- ?after={timestamp}: Load newer messages\n- ?limit=50: Custom page size (max 100)\n",
         "operationId": "getMessages",
         "parameters": [
           {
@@ -2423,11 +2937,28 @@
             }
           },
           {
-            "name": "pageable",
+            "name": "before",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "$ref": "#/components/schemas/Pageable"
+              "type": "string"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -2437,7 +2968,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiResponsePageChatMessageResponse"
+                  "$ref": "#/components/schemas/ApiResponseMessageCursorResponse"
                 }
               }
             }
@@ -2632,7 +3163,7 @@
         "tags": [
           "Authentication"
         ],
-        "summary": "Register a new users account",
+        "summary": "Register a new users account - OK",
         "operationId": "register",
         "requestBody": {
           "content": {
@@ -2663,7 +3194,7 @@
         "tags": [
           "Authentication"
         ],
-        "summary": "Refresh authentication token",
+        "summary": "Refresh authentication token - OK",
         "operationId": "refreshToken",
         "requestBody": {
           "content": {
@@ -2694,7 +3225,7 @@
         "tags": [
           "Authentication"
         ],
-        "summary": "Log out from the system",
+        "summary": "Log out from the system - OK",
         "operationId": "logout",
         "requestBody": {
           "content": {
@@ -2725,7 +3256,7 @@
         "tags": [
           "Authentication"
         ],
-        "summary": "Log in to the system",
+        "summary": "Log in to the system - OK",
         "operationId": "login",
         "requestBody": {
           "content": {
@@ -2756,7 +3287,7 @@
         "tags": [
           "Authentication"
         ],
-        "summary": "Introspect authentication token",
+        "summary": "Introspect authentication token - OK",
         "operationId": "introspectToken",
         "requestBody": {
           "content": {
@@ -2813,13 +3344,56 @@
         }
       }
     },
+    "/api/v1/users/{userId}/status": {
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update user locked status (Admin only)",
+        "description": "Locks or unlocks a user account.",
+        "operationId": "updateUserStatus",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserStatusUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseUserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/users/me": {
       "get": {
         "tags": [
           "Users"
         ],
         "summary": "Get current user's info",
-        "description": "Retrieves the profile information of the currently authenticated user.",
+        "description": "Retrieves the profile information of the currently authenticated user. Full data including credits and email.",
         "operationId": "getMyInfo",
         "responses": {
           "200": {
@@ -2828,6 +3402,184 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiResponseUserResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update my profile",
+        "description": "Updates the authenticated user's profile information.",
+        "operationId": "updateMyProfile",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserProfileUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseUserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/configs/{key}": {
+      "patch": {
+        "tags": [
+          "System Config"
+        ],
+        "summary": "Update a system config (Admin only)",
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SystemConfigUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSystemConfigResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{userId}/profile": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get user's public profile",
+        "description": "Returns a public, non-sensitive profile of any user (avatar, bio, fullName). Cached 12h.",
+        "operationId": "getPublicProfile",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseUserPublicResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{userId}/admin-view": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Admin: Get full user details",
+        "description": "Returns complete user data including sensitive fields. Requires ADMIN role. Cached 12h (admin namespace).",
+        "operationId": "getUserDetailsForAdmin",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseUserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/search": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Global User Search",
+        "description": "Search users by username, fullName, email or phoneNumber. Use for search bar in end-user mode.",
+        "operationId": "searchUsers",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Keyword: username, fullName, email, phoneNumber",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePageUserSimpleResponse"
                 }
               }
             }
@@ -2867,13 +3619,203 @@
         }
       }
     },
-    "/api/v1/itineraries/{itineraryId}/notebooks": {
+    "/api/v1/posts/my-saves": {
       "get": {
         "tags": [
-          "Itinerary"
+          "Post"
         ],
-        "summary": "Get all travel notebooks for this itinerary",
-        "operationId": "getNotebooksForItinerary",
+        "summary": "Get saved posts for the current user",
+        "operationId": "getMySavedPosts",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePagePostResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications": {
+      "get": {
+        "tags": [
+          "Notification"
+        ],
+        "summary": "Get all notifications",
+        "description": "Get paginated list of notifications for current user",
+        "operationId": "getNotifications",
+        "parameters": [
+          {
+            "name": "unreadOnly",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePageNotificationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/{notificationId}": {
+      "get": {
+        "tags": [
+          "Notification"
+        ],
+        "summary": "Get notification by ID",
+        "description": "Get specific notification details",
+        "operationId": "getNotificationById",
+        "parameters": [
+          {
+            "name": "notificationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseNotificationResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Notification"
+        ],
+        "summary": "Delete notification",
+        "description": "Hard delete a notification (use archive for history)",
+        "operationId": "deleteNotification",
+        "parameters": [
+          {
+            "name": "notificationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/unread-count": {
+      "get": {
+        "tags": [
+          "Notification"
+        ],
+        "summary": "Get unread count",
+        "description": "Get count of unread notifications",
+        "operationId": "getUnreadCount",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseLong"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notebooks/{notebookId}": {
+      "get": {
+        "tags": [
+          "Travel Notebook"
+        ],
+        "summary": "Get a single travel notebook by ID",
+        "operationId": "getNotebookById",
+        "parameters": [
+          {
+            "name": "notebookId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTravelNotebookResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notebooks/{itineraryId}/itinerary": {
+      "get": {
+        "tags": [
+          "Travel Notebook"
+        ],
+        "summary": "Get travel notebook for a specific itinerary",
+        "operationId": "getNotebookByItinerary",
         "parameters": [
           {
             "name": "itineraryId",
@@ -2891,7 +3833,498 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiResponseListTravelNotebookResponse"
+                  "$ref": "#/components/schemas/ApiResponseTravelNotebookResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/messages/search": {
+      "get": {
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Search messages across all conversations",
+        "description": "Full-text search across ALL conversations the current user belongs to. Results are sorted by relevance and time.",
+        "operationId": "searchMessagesGlobal",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListMessageSearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/media/sign": {
+      "get": {
+        "tags": [
+          "Media"
+        ],
+        "summary": "Generate signed upload credentials (for React Native direct upload)",
+        "description": "Generates a signed signature + timestamp that React Native can use to\nupload files directly to Cloudinary without routing through the backend.\nThis avoids backend bandwidth usage for large files.\n\nFlow:\n1. React Native calls GET /api/v1/media/sign?folder=tripjoy/posts\n2. Backend returns signature, timestamp, apiKey, cloudName\n3. React Native uploads directly to https://api.cloudinary.com/v1_1/{cloudName}/image/upload\n4. React Native receives the secure_url from Cloudinary\n5. React Native includes this URL in POST /api/v1/posts body\n",
+        "operationId": "generateUploadSignature",
+        "parameters": [
+          {
+            "name": "folder",
+            "in": "query",
+            "description": "Target folder (e.g. 'tripjoy/posts')",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "tripjoy/misc"
+            }
+          },
+          {
+            "name": "uploadPreset",
+            "in": "query",
+            "description": "Optional Cloudinary upload preset name",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseMapStringObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/locations/search": {
+      "get": {
+        "tags": [
+          "Location"
+        ],
+        "summary": "Search locations by text and filters",
+        "description": "Full-text search with optional filters. Uses GIN-indexed tsvector for fast FTS.\n\nWhen `lat` + `lng` are provided, results are ranked by proximity (nearest first).\nOtherwise, ranked by FTS relevance + usage_count (popularity).\n\nSupports pagination via Spring `page` + `size` + `sort` parameters.\n",
+        "operationId": "searchLocations",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Text search query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Highlands Coffee"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Location type filter",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CONTINENT",
+                "COUNTRY",
+                "REGION",
+                "PROVINCE",
+                "DISTRICT",
+                "POI"
+              ]
+            },
+            "example": "POI"
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "description": "ISO 3166-1 alpha-2 country code",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "VN"
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "description": "City or province name",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Ho Chi Minh City"
+          },
+          {
+            "name": "district",
+            "in": "query",
+            "description": "District name",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Quận 1"
+          },
+          {
+            "name": "categories",
+            "in": "query",
+            "description": "POI category filter (multi-value)",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "example": "cafe"
+          },
+          {
+            "name": "lat",
+            "in": "query",
+            "description": "User latitude for proximity ranking",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            },
+            "example": 10.762622
+          },
+          {
+            "name": "lng",
+            "in": "query",
+            "description": "User longitude for proximity ranking",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            },
+            "example": 106.660172
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePageLocationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/locations/nearby": {
+      "get": {
+        "tags": [
+          "Location"
+        ],
+        "summary": "Find nearby locations by coordinates",
+        "description": "Searches for locations within a given radius using PostGIS ST_DWithin.\nResults are ordered by distance (nearest first).\n\n- Default radius: 5km (5000m). Max: 50km.\n- Default limit: 50. Max: 200.\n- Use `type=POI` to restrict to points of interest only.\n",
+        "operationId": "getNearbyLocations",
+        "parameters": [
+          {
+            "name": "lat",
+            "in": "query",
+            "description": "Latitude",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            },
+            "example": 10.762622
+          },
+          {
+            "name": "lng",
+            "in": "query",
+            "description": "Longitude",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            },
+            "example": 106.660172
+          },
+          {
+            "name": "radius",
+            "in": "query",
+            "description": "Radius in meters (default 5000, max 50000)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 5000
+            },
+            "example": 5000
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Location type filter",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CONTINENT",
+                "COUNTRY",
+                "REGION",
+                "PROVINCE",
+                "DISTRICT",
+                "POI"
+              ]
+            },
+            "example": "POI"
+          },
+          {
+            "name": "categories",
+            "in": "query",
+            "description": "POI category filter (multi-value)",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "example": "cafe"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Max results (default 50, max 200)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 50
+            },
+            "example": 50
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListLocationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/locations/autocomplete": {
+      "get": {
+        "tags": [
+          "Location"
+        ],
+        "summary": "Hybrid location autocomplete (DB + Google Places)",
+        "description": "Autocomplete suggestions for a partial text input.\n\n**Strategy:**\n1. Search TripJoy DB first (fast, free, ranked by popularity)\n2. If DB results sparse, call Google Places Autocomplete API\n3. Merge and deduplicate results (max 10 items)\n\n**After picking a result:**\n- `location_id` present → use directly\n- `location_id` null (source=GOOGLE_MAPS) → call `POST /locations/resolve` first\n",
+        "operationId": "autocomplete",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Partial text input (min 2 chars)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Highlands"
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "description": "City bias for results",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Ho Chi Minh City"
+          },
+          {
+            "name": "lat",
+            "in": "query",
+            "description": "User latitude for proximity ranking",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            },
+            "example": 10.762622
+          },
+          {
+            "name": "lng",
+            "in": "query",
+            "description": "User longitude for proximity ranking",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            },
+            "example": 106.660172
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListLocationAutocompleteItem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/locations/administrative": {
+      "get": {
+        "tags": [
+          "Location"
+        ],
+        "summary": "Get verified administrative locations (provinces, countries, etc.)",
+        "description": "Returns a flat list of verified, pre-seeded administrative locations.\nDesigned for itinerary origin/destination selectors and filter chips.\n\n**Global scale examples:**\n- `?type=PROVINCE&country=VN` → 63 Vietnam provinces\n- `?type=PROVINCE&country=TH` → Thailand provinces\n- `?type=COUNTRY`             → all available countries\n\n**Performance:** Results are HTTP-cached (Cache-Control: public, max-age=86400).\nFrontend should also cache in localStorage with 24h TTL.\n",
+        "operationId": "getAdministrativeLocations",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Location type",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CONTINENT",
+                "COUNTRY",
+                "REGION",
+                "PROVINCE",
+                "DISTRICT",
+                "POI"
+              ]
+            },
+            "example": "PROVINCE"
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "description": "ISO 3166-1 alpha-2 country code (omit for cross-country)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "VN"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListAdministrativeLocationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/itineraries/me": {
+      "get": {
+        "tags": [
+          "Itinerary"
+        ],
+        "operationId": "getMyItineraries",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListItineraryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/groups/search": {
+      "get": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Search groups by name",
+        "description": "Searches for groups whose name contains the given keyword. Uses case-insensitive LIKE matching.",
+        "operationId": "searchGroups",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListGroupResponse"
                 }
               }
             }
@@ -2931,13 +4364,13 @@
         }
       }
     },
-    "/api/v1/conversations/{conversationId}": {
+    "/api/v1/conversations/{conversationId}/pinned-messages": {
       "get": {
         "tags": [
           "Conversations (Chat)"
         ],
-        "summary": "Get conversation details",
-        "operationId": "getConversationById",
+        "summary": "Get all pinned messages in conversation",
+        "operationId": "getPinnedMessages",
         "parameters": [
           {
             "name": "conversationId",
@@ -2955,7 +4388,122 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiResponseConversationResponse"
+                  "$ref": "#/components/schemas/ApiResponseListChatMessageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/conversations/{conversationId}/messages/search": {
+      "get": {
+        "tags": [
+          "Conversations (Chat)"
+        ],
+        "summary": "Search messages in conversation",
+        "description": "Full-text search messages using PostgreSQL FTS. Supports partial matching and relevance ranking.",
+        "operationId": "searchMessages",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListMessageSearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/configs": {
+      "get": {
+        "tags": [
+          "System Config"
+        ],
+        "summary": "Get all system configs (Admin only)",
+        "operationId": "getAll_2",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListSystemConfigResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{userId}": {
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Delete user by ID",
+        "description": "Deletes a user account from the system by their unique ID.",
+        "operationId": "deleteUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
                 }
               }
             }
@@ -2968,7 +4516,7 @@
         "tags": [
           "Role"
         ],
-        "summary": "Delete a role",
+        "summary": "Delete a role - OK",
         "operationId": "delete",
         "parameters": [
           {
@@ -2999,7 +4547,7 @@
         "tags": [
           "Permission"
         ],
-        "summary": "Delete a permission by ID",
+        "summary": "Delete a permission by ID - OK",
         "operationId": "delete_1",
         "parameters": [
           {
@@ -3008,6 +4556,49 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/media/delete": {
+      "delete": {
+        "tags": [
+          "Media"
+        ],
+        "summary": "Delete a media file",
+        "description": "Permanently removes a file from Cloudinary by its publicId.",
+        "operationId": "deleteMedia",
+        "parameters": [
+          {
+            "name": "publicId",
+            "in": "query",
+            "description": "Cloudinary public_id (e.g. 'tripjoy/avatars/users/abc123')",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "resourceType",
+            "in": "query",
+            "description": "Resource type: 'image' or 'video'",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "image"
             }
           }
         ],
@@ -3056,61 +4647,73 @@
           }
         }
       }
+    },
+    "/api/v1/groups/{groupId}/location-suggestions/{suggestionId}": {
+      "delete": {
+        "tags": [
+          "Location Suggestions"
+        ],
+        "summary": "Delete a suggestion - Owner or Leader/Co-Leader - OK",
+        "operationId": "deleteSuggestion",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "suggestionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
-      "UserUpdateRequest": {
+      "UserRoleUpdateRequest": {
+        "required": [
+          "roles"
+        ],
         "type": "object",
         "properties": {
-          "password": {
-            "type": "string",
-            "description": "New password for the users (leave empty to keep current password)",
-            "example": "NewStr0ngP@ss"
-          },
-          "fullName": {
-            "type": "string",
-            "description": "Users's full name",
-            "example": "John Doe"
-          },
-          "bio": {
-            "type": "string",
-            "description": "Short biography or profile description",
-            "example": "Traveler. Photographer. Coffee lover."
-          },
-          "avatarUrl": {
-            "type": "string",
-            "description": "URL to the users's avatar image",
-            "format": "uri",
-            "example": "https://example.com/avatars/johndoe.jpg"
-          },
-          "dateOfBirth": {
-            "type": "string",
-            "description": "Users's date of birth",
-            "format": "date",
-            "example": "1990-01-01"
-          },
           "roles": {
+            "uniqueItems": true,
             "type": "array",
-            "description": "List of role names assigned to the users",
+            "description": "Set of role names",
             "example": [
               "USER",
               "ADMIN"
             ],
             "items": {
               "type": "string",
-              "description": "List of role names assigned to the users",
+              "description": "Set of role names",
               "example": "[\"USER\",\"ADMIN\"]"
             }
-          },
-          "locked": {
-            "type": "boolean"
-          },
-          "deleted": {
-            "type": "boolean"
           }
         },
-        "description": "Request payload for updating a users's profile"
+        "description": "Request payload for updating user roles (Admin only)"
       },
       "ApiResponseUserResponse": {
         "type": "object",
@@ -3171,7 +4774,7 @@
           },
           "dateOfBirth": {
             "type": "string",
-            "format": "date-time"
+            "format": "date"
           },
           "phoneNumber": {
             "type": "string"
@@ -3223,10 +4826,52 @@
           }
         }
       },
+      "ChangePasswordRequest": {
+        "required": [
+          "confirmPassword",
+          "newPassword",
+          "oldPassword"
+        ],
+        "type": "object",
+        "properties": {
+          "oldPassword": {
+            "type": "string",
+            "description": "Current password",
+            "example": "OldStr0ngP@ss"
+          },
+          "newPassword": {
+            "maxLength": 2147483647,
+            "minLength": 6,
+            "type": "string",
+            "description": "New password",
+            "example": "NewStr0ngP@ss"
+          },
+          "confirmPassword": {
+            "type": "string",
+            "description": "Confirm new password",
+            "example": "NewStr0ngP@ss"
+          }
+        },
+        "description": "Request payload for changing user password"
+      },
+      "ApiResponseVoid": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object"
+          }
+        }
+      },
       "PostRequest": {
         "required": [
-          "content",
-          "media_url"
+          "content"
         ],
         "type": "object",
         "properties": {
@@ -3250,10 +4895,26 @@
               "example": "[\"danang\",\"food\",\"beach\"]"
             }
           },
-          "media_url": {
+          "visibility": {
             "type": "string",
-            "description": "Media file's url of the blog",
-            "example": "https://res.cloudinary.com/your_cloud_name/image/upload/v1614770203/mbjf0dum95iijqwrxdzx.jpg"
+            "description": "Visibility of the post (PUBLIC or PRIVATE)",
+            "example": "PUBLIC",
+            "enum": [
+              "PUBLIC",
+              "PRIVATE"
+            ]
+          },
+          "media_urls": {
+            "type": "array",
+            "description": "List of Cloudinary secure URLs (upload via POST /api/v1/media/upload/image or /video first, then pass the URLs here)",
+            "example": [
+              "https://res.cloudinary.com/tripjoy/image/upload/v1/tripjoy/posts/img1.webp"
+            ],
+            "items": {
+              "type": "string",
+              "description": "List of Cloudinary secure URLs (upload via POST /api/v1/media/upload/image or /video first, then pass the URLs here)",
+              "example": "[\"https://res.cloudinary.com/tripjoy/image/upload/v1/tripjoy/posts/img1.webp\"]"
+            }
           },
           "itinerary_id": {
             "type": "string",
@@ -3361,6 +5022,13 @@
           "content": {
             "type": "string"
           },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "PUBLIC",
+              "PRIVATE"
+            ]
+          },
           "hashtags": {
             "uniqueItems": true,
             "type": "array",
@@ -3384,8 +5052,11 @@
             "type": "string",
             "format": "uuid"
           },
-          "media_url": {
-            "type": "string"
+          "media_urls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "shared_quantity": {
             "type": "integer",
@@ -3437,121 +5108,273 @@
           }
         }
       },
-      "TravelNotebookRequest": {
+      "AddressComponentsDto": {
+        "type": "object",
+        "properties": {
+          "city": {
+            "type": "string",
+            "description": "City/locality name (may differ from adminArea1 for cities within provinces)",
+            "example": "Nha Trang"
+          },
+          "neighborhood": {
+            "type": "string",
+            "description": "Neighborhood",
+            "example": "Khu phố 3"
+          },
+          "postcode": {
+            "type": "string",
+            "description": "Postal/ZIP code",
+            "example": "72500"
+          },
+          "country_name": {
+            "type": "string",
+            "description": "Country name",
+            "example": "Vietnam"
+          },
+          "country_code": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code",
+            "example": "VN"
+          },
+          "admin_area_level1": {
+            "type": "string",
+            "description": "Administrative area level 1 (state/province/tỉnh)",
+            "example": "Thành phố Hồ Chí Minh"
+          },
+          "admin_area_level1_code": {
+            "type": "string",
+            "description": "Admin area level 1 short code",
+            "example": "HCM"
+          },
+          "admin_area_level2": {
+            "type": "string",
+            "description": "Administrative area level 2 (district/quận/huyện)",
+            "example": "Quận 10"
+          },
+          "admin_area_level3": {
+            "type": "string",
+            "description": "Administrative area level 3 (commune/ward/phường/xã)",
+            "example": "Phường 14"
+          },
+          "sub_locality": {
+            "type": "string",
+            "description": "Sub-locality (ward/phường)",
+            "example": "Phường Vĩnh Nguyên"
+          },
+          "street_name": {
+            "type": "string",
+            "description": "Street/route name",
+            "example": "Đường Lý Thường Kiệt"
+          },
+          "address_number": {
+            "type": "string",
+            "description": "Building/street number",
+            "example": "268"
+          },
+          "plus_code": {
+            "type": "string",
+            "description": "Google Plus Code (Open Location Code)",
+            "example": "7P28+HM"
+          }
+        },
+        "description": "Structured address decomposition. Mirrors Google Maps address_components."
+      },
+      "LocationCreateRequest": {
         "required": [
-          "itinerary_id",
-          "name"
+          "latitude",
+          "longitude",
+          "name",
+          "provider"
         ],
         "type": "object",
         "properties": {
+          "provider": {
+            "type": "string",
+            "description": "Map data provider.",
+            "example": "GOOGLE_MAPS",
+            "enum": [
+              "MAPBOX",
+              "GOOGLE_MAPS",
+              "MANUAL"
+            ]
+          },
           "name": {
             "type": "string",
-            "description": "Name of the travel notebook",
-            "example": "Da Nang Food Guide"
+            "description": "Primary display name",
+            "example": "Đại Học Bách Khoa TP.HCM"
           },
-          "description": {
-            "type": "string",
-            "description": "Description or content of the notebook",
-            "example": "List of must-try dishes and restaurants."
-          },
-          "itinerary_id": {
-            "type": "string",
-            "description": "UUID of the itinerary this notebook belongs to",
-            "format": "uuid"
-          }
-        }
-      },
-      "ApiResponseTravelNotebookResponse": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
-          },
-          "data": {
-            "$ref": "#/components/schemas/TravelNotebookResponse"
-          }
-        }
-      },
-      "TravelNotebookResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "itinerary": {
-            "$ref": "#/components/schemas/ItinerarySimpleResponse"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "created_by": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updated_by": {
-            "type": "string",
-            "format": "uuid"
-          }
-        }
-      },
-      "LocationRequest": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Name of the location",
-            "example": "My Khe Beach"
-          },
-          "lat": {
+          "latitude": {
             "type": "number",
-            "description": "Latitude of the location",
+            "description": "Latitude (WGS84)",
             "format": "double",
-            "example": 16.0544
+            "example": 10.77324709
           },
-          "lng": {
+          "longitude": {
             "type": "number",
-            "description": "Longitude of the location",
+            "description": "Longitude (WGS84)",
             "format": "double",
-            "example": 108.2208
+            "example": 106.65976722
+          },
+          "viewport": {
+            "type": "string",
+            "description": "Viewport bounding box as JSON string. Google Maps: geometry.viewport. Mapbox: bbox array.",
+            "example": "{\"northeast\":{\"lat\":10.78,\"lng\":106.67},\"southwest\":{\"lat\":10.76,\"lng\":106.65}}"
+          },
+          "maki": {
+            "type": "string",
+            "description": "Maki icon identifier (Mapbox icon set)",
+            "example": "school"
+          },
+          "rating": {
+            "type": "number",
+            "description": "Average user rating (1.0–5.0). Google Maps: rating.",
+            "example": 4.3
           },
           "hotline": {
             "type": "string",
-            "description": "Hotline number for the location",
-            "example": "0905123456"
+            "description": "Contact phone number",
+            "example": "+84 28 3865 2670"
           },
-          "category": {
+          "website": {
             "type": "string",
-            "description": "Category of the location",
-            "example": "Beach"
+            "description": "Official website URL. Google Maps: website.",
+            "example": "https://www.hcmut.edu.vn"
           },
-          "is_open": {
+          "timezone": {
+            "type": "string",
+            "description": "IANA timezone identifier",
+            "example": "Asia/Ho_Chi_Minh"
+          },
+          "location_type": {
+            "type": "string",
+            "description": "Location type. Defaults to POI if not provided.",
+            "example": "POI",
+            "enum": [
+              "CONTINENT",
+              "COUNTRY",
+              "REGION",
+              "PROVINCE",
+              "DISTRICT",
+              "POI",
+              "CONTINENT",
+              "COUNTRY",
+              "REGION",
+              "PROVINCE",
+              "DISTRICT",
+              "POI"
+            ]
+          },
+          "provider_id": {
+            "type": "string",
+            "description": "Provider's unique place ID. Google Maps: place_id. Mapbox: mapbox_id.",
+            "example": "ChIJ0T2NLikpdTERgJJ6o5gX1Kw"
+          },
+          "name_en": {
+            "type": "string",
+            "description": "English / international name",
+            "example": "Ho Chi Minh City University of Technology"
+          },
+          "full_address": {
+            "type": "string",
+            "description": "Full formatted address from Map API (Google: formatted_address)",
+            "example": "268 Đ. Lý Thường Kiệt, Phường 14, Quận 10, Hồ Chí Minh, Vietnam"
+          },
+          "place_formatted": {
+            "type": "string",
+            "description": "Short place-level formatted address (Mapbox: place_formatted)",
+            "example": "Quận 10, Hồ Chí Minh, Vietnam"
+          },
+          "routable_latitude": {
+            "type": "number",
+            "description": "Routable entry-point latitude (navigation target, Mapbox: routable_points)",
+            "format": "double",
+            "example": 10.7732
+          },
+          "routable_longitude": {
+            "type": "number",
+            "description": "Routable entry-point longitude",
+            "format": "double",
+            "example": 106.6597
+          },
+          "address_components": {
+            "$ref": "#/components/schemas/AddressComponentsDto"
+          },
+          "poi_categories": {
+            "type": "array",
+            "description": "POI type categories. Google Maps: types[]. Mapbox: categories[].",
+            "example": [
+              "university",
+              "point_of_interest",
+              "establishment"
+            ],
+            "items": {
+              "type": "string",
+              "description": "POI type categories. Google Maps: types[]. Mapbox: categories[].",
+              "example": "[\"university\",\"point_of_interest\",\"establishment\"]"
+            }
+          },
+          "primary_type": {
+            "type": "string",
+            "description": "Most specific place type. Google Maps: primary_type.",
+            "example": "university"
+          },
+          "icon_url": {
+            "type": "string",
+            "description": "Map provider icon URL. Google Maps: icon.",
+            "example": "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/school-71.png"
+          },
+          "icon_background_color": {
+            "type": "string",
+            "description": "Icon background color hex. Google Maps: icon_background_color.",
+            "example": "#4DB546"
+          },
+          "user_ratings_total": {
+            "type": "integer",
+            "description": "Total ratings count. Google Maps: user_ratings_total.",
+            "format": "int32",
+            "example": 2847
+          },
+          "price_level": {
+            "type": "integer",
+            "description": "Price level (0–4). Google Maps: price_level.",
+            "format": "int32",
+            "example": 2
+          },
+          "operational_status": {
+            "type": "string",
+            "description": "Business/operational status. Google Maps: business_status.",
+            "example": "OPERATIONAL",
+            "enum": [
+              "OPERATIONAL",
+              "CLOSED_PERMANENTLY",
+              "CLOSED_TEMPORARILY",
+              "UNKNOWN"
+            ]
+          },
+          "opening_hours": {
+            "type": "string",
+            "description": "Opening hours as raw JSON. Google Maps: opening_hours.",
+            "example": "{\"open_now\":true,\"weekday_text\":[\"Monday: 7:30 AM – 5:00 PM\"]}"
+          },
+          "country_code": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code",
+            "example": "VN"
+          },
+          "admin_code": {
+            "type": "string",
+            "description": "Admin place code (province code for VN, ISO 3166-2 for global)",
+            "example": "79"
+          },
+          "wheelchair_accessible": {
             "type": "boolean",
-            "description": "Is the location currently open",
+            "description": "Wheelchair accessible. Google Maps: wheelchair_accessible_entrance.",
             "example": true
           },
-          "content": {
+          "raw_map_response": {
             "type": "string",
-            "description": "Detailed information or description of the location (from Location_info table)",
-            "example": "One of the most beautiful beaches in Da Nang."
+            "description": "Full raw JSON response from the map provider API. Stored as JSONB for forward-compatibility.",
+            "example": "{\"place_id\":\"ChIJ...\",\"name\":\"...\",\"types\":[...]}"
           }
         }
       },
@@ -3575,84 +5398,182 @@
         "properties": {
           "id": {
             "type": "string",
+            "description": "Internal TripJoy location ID (UUID)",
             "format": "uuid"
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Primary display name",
+            "example": "Đại Học Bách Khoa TP.HCM"
           },
-          "lat": {
+          "latitude": {
             "type": "number",
-            "format": "double"
+            "description": "Latitude (WGS84)",
+            "format": "double",
+            "example": 10.77324709
           },
-          "lng": {
+          "longitude": {
             "type": "number",
-            "format": "double"
+            "description": "Longitude (WGS84)",
+            "format": "double",
+            "example": 106.65976722
+          },
+          "viewport": {
+            "type": "string",
+            "description": "Recommended map viewport bounding box (JSONB)"
+          },
+          "maki": {
+            "type": "string",
+            "description": "Maki icon identifier (Mapbox icon set)",
+            "example": "school"
+          },
+          "rating": {
+            "type": "number",
+            "description": "Average user rating (1.0–5.0)",
+            "example": 4.3
           },
           "hotline": {
-            "type": "string"
-          },
-          "category": {
-            "type": "string"
-          },
-          "isOpen": {
-            "type": "boolean"
-          },
-          "content": {
-            "type": "string"
-          }
-        }
-      },
-      "LocationInfoRequest": {
-        "required": [
-          "content",
-          "contentType"
-        ],
-        "type": "object",
-        "properties": {
-          "content": {
             "type": "string",
-            "description": "Detailed content for the location (e.g., HTML, Markdown)"
+            "description": "Contact phone number",
+            "example": "+84 28 3865 2670"
           },
-          "contentType": {
+          "website": {
             "type": "string",
-            "description": "Type of the content (e.g., 'Medical', 'Cultural', 'Recreational')"
-          }
-        }
-      },
-      "ApiResponseLocationInfoResponse": {
-        "type": "object",
-        "properties": {
-          "code": {
+            "description": "Official website URL",
+            "example": "https://www.hcmut.edu.vn"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "IANA timezone identifier",
+            "example": "Asia/Ho_Chi_Minh"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Map data provider",
+            "example": "GOOGLE_MAPS"
+          },
+          "location_type": {
+            "type": "string",
+            "description": "Location type in the Two-Tier Model",
+            "example": "POI",
+            "enum": [
+              "CONTINENT",
+              "COUNTRY",
+              "REGION",
+              "PROVINCE",
+              "DISTRICT",
+              "POI"
+            ]
+          },
+          "is_verified": {
+            "type": "boolean",
+            "description": "Whether this location is admin-verified (e.g., pre-seeded province)",
+            "example": false
+          },
+          "usage_count": {
             "type": "integer",
-            "format": "int32"
+            "description": "Number of times this location has been used across the platform",
+            "format": "int32",
+            "example": 142
           },
-          "message": {
-            "type": "string"
-          },
-          "data": {
-            "$ref": "#/components/schemas/LocationInfoResponse"
-          }
-        }
-      },
-      "LocationInfoResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
+          "name_en": {
             "type": "string",
-            "format": "uuid"
+            "description": "English/International name",
+            "example": "Ho Chi Minh City University of Technology"
           },
-          "content": {
-            "type": "string"
-          },
-          "contentType": {
-            "type": "string"
-          },
-          "location_id": {
-            "type": "string"
-          },
-          "updated_at": {
+          "full_address": {
             "type": "string",
-            "format": "date-time"
+            "description": "Full formatted address from Map API",
+            "example": "268 Đ. Lý Thường Kiệt, Ho Chi Minh City, Vietnam"
+          },
+          "place_formatted": {
+            "type": "string",
+            "description": "Short place-level formatted address",
+            "example": "Quận 10, Hồ Chí Minh, Vietnam"
+          },
+          "routable_lat": {
+            "type": "number",
+            "description": "Routable entry-point latitude (for navigation)",
+            "format": "double",
+            "example": 10.7732
+          },
+          "routable_lng": {
+            "type": "number",
+            "description": "Routable entry-point longitude (for navigation)",
+            "format": "double",
+            "example": 106.6597
+          },
+          "address_components": {
+            "$ref": "#/components/schemas/AddressComponentsDto"
+          },
+          "categories": {
+            "type": "array",
+            "description": "POI categories from map provider",
+            "example": [
+              "university",
+              "point_of_interest",
+              "establishment"
+            ],
+            "items": {
+              "type": "string",
+              "description": "POI categories from map provider",
+              "example": "[\"university\",\"point_of_interest\",\"establishment\"]"
+            }
+          },
+          "primary_type": {
+            "type": "string",
+            "description": "Most specific place type",
+            "example": "university"
+          },
+          "icon_url": {
+            "type": "string",
+            "description": "Map provider icon URL"
+          },
+          "icon_background_color": {
+            "type": "string",
+            "description": "Icon background color hex",
+            "example": "#4DB546"
+          },
+          "user_ratings_total": {
+            "type": "integer",
+            "description": "Total number of user ratings",
+            "format": "int32",
+            "example": 2847
+          },
+          "price_level": {
+            "type": "integer",
+            "description": "Price level (0=free, 1=$, 2=$$, 3=$$$, 4=$$$$)",
+            "format": "int32",
+            "example": 2
+          },
+          "operational_status": {
+            "type": "string",
+            "description": "Business/operational status",
+            "example": "OPERATIONAL"
+          },
+          "opening_hours": {
+            "type": "string",
+            "description": "Opening hours (raw JSONB)"
+          },
+          "country_code": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code",
+            "example": "VN"
+          },
+          "admin_code": {
+            "type": "string",
+            "description": "Admin place code (province code for VN, ISO 3166-2 for global)",
+            "example": "79"
+          },
+          "wheelchair_accessible": {
+            "type": "boolean",
+            "description": "Wheelchair accessible",
+            "example": true
+          },
+          "provider_id": {
+            "type": "string",
+            "description": "Provider's unique place ID",
+            "example": "ChIJ0T2NLikpdTERgJJ6o5gX1Kw"
           }
         }
       },
@@ -3709,6 +5630,31 @@
             "description": "Detailed description of the itinerary",
             "example": "A 5-day trip to explore beaches and food in Da Nang."
           },
+          "destination": {
+            "type": "string",
+            "description": "Destination of the trip",
+            "example": "Da Nang"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status of the itinerary",
+            "example": "DRAFT"
+          },
+          "themes": {
+            "uniqueItems": true,
+            "type": "array",
+            "description": "Set of themes for the itinerary (from Itinerary_theme table)",
+            "example": [
+              "Beach",
+              "Food",
+              "Culture"
+            ],
+            "items": {
+              "type": "string",
+              "description": "Set of themes for the itinerary (from Itinerary_theme table)",
+              "example": "[\"Beach\",\"Food\",\"Culture\"]"
+            }
+          },
           "start_date": {
             "type": "string",
             "description": "Start date and time of the trip (ISO 8601 format)",
@@ -3731,31 +5677,6 @@
             "format": "double",
             "example": 10000000
           },
-          "destination": {
-            "type": "string",
-            "description": "Destination of the trip",
-            "example": "Da Nang"
-          },
-          "status": {
-            "type": "string",
-            "description": "Status of the itinerary",
-            "example": "PLANNING"
-          },
-          "themes": {
-            "uniqueItems": true,
-            "type": "array",
-            "description": "Set of themes for the itinerary (from Itinerary_theme table)",
-            "example": [
-              "Beach",
-              "Food",
-              "Culture"
-            ],
-            "items": {
-              "type": "string",
-              "description": "Set of themes for the itinerary (from Itinerary_theme table)",
-              "example": "[\"Beach\",\"Food\",\"Culture\"]"
-            }
-          },
           "group_id": {
             "type": "string",
             "description": "UUID of the group this itinerary belongs to",
@@ -3777,16 +5698,10 @@
       },
       "TripItemRequest": {
         "required": [
-          "location_id",
           "start_time"
         ],
         "type": "object",
         "properties": {
-          "start_time": {
-            "type": "string",
-            "description": "Start time of this specific trip item (ISO 8601 format)",
-            "format": "date-time"
-          },
           "duration": {
             "type": "integer",
             "description": "Duration of the activity in minutes",
@@ -3798,10 +5713,20 @@
             "description": "A note for this trip item",
             "example": "Remember to buy sunscreen."
           },
+          "start_time": {
+            "type": "string",
+            "description": "Start time of this specific trip item (ISO 8601 format)",
+            "format": "date-time"
+          },
           "location_id": {
             "type": "string",
-            "description": "UUID of the Location for this trip item",
+            "description": "UUID of the Location for this trip item (if already in DB)",
             "format": "uuid"
+          },
+          "place_id": {
+            "type": "string",
+            "description": "Google Place ID (used when picking AI suggestion not yet in DB)",
+            "example": "ChIJ0T2NLikpdTERgJJ6o5gX1Kw"
           }
         }
       },
@@ -3834,7 +5759,22 @@
             "type": "string"
           },
           "status": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "GENERATING",
+              "FAILED",
+              "DRAFT",
+              "CONFIRMED",
+              "IN_PROGRESS",
+              "COMPLETED"
+            ]
+          },
+          "themes": {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "created_at": {
             "type": "string",
@@ -3866,6 +5806,16 @@
           },
           "created_by_user": {
             "$ref": "#/components/schemas/UserSimpleResponse"
+          },
+          "budget_estimate": {
+            "type": "number"
+          },
+          "total_expense": {
+            "type": "number"
+          },
+          "people_quantity": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -4091,9 +6041,6 @@
           "avatar": {
             "type": "string"
           },
-          "theme": {
-            "type": "string"
-          },
           "isDeleted": {
             "type": "boolean"
           },
@@ -4129,6 +6076,10 @@
           "chatbot_count": {
             "type": "integer",
             "format": "int32"
+          },
+          "iti_count": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -4162,6 +6113,116 @@
           },
           "data": {
             "$ref": "#/components/schemas/GroupMemberResponse"
+          }
+        }
+      },
+      "ConversationUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string",
+            "description": "Conversation name (only for group chats)",
+            "example": "Tokyo Trip 2024"
+          },
+          "is_pinned": {
+            "type": "boolean",
+            "description": "Pin/unpin the conversation in the list",
+            "example": true
+          }
+        }
+      },
+      "ApiResponseConversationResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ConversationResponse"
+          }
+        }
+      },
+      "ChatMessageSimpleResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID of the replied message",
+            "format": "uuid"
+          },
+          "message_content": {
+            "type": "string",
+            "description": "Short text content of the replied message"
+          },
+          "message_type": {
+            "type": "string",
+            "description": "Type of the message (e.g., TEXT, IMAGE)"
+          },
+          "sender": {
+            "$ref": "#/components/schemas/UserSimpleResponse"
+          }
+        }
+      },
+      "ConversationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "avatar": {
+            "type": "string"
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserSimpleResponse"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "group_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "group_name": {
+            "type": "string"
+          },
+          "last_message": {
+            "$ref": "#/components/schemas/ChatMessageSimpleResponse"
+          },
+          "unread_count": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "is_pinned": {
+            "type": "boolean"
           }
         }
       },
@@ -4415,21 +6476,6 @@
           }
         }
       },
-      "ApiResponseVoid": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
-          },
-          "data": {
-            "type": "object"
-          }
-        }
-      },
       "PermissionRequest": {
         "type": "object",
         "properties": {
@@ -4453,6 +6499,237 @@
           },
           "data": {
             "$ref": "#/components/schemas/PermissionResponse"
+          }
+        }
+      },
+      "ApiResponseTravelNotebookResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/TravelNotebookResponse"
+          }
+        }
+      },
+      "TravelNotebookResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "food": {
+            "type": "string"
+          },
+          "climate": {
+            "type": "string"
+          },
+          "culture": {
+            "type": "string"
+          },
+          "itinerary": {
+            "$ref": "#/components/schemas/ItinerarySimpleResponse"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "emergency_contacts": {
+            "type": "string"
+          }
+        }
+      },
+      "ApiResponseMediaUploadResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/MediaUploadResponse"
+          }
+        }
+      },
+      "MediaUploadResponse": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "HTTP URL of the uploaded media",
+            "example": "http://res.cloudinary.com/tripjoy/image/upload/v1614770203/tripjoy/avatars/users/img.jpg"
+          },
+          "format": {
+            "type": "string",
+            "description": "File format after processing",
+            "example": "webp"
+          },
+          "width": {
+            "type": "integer",
+            "description": "Width in pixels (images only)",
+            "format": "int32",
+            "example": 1080
+          },
+          "height": {
+            "type": "integer",
+            "description": "Height in pixels (images only)",
+            "format": "int32",
+            "example": 1080
+          },
+          "bytes": {
+            "type": "integer",
+            "description": "File size in bytes",
+            "format": "int64",
+            "example": 204800
+          },
+          "duration": {
+            "type": "number",
+            "description": "Duration in seconds (videos only)",
+            "format": "double",
+            "example": 30.5
+          },
+          "secure_url": {
+            "type": "string",
+            "description": "HTTPS URL of the uploaded media (use this in production)",
+            "example": "https://res.cloudinary.com/tripjoy/image/upload/v1614770203/tripjoy/avatars/users/img.jpg"
+          },
+          "public_id": {
+            "type": "string",
+            "description": "Cloudinary public ID, used for deletion or further transformations",
+            "example": "tripjoy/avatars/users/abc123"
+          },
+          "resource_type": {
+            "type": "string",
+            "description": "Resource type: image or video",
+            "example": "image"
+          }
+        },
+        "description": "Response after uploading a media file to Cloudinary"
+      },
+      "AiSuggestLocationRequest": {
+        "required": [
+          "unwantedPlaceId"
+        ],
+        "type": "object",
+        "properties": {
+          "unwantedPlaceId": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "ApiResponseListTripItemResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TripItemResponse"
+            }
+          }
+        }
+      },
+      "AiModifyItineraryRequest": {
+        "required": [
+          "unwantedPlaceIds"
+        ],
+        "type": "object",
+        "properties": {
+          "unwantedPlaceIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "GenerateItineraryRequest": {
+        "required": [
+          "destination",
+          "endDate",
+          "latitude",
+          "longitude",
+          "startDate"
+        ],
+        "type": "object",
+        "properties": {
+          "destination": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "peopleQuantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "budgetEstimate": {
+            "type": "number",
+            "format": "double"
+          },
+          "themes": {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "suggestLocations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
@@ -4496,21 +6773,22 @@
         }
       },
       "SuggestLocationRequest": {
-        "required": [
-          "location_id"
-        ],
         "type": "object",
         "properties": {
-          "location_id": {
-            "type": "string",
-            "description": "The UUID of the Location being suggested",
-            "format": "uuid",
-            "example": "a1b2c3d4-e5f6-7890-1234-567890abcdef"
-          },
           "notes": {
+            "maxLength": 1000,
             "type": "string",
             "description": "Optional notes about why this location is suggested",
             "example": "This place looks great for our first day!"
+          },
+          "location_id": {
+            "type": "string",
+            "description": "UUID of existing location (use this OR locationData, not both)",
+            "format": "uuid",
+            "example": "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+          },
+          "location_data": {
+            "$ref": "#/components/schemas/LocationCreateRequest"
           }
         }
       },
@@ -4718,96 +6996,6 @@
           }
         }
       },
-      "ApiResponseConversationResponse": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
-          },
-          "data": {
-            "$ref": "#/components/schemas/ConversationResponse"
-          }
-        }
-      },
-      "ChatMessageSimpleResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "ID of the replied message",
-            "format": "uuid"
-          },
-          "message_content": {
-            "type": "string",
-            "description": "Short text content of the replied message"
-          },
-          "message_type": {
-            "type": "string",
-            "description": "Type of the message (e.g., TEXT, IMAGE)"
-          },
-          "sender": {
-            "$ref": "#/components/schemas/UserSimpleResponse"
-          }
-        }
-      },
-      "ConversationResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "type": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "avatar": {
-            "type": "string"
-          },
-          "members": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UserSimpleResponse"
-            }
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "created_by": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updated_by": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "group_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "last_message": {
-            "$ref": "#/components/schemas/ChatMessageSimpleResponse"
-          },
-          "unread_count": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "is_pinned": {
-            "type": "boolean"
-          }
-        }
-      },
       "ChatMessageRequest": {
         "required": [
           "message_content"
@@ -4829,10 +7017,10 @@
             "description": "Media URL when message_type is IMAGE",
             "example": "http://image.url/img.png"
           },
-          "share_post_url": {
+          "shared_post_id": {
             "type": "string",
-            "description": "Post URL when message_type is SHARE_POST",
-            "example": "http://tripjoy/posts/abc"
+            "description": "Post ID when message_type is SHARE_POST",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
           },
           "parent_message_id": {
             "type": "string",
@@ -4890,8 +7078,8 @@
           "media_url": {
             "type": "string"
           },
-          "share_post_url": {
-            "type": "string"
+          "shared_post": {
+            "$ref": "#/components/schemas/PostSimpleResponse"
           },
           "is_bot": {
             "type": "boolean"
@@ -4912,6 +7100,47 @@
           },
           "parent_message": {
             "$ref": "#/components/schemas/ChatMessageSimpleResponse"
+          },
+          "is_pinned": {
+            "type": "boolean",
+            "description": "Whether this message is pinned in the conversation"
+          },
+          "like_count": {
+            "type": "integer",
+            "description": "Total number of likes on this message",
+            "format": "int32"
+          },
+          "is_liked_by_current_user": {
+            "type": "boolean",
+            "description": "Whether the current user has liked this message"
+          }
+        }
+      },
+      "PostSimpleResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "visibility": {
+            "type": "string",
+            "description": "Visibility of the post",
+            "enum": [
+              "PUBLIC",
+              "PRIVATE"
+            ]
+          },
+          "content_snippet": {
+            "type": "string",
+            "description": "Short snippet of the post content"
+          },
+          "thumbnail_url": {
+            "type": "string",
+            "description": "First media URL of the post to act as a thumbnail"
+          },
+          "author": {
+            "$ref": "#/components/schemas/UserSimpleResponse"
           }
         }
       },
@@ -4941,11 +7170,21 @@
       "AuthenticationResponse": {
         "type": "object",
         "properties": {
-          "token": {
-            "type": "string"
-          },
           "authenticated": {
             "type": "boolean"
+          },
+          "access_token": {
+            "type": "string"
+          },
+          "refresh_token": {
+            "type": "string"
+          },
+          "expires_in": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "token_type": {
+            "type": "string"
           }
         }
       },
@@ -5070,25 +7309,68 @@
           }
         }
       },
-      "ApiResponseListUserResponse": {
+      "UserStatusUpdateRequest": {
+        "required": [
+          "isLocked"
+        ],
         "type": "object",
         "properties": {
-          "code": {
-            "type": "integer",
-            "format": "int32"
+          "isLocked": {
+            "type": "boolean",
+            "description": "Status indicating whether the user is locked out",
+            "example": true
+          }
+        },
+        "description": "Request payload for updating user status (Admin only)"
+      },
+      "UserProfileUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "description": "User's full name",
+            "example": "John Doe"
           },
-          "message": {
+          "phoneNumber": {
+            "type": "string",
+            "description": "User's phone number",
+            "example": "0123456789"
+          },
+          "bio": {
+            "type": "string",
+            "description": "Short biography or profile description",
+            "example": "Traveler. Photographer. Coffee lover."
+          },
+          "avatarUrl": {
+            "type": "string",
+            "description": "URL to the user's avatar image",
+            "format": "uri",
+            "example": "https://example.com/avatars/johndoe.jpg"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "description": "User's date of birth",
+            "format": "date",
+            "example": "1990-01-01"
+          }
+        },
+        "description": "Request payload for updating a user's profile"
+      },
+      "SystemConfigUpdateRequest": {
+        "required": [
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "value": {
             "type": "string"
           },
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UserResponse"
-            }
+          "description": {
+            "type": "string"
           }
         }
       },
-      "ApiResponseListRoleResponse": {
+      "ApiResponseSystemConfigResponse": {
         "type": "object",
         "properties": {
           "code": {
@@ -5099,10 +7381,34 @@
             "type": "string"
           },
           "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/RoleResponse"
-            }
+            "$ref": "#/components/schemas/SystemConfigResponse"
+          }
+        }
+      },
+      "SystemConfigResponse": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "data_type": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_by": {
+            "type": "string"
           }
         }
       },
@@ -5127,7 +7433,7 @@
           }
         }
       },
-      "ApiResponsePageReportResponse": {
+      "ApiResponsePageUserResponse": {
         "type": "object",
         "properties": {
           "code": {
@@ -5138,26 +7444,20 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/PageReportResponse"
+            "$ref": "#/components/schemas/PageUserResponse"
           }
         }
       },
-      "PageReportResponse": {
+      "PageUserResponse": {
         "type": "object",
         "properties": {
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
           "totalElements": {
             "type": "integer",
             "format": "int64"
           },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
           },
           "size": {
             "type": "integer",
@@ -5166,7 +7466,7 @@
           "content": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ReportResponse"
+              "$ref": "#/components/schemas/UserResponse"
             }
           },
           "number": {
@@ -5178,6 +7478,12 @@
             "items": {
               "$ref": "#/components/schemas/SortObject"
             }
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
           },
           "numberOfElements": {
             "type": "integer",
@@ -5204,16 +7510,16 @@
               "$ref": "#/components/schemas/SortObject"
             }
           },
-          "pageNumber": {
-            "type": "integer",
-            "format": "int32"
+          "paged": {
+            "type": "boolean"
           },
           "pageSize": {
             "type": "integer",
             "format": "int32"
           },
-          "paged": {
-            "type": "boolean"
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
           },
           "unpaged": {
             "type": "boolean"
@@ -5240,6 +7546,295 @@
           }
         }
       },
+      "ApiResponseUserPublicResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/UserPublicResponse"
+          }
+        }
+      },
+      "UserPublicResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "bio": {
+            "type": "string"
+          },
+          "avatarUrl": {
+            "type": "string"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date"
+          },
+          "emailVerified": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ApiResponsePageUserSimpleResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PageUserSimpleResponse"
+          }
+        }
+      },
+      "PageUserSimpleResponse": {
+        "type": "object",
+        "properties": {
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserSimpleResponse"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SortObject"
+            }
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ApiResponseListRoleResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoleResponse"
+            }
+          }
+        }
+      },
+      "ApiResponsePageReportResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PageReportResponse"
+          }
+        }
+      },
+      "PageReportResponse": {
+        "type": "object",
+        "properties": {
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportResponse"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SortObject"
+            }
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PostQueryParams": {
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string",
+            "description": "Full-text search keyword on post content",
+            "example": "Đà Nẵng cafe"
+          },
+          "hashtag": {
+            "type": "string",
+            "description": "Filter by exact hashtag (with or without #)",
+            "example": "dulich"
+          },
+          "sort": {
+            "pattern": "^(relevance|newest)$",
+            "type": "string",
+            "description": "Sort strategy:\n- `relevance`: FTS ranking (only meaningful when `q` is provided)\n- `newest`: sort by creation date desc (default)\n",
+            "default": "newest",
+            "enum": [
+              "relevance",
+              "newest"
+            ]
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "creator_id": {
+            "type": "string",
+            "description": "Filter by creator UUID",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "itinerary_id": {
+            "type": "string",
+            "description": "Filter by attached itinerary UUID",
+            "format": "uuid"
+          },
+          "start_date": {
+            "type": "string",
+            "description": "Trip start date (inclusive), ISO-8601",
+            "format": "date-time"
+          },
+          "end_date": {
+            "type": "string",
+            "description": "Trip end date (inclusive), ISO-8601",
+            "format": "date-time"
+          },
+          "min_days": {
+            "minimum": 0,
+            "type": "integer",
+            "description": "Minimum trip duration in days",
+            "format": "int32",
+            "example": 3
+          },
+          "max_days": {
+            "minimum": 0,
+            "type": "integer",
+            "description": "Maximum trip duration in days",
+            "format": "int32",
+            "example": 7
+          },
+          "min_budget": {
+            "minimum": 0,
+            "type": "number",
+            "description": "Minimum estimated budget (VND)",
+            "example": 500000
+          },
+          "max_budget": {
+            "minimum": 0,
+            "type": "number",
+            "description": "Maximum estimated budget (VND)",
+            "example": 5000000
+          },
+          "min_people": {
+            "minimum": 1,
+            "type": "integer",
+            "description": "Minimum group size",
+            "format": "int32",
+            "example": 2
+          },
+          "max_people": {
+            "minimum": 1,
+            "type": "integer",
+            "description": "Maximum group size",
+            "format": "int32",
+            "example": 10
+          },
+          "origin_id": {
+            "type": "string",
+            "description": "Filter by origin location UUID",
+            "format": "uuid"
+          },
+          "destination_id": {
+            "type": "string",
+            "description": "Filter by destination location UUID",
+            "format": "uuid"
+          }
+        },
+        "description": "Query parameters for filtering/searching posts (all fields optional)"
+      },
       "ApiResponsePagePostResponse": {
         "type": "object",
         "properties": {
@@ -5258,19 +7853,13 @@
       "PagePostResponse": {
         "type": "object",
         "properties": {
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
           "totalElements": {
             "type": "integer",
             "format": "int64"
           },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
           },
           "size": {
             "type": "integer",
@@ -5291,6 +7880,12 @@
             "items": {
               "$ref": "#/components/schemas/SortObject"
             }
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
           },
           "numberOfElements": {
             "type": "integer",
@@ -5322,19 +7917,13 @@
       "PageCommentResponse": {
         "type": "object",
         "properties": {
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
           "totalElements": {
             "type": "integer",
             "format": "int64"
           },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
           },
           "size": {
             "type": "integer",
@@ -5355,6 +7944,12 @@
             "items": {
               "$ref": "#/components/schemas/SortObject"
             }
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
           },
           "numberOfElements": {
             "type": "integer",
@@ -5386,6 +7981,279 @@
           }
         }
       },
+      "ApiResponsePageNotificationResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PageNotificationResponse"
+          }
+        }
+      },
+      "NotificationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recipient": {
+            "$ref": "#/components/schemas/UserSimpleResponse"
+          },
+          "actor": {
+            "$ref": "#/components/schemas/UserSimpleResponse"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "POST_LIKED",
+              "POST_COMMENTED",
+              "POST_SHARED",
+              "POST_SAVED",
+              "COMMENT_LIKED",
+              "COMMENT_REPLIED",
+              "COMMENT_MENTIONED",
+              "GROUP_INVITE",
+              "GROUP_MEMBER_JOINED",
+              "GROUP_MEMBER_LEFT",
+              "GROUP_ROLE_CHANGED",
+              "GROUP_UPDATED",
+              "GROUP_LEADERSHIP_TRANSFERRED",
+              "GROUP_ITINERARY_CREATED",
+              "CHAT_MESSAGE",
+              "CHAT_MESSAGE_LIKED",
+              "CHAT_MENTIONED",
+              "ITINERARY_SHARED",
+              "ITINERARY_LIKED",
+              "ITINERARY_UPDATED",
+              "SYSTEM_ANNOUNCEMENT",
+              "ACCOUNT_VERIFICATION",
+              "CREDITS_AWARDED"
+            ]
+          },
+          "entity_type": {
+            "type": "string"
+          },
+          "entity_id": {
+            "type": "string"
+          },
+          "is_read": {
+            "type": "boolean"
+          },
+          "read_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "is_archived": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageNotificationResponse": {
+        "type": "object",
+        "properties": {
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationResponse"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SortObject"
+            }
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ApiResponseNotificationResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/NotificationResponse"
+          }
+        }
+      },
+      "ApiResponseLong": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "ApiResponseListUserSimpleResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserSimpleResponse"
+            }
+          }
+        }
+      },
+      "ApiResponseListMessageSearchResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MessageSearchResponse"
+            }
+          }
+        }
+      },
+      "MessageSearchResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "conversation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sender_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sender": {
+            "$ref": "#/components/schemas/UserSimpleResponse"
+          },
+          "message_content": {
+            "type": "string"
+          },
+          "message_type": {
+            "type": "string"
+          },
+          "media_url": {
+            "type": "string"
+          },
+          "is_pinned": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Search result for a message"
+      },
+      "ApiResponseMapStringObject": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object"
+            }
+          }
+        }
+      },
       "ApiResponsePageLocationResponse": {
         "type": "object",
         "properties": {
@@ -5404,19 +8272,13 @@
       "PageLocationResponse": {
         "type": "object",
         "properties": {
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
           "totalElements": {
             "type": "integer",
             "format": "int64"
           },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
           },
           "size": {
             "type": "integer",
@@ -5438,6 +8300,12 @@
               "$ref": "#/components/schemas/SortObject"
             }
           },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
           "numberOfElements": {
             "type": "integer",
             "format": "int32"
@@ -5450,7 +8318,7 @@
           }
         }
       },
-      "ApiResponseListTravelNotebookResponse": {
+      "ApiResponseListLocationResponse": {
         "type": "object",
         "properties": {
           "code": {
@@ -5463,12 +8331,12 @@
           "data": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TravelNotebookResponse"
+              "$ref": "#/components/schemas/LocationResponse"
             }
           }
         }
       },
-      "ApiResponseListTripItemResponse": {
+      "ApiResponseListLocationAutocompleteItem": {
         "type": "object",
         "properties": {
           "code": {
@@ -5481,7 +8349,178 @@
           "data": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TripItemResponse"
+              "$ref": "#/components/schemas/LocationAutocompleteItem"
+            }
+          }
+        }
+      },
+      "LocationAutocompleteItem": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Primary display name",
+            "example": "Highlands Coffee - Nguyễn Huệ"
+          },
+          "latitude": {
+            "type": "number",
+            "description": "Latitude — may be null for external autocomplete results",
+            "format": "double",
+            "example": 10.7769
+          },
+          "longitude": {
+            "type": "number",
+            "description": "Longitude — may be null for external autocomplete results",
+            "format": "double",
+            "example": 106.7009
+          },
+          "maki": {
+            "type": "string",
+            "description": "Maki icon identifier",
+            "example": "coffee"
+          },
+          "source": {
+            "type": "string",
+            "description": "Data source: DB or GOOGLE_MAPS",
+            "example": "GOOGLE_MAPS",
+            "enum": [
+              "DB",
+              "GOOGLE_MAPS"
+            ]
+          },
+          "location_id": {
+            "type": "string",
+            "description": "Internal TripJoy UUID — null means location is not yet in DB",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "provider_id": {
+            "type": "string",
+            "description": "Provider place ID (e.g. Google place_id) — used in POST /locations/resolve",
+            "example": "ChIJ0T2NLikpdTERgJJ6o5gX1Kw"
+          },
+          "secondary_text": {
+            "type": "string",
+            "description": "Short secondary location context",
+            "example": "Quận 1, Hồ Chí Minh, Vietnam"
+          },
+          "full_address": {
+            "type": "string",
+            "description": "Full formatted address",
+            "example": "123 Nguyễn Huệ, Quận 1, Hồ Chí Minh"
+          },
+          "primary_type": {
+            "type": "string",
+            "description": "Primary place type for icon selection",
+            "example": "cafe"
+          }
+        },
+        "description": "Autocomplete suggestion for location search"
+      },
+      "AdministrativeLocationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Internal TripJoy location ID",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "description": "Primary display name (localized)",
+            "example": "Thành phố Hồ Chí Minh"
+          },
+          "latitude": {
+            "type": "number",
+            "description": "Latitude",
+            "format": "double",
+            "example": 10.762622
+          },
+          "longitude": {
+            "type": "number",
+            "description": "Longitude",
+            "format": "double",
+            "example": 106.660172
+          },
+          "viewport": {
+            "type": "string",
+            "description": "Recommended map viewport",
+            "example": "{\"northeast\":{\"lat\":11.16,\"lng\":107.03},\"southwest\":{\"lat\":10.35,\"lng\":106.36}}"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "IANA timezone",
+            "example": "Asia/Ho_Chi_Minh"
+          },
+          "maki": {
+            "type": "string",
+            "description": "Maki icon for map marker",
+            "example": "city"
+          },
+          "location_type": {
+            "type": "string",
+            "description": "Location type",
+            "example": "PROVINCE"
+          },
+          "name_en": {
+            "type": "string",
+            "description": "English / international name",
+            "example": "Ho Chi Minh City"
+          },
+          "country_code": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code",
+            "example": "VN"
+          },
+          "admin_code": {
+            "type": "string",
+            "description": "Admin place code (province code or ISO 3166-2)",
+            "example": "79"
+          },
+          "usage_count": {
+            "type": "integer",
+            "description": "Number of times referenced across the platform (popularity)",
+            "format": "int32",
+            "example": 3210
+          },
+          "provider_id": {
+            "type": "string",
+            "description": "Provider's unique place ID (for map SDK integration)",
+            "example": "ChIJo4EX8ompMTERBrgMc-blO0A"
+          }
+        }
+      },
+      "ApiResponseListAdministrativeLocationResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdministrativeLocationResponse"
+            }
+          }
+        }
+      },
+      "ApiResponseListItineraryResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItineraryResponse"
             }
           }
         }
@@ -5576,19 +8615,13 @@
       "PageFeedbackResponse": {
         "type": "object",
         "properties": {
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
           "totalElements": {
             "type": "integer",
             "format": "int64"
           },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
           },
           "size": {
             "type": "integer",
@@ -5609,6 +8642,12 @@
             "items": {
               "$ref": "#/components/schemas/SortObject"
             }
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
           },
           "numberOfElements": {
             "type": "integer",
@@ -5640,7 +8679,7 @@
           }
         }
       },
-      "ApiResponsePageChatMessageResponse": {
+      "ApiResponseListChatMessageResponse": {
         "type": "object",
         "properties": {
           "code": {
@@ -5651,56 +8690,82 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/PageChatMessageResponse"
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChatMessageResponse"
+            }
           }
         }
       },
-      "PageChatMessageResponse": {
+      "ApiResponseMessageCursorResponse": {
         "type": "object",
         "properties": {
-          "totalPages": {
+          "code": {
             "type": "integer",
             "format": "int32"
           },
-          "totalElements": {
-            "type": "integer",
-            "format": "int64"
+          "message": {
+            "type": "string"
           },
-          "first": {
+          "data": {
+            "$ref": "#/components/schemas/MessageCursorResponse"
+          }
+        }
+      },
+      "CursorInfo": {
+        "type": "object",
+        "properties": {
+          "before": {
+            "type": "string"
+          },
+          "after": {
+            "type": "string"
+          }
+        }
+      },
+      "HasMore": {
+        "type": "object",
+        "properties": {
+          "before": {
             "type": "boolean"
           },
-          "last": {
+          "after": {
             "type": "boolean"
-          },
-          "size": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "content": {
+          }
+        }
+      },
+      "MessageCursorResponse": {
+        "type": "object",
+        "properties": {
+          "messages": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ChatMessageResponse"
             }
           },
-          "number": {
+          "cursors": {
+            "$ref": "#/components/schemas/CursorInfo"
+          },
+          "has_more": {
+            "$ref": "#/components/schemas/HasMore"
+          }
+        }
+      },
+      "ApiResponseListSystemConfigResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
             "type": "integer",
             "format": "int32"
           },
-          "sort": {
+          "message": {
+            "type": "string"
+          },
+          "data": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/SortObject"
+              "$ref": "#/components/schemas/SystemConfigResponse"
             }
-          },
-          "numberOfElements": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "pageable": {
-            "$ref": "#/components/schemas/PageableObject"
-          },
-          "empty": {
-            "type": "boolean"
           }
         }
       }

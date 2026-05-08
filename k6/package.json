@@ -1,13 +1,33 @@
 {
   "name": "tripjoy-k6-tests",
-  "version": "1.0.0",
-  "description": "k6 load testing suite for TripJoy API",
+  "version": "2.0.0",
+  "description": "Production-ready k6 performance testing suite for TripJoy API",
   "scripts": {
-    "test:smoke": "k6 run scenarios/smoke-test.js",
-    "test:load": "k6 run scenarios/load-test.js",
-    "test:stress": "k6 run scenarios/stress-test.js",
-    "test:auth": "k6 run tests/auth-test.js"
+    "test:smoke":   "k6 run scenarios/smoke-test.js",
+    "seed:users":   "k6 run scripts/seed-users.js",
+    "test:smoke:staging":  "k6 run -e ENV=staging scenarios/smoke-test.js",
+
+    "test:load":    "k6 run scenarios/load-test.js",
+    "test:load:staging":   "k6 run -e ENV=staging scenarios/load-test.js",
+
+    "test:stress":  "k6 run scenarios/stress-test.js",
+    "test:stress:staging": "k6 run -e ENV=staging scenarios/stress-test.js",
+
+    "test:soak":    "k6 run scenarios/soak-test.js",
+    "test:spike":   "k6 run scenarios/spike-test.js",
+    "test:ai":      "k6 run scenarios/ai-test.js",
+
+    "test:smoke:report":   "k6 run --out json=reports/smoke-results.json scenarios/smoke-test.js",
+    "test:load:report":    "k6 run --out json=reports/load-results.json scenarios/load-test.js",
+    "test:stress:report":  "k6 run --out json=reports/stress-results.json scenarios/stress-test.js",
+    "test:soak:report":    "k6 run --out json=reports/soak-results.json scenarios/soak-test.js",
+    "test:ai:report":      "k6 run --out json=reports/ai-results.json scenarios/ai-test.js",
+
+    "test:all:report": "npm run test:smoke:report && npm run test:load:report && npm run test:stress:report && npm run test:ai:report"
   },
-  "keywords": ["k6", "load-testing", "stress-testing", "api-testing"],
-  "author": "TripJoy Team"
+  "keywords": ["k6", "load-testing", "stress-testing", "performance", "tripjoy"],
+  "author": "TripJoy Team",
+  "engines": {
+    "k6": ">=0.50.0"
+  }
 }
