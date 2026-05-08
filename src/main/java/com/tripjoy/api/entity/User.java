@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 import lombok.experimental.SuperBuilder;
 
 @Getter
@@ -19,6 +20,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "users")
+@BatchSize(size = 20)
 public class User extends BaseEntity {
 
     private String username;

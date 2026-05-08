@@ -70,12 +70,10 @@ public class GroupService implements IGroupService {
 
     @Transactional(readOnly = true)
     public List<GroupResponse> getMyGroups(UUID userId) {
-        // Use NOT DELETED query to filter soft-deleted memberships
-        List<GroupMember> memberRecords = groupMemberRepository.findByUserIdAndNotDeleted(userId);
+        // Efficiently fetch groups where the user is a member in one query
+        List<Group> groups = groupRepository.findByMemberUserId(userId);
 
-        return memberRecords.stream()
-                .map(GroupMember::getGroup)
-                .filter(group -> !group.getSoftDeleteInfo().isDeleted()) // Also filter deleted groups
+        return groups.stream()
                 .map(groupMapper::toGroupResponse)
                 .toList();
     }

@@ -138,8 +138,8 @@ public interface LocationRepository extends JpaRepository<Location, UUID> {
                           AND (:district IS NULL OR LOWER(l.admin_area_level2) = LOWER(:district))
                           AND (
                             :query IS NULL
-                            OR l.search_vector @@ plainto_tsquery('simple', unaccent(:query))
-                            OR lower(unaccent(l.name)) LIKE lower(unaccent(CONCAT('%', :query, '%')))
+                            OR l.search_vector @@ plainto_tsquery('simple', f_unaccent(:query))
+                            OR lower(f_unaccent(l.name)) LIKE lower(f_unaccent(CONCAT('%', :query, '%')))
                           )
                         ORDER BY
                           l.is_verified DESC,
@@ -159,8 +159,8 @@ public interface LocationRepository extends JpaRepository<Location, UUID> {
                           AND (:district IS NULL OR LOWER(l.admin_area_level2) = LOWER(:district))
                           AND (
                             :query IS NULL
-                            OR l.search_vector @@ plainto_tsquery('simple', unaccent(:query))
-                            OR lower(unaccent(l.name)) LIKE lower(unaccent(CONCAT('%', :query, '%')))
+                            OR l.search_vector @@ plainto_tsquery('simple', f_unaccent(:query))
+                            OR lower(f_unaccent(l.name)) LIKE lower(f_unaccent(CONCAT('%', :query, '%')))
                           )
                         """, nativeQuery = true)
         Page<Location> searchLocations(

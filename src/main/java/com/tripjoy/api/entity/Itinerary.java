@@ -26,6 +26,7 @@ import lombok.*;
                 @Index(name = "idx_itinerary_group", columnList = "group_id, is_deleted"),
                 @Index(name = "idx_itinerary_user_deleted", columnList = "user_id, is_deleted")
         })
+@BatchSize(size = 20)
 public class Itinerary extends BaseEntity {
 
     private String name;

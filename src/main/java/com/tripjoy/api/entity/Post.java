@@ -34,6 +34,7 @@ public class Post extends BaseEntity {
     @CollectionTable(name = "post_media", joinColumns = @JoinColumn(name = "post_id"))
     @Column(name = "media_url", length = 1024)
     @OrderColumn(name = "media_order")
+    @BatchSize(size = 20)
     private List<String> mediaUrls = new ArrayList<>();
 
     @Embedded

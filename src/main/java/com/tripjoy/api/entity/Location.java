@@ -19,6 +19,7 @@ import com.tripjoy.api.enums.LocationType;
 import com.tripjoy.api.enums.MapProvider;
 import com.tripjoy.api.enums.OperationalStatus;
 
+import org.hibernate.annotations.BatchSize;
 import lombok.*;
 
 /**
@@ -55,6 +56,7 @@ import lombok.*;
             @Index(name = "idx_location_usage_count", columnList = "usage_count DESC"),
             @Index(name = "idx_location_coordinates", columnList = "latitude, longitude")
         })
+@BatchSize(size = 20)
 public class Location extends BaseEntity {
 
     // ==================== CLASSIFICATION (Two-Tier Model) ====================

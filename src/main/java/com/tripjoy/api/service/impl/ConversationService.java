@@ -149,7 +149,7 @@ public class ConversationService implements IConversationService {
             if (conversation.getName() != null && !conversation.getName().trim().isEmpty()) {
                 response.setName(conversation.getName());
             } else if (conversation.getGroup() != null) {
-                response.setName("General chat"); // Default fallback
+                response.setName(conversation.getGroup().getName()); // Use Group Name instead of generic 'General chat'
             }
 
             // Set avatar and groupName from group
