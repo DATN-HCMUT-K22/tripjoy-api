@@ -13,21 +13,21 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FeedbackRequest {
 
-    @NotBlank
+    @NotBlank(message = "INVALID_REQUEST")
     @Schema(
             description = "Type of feedback (e.g., BUG_REPORT, SUGGESTION)",
             example = "BUG_REPORT",
             requiredMode = Schema.RequiredMode.REQUIRED)
     String type; // maps to column "type"
 
-    @NotBlank
+    @NotBlank(message = "INVALID_REQUEST")
     @Schema(
             description = "Summary title of the feedback",
             example = "App crash on startup",
             requiredMode = Schema.RequiredMode.REQUIRED)
     String title;
 
-    @NotBlank
+    @NotBlank(message = "INVALID_REQUEST")
     @Schema(
             description = "Detailed content of the feedback",
             example = "The app crashes when opening the map.",

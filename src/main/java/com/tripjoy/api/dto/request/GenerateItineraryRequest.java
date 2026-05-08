@@ -17,19 +17,19 @@ import lombok.*;
 @AllArgsConstructor
 public class GenerateItineraryRequest {
 
-    @NotBlank(message = "Destination is required")
+    @NotBlank(message = "INVALID_REQUEST")
     private String destination;
 
-    @NotNull(message = "Latitude is required")
+    @NotNull(message = "INVALID_REQUEST")
     private Double latitude;
 
-    @NotNull(message = "Longitude is required")
+    @NotNull(message = "INVALID_REQUEST")
     private Double longitude;
 
-    @NotNull(message = "Start date is required")
+    @NotNull(message = "INVALID_REQUEST")
     private LocalDateTime startDate;
 
-    @NotNull(message = "End date is required")
+    @NotNull(message = "INVALID_REQUEST")
     private LocalDateTime endDate;
 
     @Positive(message = "People quantity must be positive")

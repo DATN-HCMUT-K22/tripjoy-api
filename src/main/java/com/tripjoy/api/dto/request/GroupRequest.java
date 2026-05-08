@@ -22,7 +22,7 @@ import lombok.experimental.SuperBuilder;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class GroupRequest {
 
-    @NotBlank
+    @NotBlank(message = "INVALID_REQUEST")
     @Schema(
             name = "name",
             description = "Name of the travel group",

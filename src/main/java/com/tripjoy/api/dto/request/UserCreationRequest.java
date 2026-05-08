@@ -16,7 +16,7 @@ import lombok.experimental.SuperBuilder;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserCreationRequest {
 
-    @NotBlank(message = "{not_blank}")
+    @NotBlank(message = "INVALID_REQUEST")
     @Size(min = 4, message = "INVALID_USERNAME")
     @Schema(
             name = "username",
@@ -26,7 +26,7 @@ public class UserCreationRequest {
             example = "user")
     String username;
 
-    @NotBlank(message = "{not_blank}")
+    @NotBlank(message = "INVALID_REQUEST")
     @Email(message = "{invalid_email}")
     @Schema(
             name = "email",
@@ -36,7 +36,7 @@ public class UserCreationRequest {
             example = "johndoe@example.com")
     String email;
 
-    @NotBlank(message = "{not_blank}")
+    @NotBlank(message = "INVALID_REQUEST")
     @Size(min = 8, message = "Password must be at least 8 characters")
     @Schema(
             name = "password",

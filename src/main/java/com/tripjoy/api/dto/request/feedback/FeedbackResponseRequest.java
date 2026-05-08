@@ -13,7 +13,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FeedbackResponseRequest {
 
-    @NotBlank
+    @NotBlank(message = "INVALID_REQUEST")
     @Schema(
             description = "The admin's reply content to the users",
             example = "Thank you for your feedback! We are looking into this issue.")
