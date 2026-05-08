@@ -10,6 +10,7 @@ import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.Formula;
 
 @Getter
 @Setter
@@ -26,6 +27,10 @@ public class Group extends BaseEntity {
     private String avatar;
     private String themeColor;
     private Boolean isPro;
+    
+    @Column(name = "iti_count")
+    @Builder.Default
+    private Integer itiCount = 0;
 
     @Embedded
     @Builder.Default

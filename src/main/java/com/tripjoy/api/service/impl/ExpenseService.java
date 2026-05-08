@@ -51,6 +51,11 @@ public class ExpenseService implements IExpenseService {
         expense.setUser(user);
 
         expense = expenseRepository.save(expense);
+
+        // Update denormalized total
+        itinerary.setTotalExpense(itinerary.getTotalExpense().add(expense.getAmount() != null ? expense.getAmount() : java.math.BigDecimal.ZERO));
+        itineraryRepository.save(itinerary);
+
         return expenseMapper.toExpenseResponse(expense);
     }
 
@@ -78,9 +83,18 @@ public class ExpenseService implements IExpenseService {
             throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
         }
 
+        java.math.BigDecimal oldAmount = expense.getAmount() != null ? expense.getAmount() : java.math.BigDecimal.ZERO;
         expenseMapper.updateExpense(expense, request);
+        java.math.BigDecimal newAmount = expense.getAmount() != null ? expense.getAmount() : java.math.BigDecimal.ZERO;
 
         expense = expenseRepository.save(expense);
+        
+        // Sync total if amount changed
+        if (oldAmount.compareTo(newAmount) != 0) {
+            itinerary.setTotalExpense(itinerary.getTotalExpense().subtract(oldAmount).add(newAmount));
+            itineraryRepository.save(itinerary);
+        }
+
         return expenseMapper.toExpenseResponse(expense);
     }
 
@@ -98,7 +112,12 @@ public class ExpenseService implements IExpenseService {
             throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
         }
 
+        java.math.BigDecimal amountToRemove = expense.getAmount() != null ? expense.getAmount() : java.math.BigDecimal.ZERO;
         expenseRepository.delete(expense);
+        
+        // Sync total
+        itinerary.setTotalExpense(itinerary.getTotalExpense().subtract(amountToRemove));
+        itineraryRepository.save(itinerary);
     }
 
     private void validateOwnership(Itinerary itinerary) {

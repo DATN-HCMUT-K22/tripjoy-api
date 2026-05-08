@@ -21,6 +21,9 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
 
     List<Comment> findTop2ByParentCommentIdAndIsDeletedFalseOrderByCreatedAtAsc(UUID parentCommentId);
 
+    @Query(value = "SELECT EXISTS(SELECT 1 FROM like_comment WHERE comment_id = :commentId AND user_id = :userId)", nativeQuery = true)
+    boolean existsLike(@Param("commentId") UUID commentId, @Param("userId") UUID userId);
+
     @Query("SELECT DISTINCT c.user FROM Comment c WHERE c.post.id = :postId AND c.parentComment IS NULL")
     List<User> findDistinctCommentersByPostId(@Param("postId") UUID postId);
 

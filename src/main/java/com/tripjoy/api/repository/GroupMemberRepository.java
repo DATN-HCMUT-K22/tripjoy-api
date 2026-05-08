@@ -42,7 +42,7 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, UUID> 
     List<GroupMember> findByGroupAndNotDeletedOrderByRoleAsc(@Param("group") Group group);
 
     @Query(
-            "SELECT gm FROM GroupMember gm WHERE gm.user.id = :userId AND gm.softDeleteInfo.isDeleted = false ORDER BY gm.group.createdAt DESC")
+            "SELECT gm FROM GroupMember gm JOIN FETCH gm.group WHERE gm.user.id = :userId AND gm.softDeleteInfo.isDeleted = false ORDER BY gm.group.createdAt DESC")
     List<GroupMember> findByUserIdAndNotDeleted(@Param("userId") UUID userId);
 
     @Query(

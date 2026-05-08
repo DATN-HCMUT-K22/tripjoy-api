@@ -27,8 +27,8 @@ public interface PostMapper {
     @Mapping(target = "updatedAt", source = "updatedAt")
     @Mapping(target = "itinerary", source = "itinerary")
     @Mapping(target = "createdByUser", source = "creator")
-    @Mapping(target = "likeCount", expression = "java((long) (post.getLikeUsers() != null ? post.getLikeUsers().size() : 0))")
-    @Mapping(target = "commentCount", expression = "java((long) (post.getComments() != null ? post.getComments().size() : 0))")
+    @Mapping(target = "likeCount", source = "likeCount")
+    @Mapping(target = "commentCount", source = "commentCount")
     @Mapping(target = "hashtags", source = "hashtags", qualifiedByName = "mapHashtagsToStrings")
     @Mapping(target = "isLiked", ignore = true) // Set manually in service
     @Mapping(target = "isSaved", ignore = true) // Set manually in service

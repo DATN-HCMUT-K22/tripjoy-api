@@ -180,6 +180,7 @@ public class PostService implements IPostService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         post.getLikeUsers().add(user);
+        post.setLikeCount(post.getLikeCount() + 1);
         postRepository.save(post);
 
         eventPublisher.publishEvent(new PostLikedEvent(post, user));
@@ -195,6 +196,7 @@ public class PostService implements IPostService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         post.getLikeUsers().remove(user);
+        post.setLikeCount(Math.max(0, post.getLikeCount() - 1));
         postRepository.save(post);
     }
 
@@ -236,8 +238,8 @@ public class PostService implements IPostService {
     private PostResponse getPostResponseWithContext(Post post, UUID currentUserId) {
         PostResponse response = postMapper.toPostResponse(post);
         if (currentUserId != null) {
-            response.setIsLiked(post.getLikeUsers() != null && post.getLikeUsers().stream().anyMatch(u -> u.getId().equals(currentUserId)));
-            response.setIsSaved(post.getSaveUsers() != null && post.getSaveUsers().stream().anyMatch(u -> u.getId().equals(currentUserId)));
+            response.setIsLiked(postRepository.existsLike(post.getId(), currentUserId));
+            response.setIsSaved(postRepository.existsSave(post.getId(), currentUserId));
         } else {
             response.setIsLiked(false);
             response.setIsSaved(false);

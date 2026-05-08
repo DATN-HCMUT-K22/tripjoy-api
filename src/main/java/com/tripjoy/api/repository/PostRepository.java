@@ -119,7 +119,22 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
             @Param("originId") UUID originId,
             @Param("destinationId") UUID destinationId);
 
+    @Query("SELECT p FROM Post p " +
+           "LEFT JOIN FETCH p.creator " +
+           "LEFT JOIN FETCH p.itinerary " +
+           "WHERE p.softDeleteInfo.isDeleted = false")
     Page<Post> findBySoftDeleteInfoIsDeletedFalse(Pageable pageable);
 
-    Page<Post> findBySaveUsersIdAndSoftDeleteInfoIsDeletedFalse(UUID userId, Pageable pageable);
+    @Query("SELECT p FROM Post p " +
+           "JOIN p.saveUsers u " +
+           "LEFT JOIN FETCH p.creator " +
+           "LEFT JOIN FETCH p.itinerary " +
+           "WHERE u.id = :userId AND p.softDeleteInfo.isDeleted = false")
+    Page<Post> findBySaveUsersIdAndSoftDeleteInfoIsDeletedFalse(@Param("userId") UUID userId, Pageable pageable);
+
+    @Query(value = "SELECT EXISTS(SELECT 1 FROM like_post WHERE post_id = :postId AND user_id = :userId)", nativeQuery = true)
+    boolean existsLike(@Param("postId") UUID postId, @Param("userId") UUID userId);
+
+    @Query(value = "SELECT EXISTS(SELECT 1 FROM save_post WHERE post_id = :postId AND user_id = :userId)", nativeQuery = true)
+    boolean existsSave(@Param("postId") UUID postId, @Param("userId") UUID userId);
 }
