@@ -46,7 +46,7 @@ public class LocationCreateRequest {
 
     // ==================== Provider ====================
 
-    @NotNull
+    @NotNull(message = "INVALID_REQUEST")
     @Schema(
             description = "Map data provider.",
             example = "GOOGLE_MAPS",
@@ -61,7 +61,7 @@ public class LocationCreateRequest {
 
     // ==================== Basic Info ====================
 
-    @NotBlank
+    @NotBlank(message = "INVALID_REQUEST")
     @Schema(description = "Primary display name", example = "Đại Học Bách Khoa TP.HCM")
     String name;
 
@@ -69,11 +69,11 @@ public class LocationCreateRequest {
     @JsonProperty("name_en")
     String nameEn;
 
-    @NotNull
+    @NotNull(message = "INVALID_REQUEST")
     @Schema(description = "Latitude (WGS84)", example = "10.77324709")
     Double latitude;
 
-    @NotNull
+    @NotNull(message = "INVALID_REQUEST")
     @Schema(description = "Longitude (WGS84)", example = "106.65976722")
     Double longitude;
 
