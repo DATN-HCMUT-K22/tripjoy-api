@@ -10,7 +10,7 @@ import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.Formula;
+import org.hibernate.annotations.BatchSize;
 
 @Getter
 @Setter
@@ -37,16 +37,19 @@ public class Group extends BaseEntity {
     private SoftDeleteInfo softDeleteInfo = new SoftDeleteInfo();
 
     @OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @BatchSize(size = 20)
     @JsonIgnore
     @Builder.Default
     private Set<Itinerary> itineraries = new HashSet<>();
 
     @OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @BatchSize(size = 20)
     @JsonIgnore
     @Builder.Default
     private Set<GroupMember> members = new HashSet<>();
 
     @OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @BatchSize(size = 20)
     @JsonIgnore
     @Builder.Default
     private Set<Conversation> conversations = new HashSet<>();
