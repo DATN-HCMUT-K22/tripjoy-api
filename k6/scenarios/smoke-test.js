@@ -87,3 +87,8 @@ export default function (data) {
 export function teardown(data) {
     console.log('[smoke] Smoke test completed.');
 }
+
+/**
+ * Handle custom summary report
+ */
+export { handleSummary } from '../lib/summary.js';

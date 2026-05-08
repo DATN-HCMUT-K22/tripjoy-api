@@ -1,18 +1,18 @@
 package com.tripjoy.api.service.impl;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.context.ApplicationEventPublisher;
 
+import com.tripjoy.api.dto.context.PostMappingContext;
 import com.tripjoy.api.dto.event.PostLikedEvent;
 import com.tripjoy.api.dto.request.PostQueryParams;
 import com.tripjoy.api.dto.request.PostRequest;
@@ -20,10 +20,10 @@ import com.tripjoy.api.dto.response.PostResponse;
 import com.tripjoy.api.entity.Itinerary;
 import com.tripjoy.api.entity.Post;
 import com.tripjoy.api.entity.User;
+import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
+import com.tripjoy.api.enums.PostVisibility;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
-import com.tripjoy.api.enums.PostVisibility;
-import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 import com.tripjoy.api.mapper.PostMapper;
 import com.tripjoy.api.repository.ItineraryRepository;
 import com.tripjoy.api.repository.PostRepository;
@@ -81,41 +81,39 @@ public class PostService implements IPostService {
     @Override
     @Transactional(readOnly = true)
     public Page<PostResponse> getPosts(PostQueryParams params, Pageable pageable, UUID currentUserId) {
-        // Fast path: no filter criteria — use simple paginated findAll (no FTS overhead)
+        Page<Post> postPage;
+        
+        // Fast path: no filter criteria — use optimized paginated query
         if (params == null || params.isEmpty()) {
-            return postRepository.findBySoftDeleteInfoIsDeletedFalse(pageable)
-                    .map(post -> getPostResponseWithContext(post, currentUserId));
-        }
+            postPage = postRepository.findBySoftDeleteInfoIsDeletedFalse(pageable);
+        } else {
+            // Filter path: delegate to FTS + multi-criteria native query
+            int pageNum = pageable.getPageNumber();
+            int size = pageable.getPageSize();
+            int offset = pageNum * size;
 
-        // Filter path: delegate to FTS + multi-criteria native query
-        // The native query manages its own offset/limit for now (uses PostQueryParams.sort internally)
-        int pageNum = pageable.getPageNumber();
-        int size = pageable.getPageSize();
-        int offset = pageNum * size;
+            String keyword = params.normalizedKeyword();
+            String hashtag = params.normalizedHashtag();
 
-        String keyword = params.normalizedKeyword();
-        String hashtag = params.normalizedHashtag();
-
-        List<Post> posts = postRepository.searchPosts(
-                keyword, hashtag, params.getCreatorId(), params.getItineraryId(),
-                params.getStartDate(), params.getEndDate(), params.getMinDays(), params.getMaxDays(),
-                params.getMinBudget(), params.getMaxBudget(), params.getMinPeople(), params.getMaxPeople(),
-                params.getOriginId(), params.getDestinationId(), params.getSort(), size, offset);
-
-        long totalElements = 0;
-        if (!posts.isEmpty() || pageNum > 0) {
-            totalElements = postRepository.countSearchPosts(
+            List<Post> posts = postRepository.searchPosts(
                     keyword, hashtag, params.getCreatorId(), params.getItineraryId(),
                     params.getStartDate(), params.getEndDate(), params.getMinDays(), params.getMaxDays(),
                     params.getMinBudget(), params.getMaxBudget(), params.getMinPeople(), params.getMaxPeople(),
-                    params.getOriginId(), params.getDestinationId());
+                    params.getOriginId(), params.getDestinationId(), params.getSort(), size, offset);
+
+            long totalElements = 0;
+            if (!posts.isEmpty() || pageNum > 0) {
+                totalElements = postRepository.countSearchPosts(
+                        keyword, hashtag, params.getCreatorId(), params.getItineraryId(),
+                        params.getStartDate(), params.getEndDate(), params.getMinDays(), params.getMaxDays(),
+                        params.getMinBudget(), params.getMaxBudget(), params.getMinPeople(), params.getMaxPeople(),
+                        params.getOriginId(), params.getDestinationId());
+            }
+            postPage = new PageImpl<>(posts, pageable, totalElements);
         }
 
-        List<PostResponse> responses = posts.stream()
-                .map(post -> getPostResponseWithContext(post, currentUserId))
-                .collect(Collectors.toList());
-
-        return new PageImpl<>(responses, pageable, totalElements);
+        PostMappingContext context = getPostMappingContext(postPage.getContent(), currentUserId);
+        return postPage.map(post -> postMapper.toPostResponse(post, context));
     }
 
     @Override
@@ -203,8 +201,9 @@ public class PostService implements IPostService {
     @Override
     @Transactional(readOnly = true)
     public Page<PostResponse> getSavedPosts(Pageable pageable, UUID currentUserId) {
-        return postRepository.findBySaveUsersIdAndSoftDeleteInfoIsDeletedFalse(currentUserId, pageable)
-                .map(post -> getPostResponseWithContext(post, currentUserId));
+        Page<Post> postPage = postRepository.findBySaveUsersIdAndSoftDeleteInfoIsDeletedFalse(currentUserId, pageable);
+        PostMappingContext context = getPostMappingContext(postPage.getContent(), currentUserId);
+        return postPage.map(post -> postMapper.toPostResponse(post, context));
     }
 
     @Override
@@ -233,18 +232,23 @@ public class PostService implements IPostService {
         postRepository.save(post);
     }
 
-
+    private PostMappingContext getPostMappingContext(List<Post> posts, UUID userId) {
+        if (userId == null || posts.isEmpty()) {
+            return PostMappingContext.empty();
+        }
+        List<UUID> postIds = posts.stream().map(Post::getId).toList();
+        Set<UUID> likedIds = postRepository.findLikedPostIds(postIds, userId).stream().collect(Collectors.toSet());
+        Set<UUID> savedIds = postRepository.findSavedPostIds(postIds, userId).stream().collect(Collectors.toSet());
+        return new PostMappingContext(likedIds, savedIds);
+    }
 
     private PostResponse getPostResponseWithContext(Post post, UUID currentUserId) {
-        PostResponse response = postMapper.toPostResponse(post);
-        if (currentUserId != null) {
-            response.setIsLiked(postRepository.existsLike(post.getId(), currentUserId));
-            response.setIsSaved(postRepository.existsSave(post.getId(), currentUserId));
-        } else {
-            response.setIsLiked(false);
-            response.setIsSaved(false);
+        if (currentUserId == null) {
+            return postMapper.toPostResponse(post, PostMappingContext.empty());
         }
-        return response;
+        Set<UUID> likedIds = postRepository.findLikedPostIds(List.of(post.getId()), currentUserId).stream().collect(Collectors.toSet());
+        Set<UUID> savedIds = postRepository.findSavedPostIds(List.of(post.getId()), currentUserId).stream().collect(Collectors.toSet());
+        return postMapper.toPostResponse(post, new PostMappingContext(likedIds, savedIds));
     }
 
     private void validateOwnership(Post post) {

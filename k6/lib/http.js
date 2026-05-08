@@ -28,7 +28,23 @@ const JSON_CT = { 'Content-Type': 'application/json' };
  */
 export function get(path, headers = {}, tagName = null) {
     const tag = tagName || `GET ${path}`;
-    const scenario = tag.toLowerCase().includes('search') || tag.toLowerCase().includes('find') ? 'search' : 'read';
+    let scenario = 'read';
+    
+    const lowTag = tag.toLowerCase();
+    if (lowTag.includes('search') || lowTag.includes('find') || lowTag.includes('autocomplete')) {
+        scenario = 'search';
+    } else if (lowTag.includes('post') || lowTag.includes('feed') || lowTag.includes('comment')) {
+        scenario = 'social';
+    } else if (lowTag.includes('location')) {
+        scenario = 'location';
+    } else if (lowTag.includes('group')) {
+        scenario = 'group';
+    } else if (lowTag.includes('notif')) {
+        scenario = 'notification';
+    } else if (lowTag.includes('itinerary')) {
+        scenario = 'itinerary';
+    }
+    
     const res = http.get(path, {
         headers,
         tags: { name: tag, scenario: scenario },

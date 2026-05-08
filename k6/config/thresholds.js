@@ -38,6 +38,15 @@ export const smokeThresholds = {
         'p(95)<500',
         'p(99)<1000',
     ],
+    // Per-scenario tracking
+    'http_req_duration{scenario:auth}': ['p(95)<500'],
+    'http_req_duration{scenario:social}': ['p(95)<2000'],
+    'http_req_duration{scenario:location}': ['p(95)<1000'],
+    'http_req_duration{scenario:group}': ['p(95)<2000'],
+    'http_req_duration{scenario:notification}': ['p(95)<1000'],
+    'http_req_duration{scenario:itinerary}': ['p(95)<2000'],
+    'http_req_duration{scenario:write}': ['p(95)<2000'],
+    'http_req_duration{scenario:search}': ['p(95)<5000'], 
     checks: ['rate>0.99'],
 };
 

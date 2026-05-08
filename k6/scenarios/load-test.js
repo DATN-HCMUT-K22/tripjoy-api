@@ -201,3 +201,5 @@ function chatNotifJourney(headers, data) {
 export function teardown(data) {
     console.log('[load] Load test completed.');
 }
+
+export { handleSummary } from '../lib/summary.js';
