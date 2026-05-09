@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Collectors;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -228,6 +229,15 @@ public class UserService implements IUserService {
                 // Use collect(Collectors.toList()) instead of .toList() to ensure the result is a mutable ArrayList.
                 // Immutable collections from .toList() lack a default constructor, causing Jackson deserialization failures in Redis.
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<UserSimpleResponse> searchUsersGlobal(String keyword, Pageable pageable) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return Page.empty();
+        }
+        return userRepository.searchGlobalUsers(keyword.trim(), pageable)
+                .map(userMapper::toUserSimpleResponse);
     }
 
     @Override
