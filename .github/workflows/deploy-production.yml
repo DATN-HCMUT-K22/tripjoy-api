@@ -35,6 +35,9 @@ concurrency:
   group: deploy-production
   cancel-in-progress: false
 
+permissions:
+  contents: write
+
 jobs:
   # ============================================================
   # Job 1: Final Test Gate
