@@ -1,0 +1,31 @@
+# ================================================================
+# Grafana Datasource Provisioning
+# Đường dẫn: docker/grafana/provisioning/datasources/prometheus.yml
+#
+# File này giúp Grafana TỰ ĐỘNG kết nối với Prometheus khi khởi động
+# Không cần vào UI thêm tay → phù hợp cho automation/CI/CD
+#
+# Grafana đọc file này trong /etc/grafana/provisioning/datasources/
+# (được mount qua docker-compose volume)
+# ================================================================
+
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    # type: loại datasource — grafana hỗ trợ prometheus, mysql, elasticsearch,...
+    type: prometheus
+    # access: proxy → Grafana server gọi vào Prometheus (không phải browser)
+    # Dùng proxy vì Prometheus không expose ra ngoài internet trực tiếp
+    access: proxy
+    # url: tên service trong docker-compose network (không phải localhost!)
+    url: http://prometheus:9090
+    # isDefault: Grafana dùng datasource này mặc định khi tạo panel mới
+    isDefault: true
+    # editable: false → ngăn admin UI vô tình xóa/sửa datasource này
+    editable: false
+    jsonData:
+      # Thời gian delay cho metrics (cho phép query metric đến 5 phút gần nhất)
+      timeInterval: "15s"
+      # Tắt increment interval để tránh over-query
+      queryTimeout: "60s"

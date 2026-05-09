@@ -41,7 +41,7 @@ public class PostRequest {
     private String content;
 
     @JsonProperty("itinerary_id")
-    @NotNull
+    @NotNull(message = "INVALID_REQUEST")
     @Schema(
             name = "itinerary_id",
             description = "UUID of the Itinerary this post is linked to (from Create_post table)",

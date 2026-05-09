@@ -1,12 +1,17 @@
 package com.tripjoy.api.service.impl;
 
+import java.util.stream.Collectors;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.ApplicationEventPublisher;
 
+import com.tripjoy.api.dto.event.CommentCreatedEvent;
+import com.tripjoy.api.dto.event.CommentLikedEvent;
 import com.tripjoy.api.dto.request.CommentRequest;
 import com.tripjoy.api.dto.response.CommentResponse;
 import com.tripjoy.api.entity.Comment;
@@ -34,6 +39,7 @@ public class CommentService implements ICommentService {
     PostRepository postRepository;
     UserRepository userRepository;
     CommentMapper commentMapper;
+    ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -59,14 +65,17 @@ public class CommentService implements ICommentService {
         }
 
         comment = commentRepository.save(comment);
-        return getCommentResponseWithContext(comment, userId);
+
+        eventPublisher.publishEvent(new CommentCreatedEvent(comment, user));
+
+        return getCommentResponseWithContext(comment, userId, true);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<CommentResponse> getCommentsByPostId(UUID postId, Pageable pageable, UUID currentUserId) {
         return commentRepository.findByPostIdAndParentCommentIsNullAndIsDeletedFalse(postId, pageable)
-                .map(comment -> getCommentResponseWithContext(comment, currentUserId));
+                .map(comment -> getCommentResponseWithContext(comment, currentUserId, true));
     }
 
     @Override
@@ -80,6 +89,8 @@ public class CommentService implements ICommentService {
 
         comment.getLikeUsers().add(user);
         commentRepository.save(comment);
+
+        eventPublisher.publishEvent(new CommentLikedEvent(comment, user));
     }
 
     @Override
@@ -110,13 +121,28 @@ public class CommentService implements ICommentService {
         commentRepository.save(comment);
     }
 
-    private CommentResponse getCommentResponseWithContext(Comment comment, UUID currentUserId) {
+    @Override
+    @Transactional(readOnly = true)
+    public Page<CommentResponse> getRepliesForComment(UUID commentId, Pageable pageable, UUID currentUserId) {
+        return commentRepository.findByParentCommentIdAndIsDeletedFalseOrderByCreatedAtAsc(commentId, pageable)
+                .map(reply -> getCommentResponseWithContext(reply, currentUserId, false));
+    }
+
+    private CommentResponse getCommentResponseWithContext(Comment comment, UUID currentUserId, boolean includeReplies) {
         CommentResponse response = commentMapper.toCommentResponse(comment);
-        if (currentUserId != null) {
+        if (currentUserId != null && comment.getLikeUsers() != null) {
             response.setIsLiked(comment.getLikeUsers().stream().anyMatch(u -> u.getId().equals(currentUserId)));
         } else {
             response.setIsLiked(false);
         }
+
+        if (includeReplies && comment.getParentComment() == null && comment.getReplies() != null && !comment.getReplies().isEmpty()) {
+            List<Comment> latestReplies = commentRepository.findTop2ByParentCommentIdAndIsDeletedFalseOrderByCreatedAtAsc(comment.getId());
+            response.setLatestReplies(latestReplies.stream()
+                    .map(reply -> getCommentResponseWithContext(reply, currentUserId, false))
+                    .collect(Collectors.toList()));
+        }
+
         return response;
     }
 }

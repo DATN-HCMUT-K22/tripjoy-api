@@ -72,20 +72,19 @@ public class ConversationController {
 
     @Operation(summary = "Get conversation details")
     @GetMapping(Endpoint.Conversation.ID)
-    public ApiResponse<ConversationResponse> getConversationById(@PathVariable UUID conversationId) {
+    public ApiResponse<ConversationResponse> getConversationById(@PathVariable("conversationId") UUID conversationId) {
 
         UUID currentUserId = SecurityUtils.getCurrentUserId();
 
         return ApiResponse.<ConversationResponse>builder()
-                // .data(conversationService.getConversationDetail(conversationId,
-                // currentUserId))
+                .data(conversationService.getConversationDetail(conversationId, currentUserId))
                 .build();
     }
 
     @Operation(summary = "Update conversation settings (name for group chats, isPinned)")
     @PutMapping(Endpoint.Conversation.ID)
     public ApiResponse<ConversationResponse> updateConversation(
-            @PathVariable UUID conversationId, @Valid @RequestBody ConversationUpdateRequest request) {
+            @PathVariable("conversationId") UUID conversationId, @Valid @RequestBody ConversationUpdateRequest request) {
 
         UUID currentUserId = SecurityUtils.getCurrentUserId();
 
@@ -96,7 +95,7 @@ public class ConversationController {
 
     @Operation(summary = "Reset unread count to 0 when user opens a chat")
     @PutMapping(Endpoint.Conversation.ID + "/read")
-    public ApiResponse<Void> resetUnreadCount(@PathVariable UUID conversationId) {
+    public ApiResponse<Void> resetUnreadCount(@PathVariable("conversationId") UUID conversationId) {
 
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         conversationService.resetUnreadCount(conversationId, currentUserId);
@@ -111,7 +110,7 @@ public class ConversationController {
     @Operation(summary = "Send message to conversation - OK")
     @PostMapping(Endpoint.Conversation.MESSAGES)
     public ApiResponse<ChatMessageResponse> sendMessage(
-            @PathVariable UUID conversationId, @Valid @RequestBody ChatMessageRequest request) {
+            @PathVariable("conversationId") UUID conversationId, @Valid @RequestBody ChatMessageRequest request) {
 
         UUID senderId = SecurityUtils.getCurrentUserId();
 
@@ -132,10 +131,10 @@ public class ConversationController {
 						""")
     @GetMapping(Endpoint.Conversation.MESSAGES)
     public ApiResponse<MessageCursorResponse> getMessages(
-            @PathVariable UUID conversationId,
-            @RequestParam(required = false) String before,
-            @RequestParam(required = false) String after,
-            @RequestParam(required = false) Integer limit) {
+            @PathVariable("conversationId") UUID conversationId,
+            @RequestParam(value = "before", required = false) String before,
+            @RequestParam(value = "after", required = false) String after,
+            @RequestParam(value = "limit", required = false) Integer limit) {
 
         UUID currentUserId = SecurityUtils.getCurrentUserId();
 
@@ -146,7 +145,7 @@ public class ConversationController {
 
     @Operation(summary = "Get all pinned messages in conversation")
     @GetMapping(Endpoint.Conversation.PINNED_MESSAGES)
-    public ApiResponse<List<ChatMessageResponse>> getPinnedMessages(@PathVariable UUID conversationId) {
+    public ApiResponse<List<ChatMessageResponse>> getPinnedMessages(@PathVariable("conversationId") UUID conversationId) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
 
         return ApiResponse.<List<ChatMessageResponse>>builder()
@@ -160,10 +159,10 @@ public class ConversationController {
                     + "Supports partial matching and relevance ranking.")
     @GetMapping(Endpoint.Conversation.SEARCH_MESSAGES)
     public ApiResponse<List<MessageSearchResponse>> searchMessages(
-            @PathVariable UUID conversationId,
-            @RequestParam String q,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @PathVariable("conversationId") UUID conversationId,
+            @RequestParam("q") String q,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size) {
 
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         return ApiResponse.<List<MessageSearchResponse>>builder()

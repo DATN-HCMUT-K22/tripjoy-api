@@ -37,3 +37,7 @@ build/
 ### Redis data ###
 /infra/redis/data/
 /docs
+/temp
+
+.env.prod.real
+.env.staging.real

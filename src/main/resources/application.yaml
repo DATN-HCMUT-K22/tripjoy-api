@@ -1,6 +1,31 @@
 server:
   port: ${SERVER_PORT:8080}
 
+# ================================================================
+# DevOps: Actuator + Prometheus Metrics
+# Prometheus sẽ scrape tại: http://<host>:8080/actuator/prometheus
+# ================================================================
+management:
+  endpoints:
+    web:
+      exposure:
+        # Chỉ expose những endpoint cần thiết — tránh lộ thông tin nhạy cảm
+        include: health,info,prometheus,metrics,loggers
+  endpoint:
+    health:
+      # show-details: always → thấy chi tiết DB/Redis health (chỉ dùng trong nội bộ)
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      # Tag này giúp Grafana filter metric theo từng app khi nhiều service chạy chung cluster
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        # Cho phép tính p50, p90, p99 latency của HTTP requests
+        http.server.requests: true
+
 spring:
   application:
     name: tripjoy-api
@@ -13,6 +38,12 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 50
+      minimum-idle: 10
+      idle-timeout: 30000
+      connection-timeout: 30000
+      max-lifetime: 1800000
 
   jpa:
     hibernate:
@@ -20,6 +51,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_batch_fetch_size: 100
         enable_lazy_load_no_trans: true
         format_sql: true
     show-sql: true
@@ -35,6 +67,9 @@ spring:
     locations: classpath:db/migration
 
   data:
+    web:
+      pageable:
+        serialization-mode: via-dto
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}

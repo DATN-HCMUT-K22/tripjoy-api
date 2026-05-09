@@ -4,20 +4,24 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.hibernate.annotations.BatchSize;
+
 import jakarta.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @Entity
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "users")
+@BatchSize(size = 20)
 public class User extends BaseEntity {
 
     private String username;
@@ -50,5 +54,6 @@ public class User extends BaseEntity {
 
     @ManyToMany(mappedBy = "favouriteUsers")
     @JsonIgnore
+    @Builder.Default
     private Set<Itinerary> favouriteItineraries = new HashSet<>();
 }

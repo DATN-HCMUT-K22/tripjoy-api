@@ -343,7 +343,7 @@ VALUES
      NOW(), '00000000-0000-0000-0000-000000000011', NOW(), '00000000-0000-0000-0000-000000000011',
      'Đà Lạt Phượt Cùng Nhau', 'Chuyến đi tránh nóng tháng 4',
      NOW() + INTERVAL '30 days', NOW() + INTERVAL '34 days',
-     4, 3000000.00, 'PLANNING',
+     4, 3000000.00, 'DRAFT',
      'a0000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000011', false),
 
     -- Itinerary 2: Phú Quốc (group 2, owner user2)
@@ -351,7 +351,7 @@ VALUES
      NOW(), '00000000-0000-0000-0000-000000000012', NOW(), '00000000-0000-0000-0000-000000000012',
      'Phú Quốc Resort Nghỉ Dưỡng', 'Chill hè bãi biển Phú Quốc',
      NOW() + INTERVAL '45 days', NOW() + INTERVAL '48 days',
-     4, 8000000.00, 'PLANNING',
+     4, 8000000.00, 'DRAFT',
      'a0000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000012', false),
 
     -- Itinerary 3: Sapa (group 3, owner user3)
@@ -359,7 +359,7 @@ VALUES
      NOW(), '00000000-0000-0000-0000-000000000013', NOW(), '00000000-0000-0000-0000-000000000013',
      'Trekking Fansipan 5N4Đ', 'Leo núi và ngắm biển mây Sapa',
      NOW() + INTERVAL '60 days', NOW() + INTERVAL '65 days',
-     4, 5000000.00, 'PLANNING',
+     4, 5000000.00, 'DRAFT',
      'a0000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000013', false),
 
     -- Itinerary 4: Personal trip user5 (Hội An)

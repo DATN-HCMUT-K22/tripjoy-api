@@ -26,6 +26,7 @@ public class Comment extends BaseEntity {
 
     @OneToMany(mappedBy = "parentComment", fetch = FetchType.LAZY)
     @JsonIgnore
+    @Builder.Default
     private Set<Comment> replies = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -41,5 +42,6 @@ public class Comment extends BaseEntity {
             name = "like_comment",
             joinColumns = @JoinColumn(name = "comment_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @Builder.Default
     private Set<User> likeUsers = new HashSet<>();
 }

@@ -12,11 +12,8 @@ import com.tripjoy.api.entity.TripItem;
 @Mapper(config = BaseMapperConfig.class, uses = {LocationMapper.class})
 public interface TripItemMapper {
 
-    @Mapping(target = "location", ignore = true)
-    @Mapping(target = "itinerary", ignore = true)
     TripItem toTripItem(TripItemRequest request);
 
-    @Mapping(source = "location", target = "location")
     TripItemResponse toTripItemResponse(TripItem tripItem);
 
     @Mapping(target = "location", ignore = true)

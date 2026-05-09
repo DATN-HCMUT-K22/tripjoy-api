@@ -1,6 +1,8 @@
 package com.tripjoy.api.mapper;
 
+import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -12,6 +14,7 @@ import org.mapstruct.Named;
 import com.tripjoy.api.configuration.mapper.BaseMapperConfig;
 import com.tripjoy.api.dto.request.ItineraryRequest;
 import com.tripjoy.api.dto.response.ItineraryResponse;
+import com.tripjoy.api.entity.Expense;
 import com.tripjoy.api.entity.Itinerary;
 import com.tripjoy.api.entity.Theme;
 
@@ -33,6 +36,7 @@ public interface ItineraryMapper {
     @Mapping(source = "name", target = "title")
     @Mapping(source = "group.id", target = "groupId")
     @Mapping(target = "themes", source = "themes", qualifiedByName = "mapThemesToStrings")
+    @Mapping(source = "budgetEstimate", target = "budgetEstimate")
     ItineraryResponse toItineraryResponse(Itinerary itinerary);
 
     @Mapping(target = "user", ignore = true)

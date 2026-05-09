@@ -8,17 +8,22 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.ApplicationEventPublisher;
 
+import com.tripjoy.api.dto.event.PostLikedEvent;
+import com.tripjoy.api.dto.request.PostQueryParams;
 import com.tripjoy.api.dto.request.PostRequest;
-import com.tripjoy.api.dto.request.PostSearchRequest;
 import com.tripjoy.api.dto.response.PostResponse;
 import com.tripjoy.api.entity.Itinerary;
 import com.tripjoy.api.entity.Post;
 import com.tripjoy.api.entity.User;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
+import com.tripjoy.api.enums.PostVisibility;
+import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 import com.tripjoy.api.mapper.PostMapper;
 import com.tripjoy.api.repository.ItineraryRepository;
 import com.tripjoy.api.repository.PostRepository;
@@ -41,6 +46,7 @@ public class PostService implements IPostService {
     UserRepository userRepository;
     ItineraryRepository itineraryRepository;
     IHashtagService hashtagService;
+    ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -54,6 +60,8 @@ public class PostService implements IPostService {
                 .mediaUrls(request.getMediaUrls())
                 .creator(user)
                 .shareQuantity(0)
+                .visibility(request.getVisibility() != null ? request.getVisibility() : PostVisibility.PUBLIC)
+                .softDeleteInfo(new SoftDeleteInfo())
                 .build();
 
         if (request.getItineraryId() != null) {
@@ -72,9 +80,41 @@ public class PostService implements IPostService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<PostResponse> getAllPosts(Pageable pageable, UUID currentUserId) {
-        return postRepository.findBySoftDeleteInfoIsDeletedFalse(pageable)
-                .map(post -> getPostResponseWithContext(post, currentUserId));
+    public Page<PostResponse> getPosts(PostQueryParams params, Pageable pageable, UUID currentUserId) {
+        // Fast path: no filter criteria — use simple paginated findAll (no FTS overhead)
+        if (params == null || params.isEmpty()) {
+            Page<Post> postPage = postRepository.findBySoftDeleteInfoIsDeletedFalse(pageable);
+            List<PostResponse> responses = getPostResponsesWithContext(postPage.getContent(), currentUserId);
+            return new PageImpl<>(responses, pageable, postPage.getTotalElements());
+        }
+
+        // Filter path: delegate to FTS + multi-criteria native query
+        // The native query manages its own offset/limit for now (uses PostQueryParams.sort internally)
+        int pageNum = pageable.getPageNumber();
+        int size = pageable.getPageSize();
+        int offset = pageNum * size;
+
+        String keyword = params.normalizedKeyword();
+        String hashtag = params.normalizedHashtag();
+
+        List<Post> posts = postRepository.searchPosts(
+                keyword, hashtag, params.getCreatorId(), params.getItineraryId(),
+                params.getStartDate(), params.getEndDate(), params.getMinDays(), params.getMaxDays(),
+                params.getMinBudget(), params.getMaxBudget(), params.getMinPeople(), params.getMaxPeople(),
+                params.getOriginId(), params.getDestinationId(), params.getSort(), size, offset);
+
+        long totalElements = 0;
+        if (!posts.isEmpty() || pageNum > 0) {
+            totalElements = postRepository.countSearchPosts(
+                    keyword, hashtag, params.getCreatorId(), params.getItineraryId(),
+                    params.getStartDate(), params.getEndDate(), params.getMinDays(), params.getMaxDays(),
+                    params.getMinBudget(), params.getMaxBudget(), params.getMinPeople(), params.getMaxPeople(),
+                    params.getOriginId(), params.getDestinationId());
+        }
+
+        List<PostResponse> responses = getPostResponsesWithContext(posts, currentUserId);
+
+        return new PageImpl<>(responses, pageable, totalElements);
     }
 
     @Override
@@ -140,6 +180,8 @@ public class PostService implements IPostService {
 
         post.getLikeUsers().add(user);
         postRepository.save(post);
+
+        eventPublisher.publishEvent(new PostLikedEvent(post, user));
     }
 
     @Override
@@ -158,8 +200,9 @@ public class PostService implements IPostService {
     @Override
     @Transactional(readOnly = true)
     public Page<PostResponse> getSavedPosts(Pageable pageable, UUID currentUserId) {
-        return postRepository.findBySaveUsersIdAndSoftDeleteInfoIsDeletedFalse(currentUserId, pageable)
-                .map(post -> getPostResponseWithContext(post, currentUserId));
+        Page<Post> postPage = postRepository.findBySaveUsersIdAndSoftDeleteInfoIsDeletedFalse(currentUserId, pageable);
+        List<PostResponse> responses = getPostResponsesWithContext(postPage.getContent(), currentUserId);
+        return new PageImpl<>(responses, pageable, postPage.getTotalElements());
     }
 
     @Override
@@ -188,52 +231,44 @@ public class PostService implements IPostService {
         postRepository.save(post);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public Page<PostResponse> searchPosts(PostSearchRequest request, UUID currentUserId) {
-        int page = Math.max(0, request.getPage());
-        int size = Math.min(50, Math.max(1, request.getSize()));
-        int offset = page * size;
 
-        String keyword = request.getQ() != null && !request.getQ().trim().isEmpty() ? request.getQ().trim() : null;
-        String hashtag = request.getHashtag() != null && !request.getHashtag().trim().isEmpty() ? request.getHashtag().trim() : null;
-        
-        if (hashtag != null && hashtag.startsWith("#")) {
-            hashtag = hashtag.substring(1);
-        }
-
-        List<Post> posts = postRepository.searchPosts(
-                keyword, hashtag, request.getCreatorId(), request.getItineraryId(),
-                request.getStartDate(), request.getEndDate(), request.getMinDays(), request.getMaxDays(),
-                request.getMinBudget(), request.getMaxBudget(), request.getMinPeople(), request.getMaxPeople(),
-                request.getOriginId(), request.getDestinationId(), request.getSort(), size, offset);
-
-        long totalElements = 0;
-        if (!posts.isEmpty() || page > 0) {
-            totalElements = postRepository.countSearchPosts(
-                    keyword, hashtag, request.getCreatorId(), request.getItineraryId(),
-                    request.getStartDate(), request.getEndDate(), request.getMinDays(), request.getMaxDays(),
-                    request.getMinBudget(), request.getMaxBudget(), request.getMinPeople(), request.getMaxPeople(),
-                    request.getOriginId(), request.getDestinationId());
-        }
-
-        List<PostResponse> responses = posts.stream()
-                .map(post -> getPostResponseWithContext(post, currentUserId))
-                .collect(Collectors.toList());
-
-        return new PageImpl<>(responses, PageRequest.of(page, size), totalElements);
-    }
 
     private PostResponse getPostResponseWithContext(Post post, UUID currentUserId) {
         PostResponse response = postMapper.toPostResponse(post);
         if (currentUserId != null) {
-            response.setIsLiked(post.getLikeUsers() != null && post.getLikeUsers().stream().anyMatch(u -> u.getId().equals(currentUserId)));
-            response.setIsSaved(post.getSaveUsers() != null && post.getSaveUsers().stream().anyMatch(u -> u.getId().equals(currentUserId)));
+            response.setIsLiked(postRepository.isLikedByUser(post.getId(), currentUserId));
+            response.setIsSaved(postRepository.isSavedByUser(post.getId(), currentUserId));
         } else {
             response.setIsLiked(false);
             response.setIsSaved(false);
         }
         return response;
+    }
+
+    private List<PostResponse> getPostResponsesWithContext(List<Post> posts, UUID currentUserId) {
+        if (posts.isEmpty())
+            return List.of();
+
+        List<PostResponse> responses = posts.stream()
+                .map(postMapper::toPostResponse)
+                .collect(Collectors.toList());
+
+        if (currentUserId != null) {
+            List<UUID> postIds = posts.stream().map(Post::getId).collect(Collectors.toList());
+            List<UUID> likedIds = postRepository.findLikedPostIdsByUser(postIds, currentUserId);
+            List<UUID> savedIds = postRepository.findSavedPostIdsByUser(postIds, currentUserId);
+
+            responses.forEach(res -> {
+                res.setIsLiked(likedIds.contains(res.getId()));
+                res.setIsSaved(savedIds.contains(res.getId()));
+            });
+        } else {
+            responses.forEach(res -> {
+                res.setIsLiked(false);
+                res.setIsSaved(false);
+            });
+        }
+        return responses;
     }
 
     private void validateOwnership(Post post) {

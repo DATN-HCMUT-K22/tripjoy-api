@@ -108,6 +108,9 @@ public enum ErrorCode {
     AI_GENERATION_FAILED(9002, "AI failed to generate itinerary items", HttpStatus.INTERNAL_SERVER_ERROR),
     AI_INVALID_RESPONSE(9003, "AI returned an invalid or malformed response", HttpStatus.BAD_GATEWAY),
     AI_REQUEST_TIMEOUT(9004, "AI generation request timed out", HttpStatus.GATEWAY_TIMEOUT),
+
+    // --- 10. POST DOMAIN (10000 - 10999) ---
+    POST_NOT_FOUND(10001, "Post not found", HttpStatus.NOT_FOUND),
     ;
 
     private final int code;

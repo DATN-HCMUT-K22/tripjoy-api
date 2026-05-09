@@ -29,9 +29,9 @@ public class ChatMessageRequest {
     @Schema(description = "Media URL when message_type is IMAGE", example = "http://image.url/img.png")
     String mediaUrl;
 
-    @JsonProperty("share_post_url")
-    @Schema(description = "Post URL when message_type is SHARE_POST", example = "http://tripjoy/posts/abc")
-    String sharePostUrl;
+    @JsonProperty("shared_post_id")
+    @Schema(description = "Post ID when message_type is SHARE_POST", example = "123e4567-e89b-12d3-a456-426614174000")
+    String sharedPostId;
 
     @JsonProperty("parent_message_id")
     @Schema(description = "ID of the message being replied to (if any)")

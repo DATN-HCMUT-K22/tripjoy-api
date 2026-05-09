@@ -27,7 +27,9 @@ public class SecurityConfig {
         Endpoint.Auth.BASE + Endpoint.Auth.LOGIN,
         Endpoint.Auth.BASE + Endpoint.Auth.INTROSPECT,
         Endpoint.Auth.BASE + Endpoint.Auth.LOGOUT,
-        Endpoint.Auth.BASE + Endpoint.Auth.REFRESH
+        Endpoint.Auth.BASE + Endpoint.Auth.REFRESH,
+        // Location resolve — public: any user (even unauthenticated) can resolve a map pick
+        Endpoint.Location.BASE + Endpoint.Location.RESOLVE
     };
 
     private static final String[] SWAGGER_WHITELIST = {
@@ -36,9 +38,14 @@ public class SecurityConfig {
 
     private static final String[] PUBLIC_GET_ENDPOINTS = {
         Endpoint.Post.BASE,
-        Endpoint.Post.BASE + Endpoint.Post.SEARCH,
         Endpoint.Post.BASE + Endpoint.Post.ID,
-        Endpoint.Post.BASE + Endpoint.Post.COMMENTS
+        Endpoint.Post.BASE + Endpoint.Post.COMMENTS,
+        // Location endpoints — public search and autocomplete (no auth needed)
+        Endpoint.Location.BASE + Endpoint.Location.ADMINISTRATIVE,
+        Endpoint.Location.BASE + Endpoint.Location.SEARCH,
+        Endpoint.Location.BASE + Endpoint.Location.NEARBY,
+        Endpoint.Location.BASE + Endpoint.Location.AUTOCOMPLETE,
+        Endpoint.Location.BASE + Endpoint.Location.ID
     };
 
     @Autowired
@@ -67,6 +74,7 @@ public class SecurityConfig {
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.addAllowedOrigin("http://localhost:3000");
+        corsConfiguration.addAllowedOrigin("http://localhost:5173");
         corsConfiguration.addAllowedOrigin("http://localhost:8080");
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.addAllowedMethod("*");

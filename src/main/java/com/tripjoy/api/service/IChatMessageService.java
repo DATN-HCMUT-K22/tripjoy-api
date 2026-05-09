@@ -16,6 +16,8 @@ public interface IChatMessageService {
 
     ChatMessageResponse sendMessage(UUID conversationId, UUID senderId, ChatMessageRequest request);
 
+    ChatMessageResponse sendBotMessage(UUID conversationId, UUID botId, String content);
+
     void pinMessage(UUID conversationId, UUID messageId, UUID userId);
 
     void unpinMessage(UUID conversationId, UUID messageId, UUID userId);

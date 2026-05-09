@@ -2,6 +2,7 @@ package com.tripjoy.api.service.impl;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -53,7 +54,7 @@ public class RoleService implements IRoleService {
     @Cacheable(value = RedisCacheConfig.CACHE_ROLE_ALL, key = "'all'")
     public List<RoleResponse> getAll() {
         var roles = roleRepository.findAll();
-        return roles.stream().map(mapper::toRoleResponse).toList();
+        return roles.stream().map(mapper::toRoleResponse).collect(Collectors.toList());
     }
 
     /**

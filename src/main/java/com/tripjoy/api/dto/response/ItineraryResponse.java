@@ -1,5 +1,6 @@
 package com.tripjoy.api.dto.response;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
@@ -41,4 +42,13 @@ public class ItineraryResponse extends BaseResponse {
     UserSimpleResponse createdByUser;
 
     Set<String> themes;
+    
+    @JsonProperty("budget_estimate")
+    BigDecimal budgetEstimate;
+
+    @JsonProperty("total_expense")
+    BigDecimal totalExpense;
+
+    @JsonProperty("people_quantity")
+    Integer peopleQuantity;
 }

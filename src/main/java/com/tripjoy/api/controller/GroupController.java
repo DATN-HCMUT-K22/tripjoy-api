@@ -40,7 +40,7 @@ public class GroupController {
             summary = "Search groups by name",
             description = "Searches for groups whose name contains the given keyword. Uses case-insensitive LIKE matching.")
     @GetMapping(Endpoint.Group.SEARCH)
-    public ApiResponse<List<GroupResponse>> searchGroups(@RequestParam String q) {
+    public ApiResponse<List<GroupResponse>> searchGroups(@RequestParam("q") String q) {
         return ApiResponse.<List<GroupResponse>>builder()
                 .data(groupService.searchGroups(q))
                 .build();
@@ -70,7 +70,7 @@ public class GroupController {
 
     @Operation(summary = "Get group information by ID - OK")
     @GetMapping(Endpoint.Group.ID)
-    public ApiResponse<GroupResponse> getGroupById(@PathVariable UUID groupId) {
+    public ApiResponse<GroupResponse> getGroupById(@PathVariable("groupId") UUID groupId) {
         return ApiResponse.<GroupResponse>builder()
                 .data(groupService.getGroupById(groupId))
                 .build();
@@ -79,7 +79,7 @@ public class GroupController {
     @Operation(summary = "Update group information - OK")
     @PutMapping(Endpoint.Group.ID)
     public ApiResponse<GroupResponse> updateGroup(
-            @PathVariable UUID groupId, @Valid @RequestBody GroupRequest request) {
+            @PathVariable("groupId") UUID groupId, @Valid @RequestBody GroupRequest request) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
 
         return ApiResponse.<GroupResponse>builder()
@@ -89,7 +89,7 @@ public class GroupController {
 
     @Operation(summary = "Delete group (soft delete with cascade) - Only LEADER - OK")
     @DeleteMapping(Endpoint.Group.ID)
-    public ApiResponse<Void> deleteGroup(@PathVariable UUID groupId) {
+    public ApiResponse<Void> deleteGroup(@PathVariable("groupId") UUID groupId) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         groupService.deleteGroup(groupId, currentUserId);
         return ApiResponse.<Void>builder().message("Group deleted successfully").build();
@@ -99,7 +99,7 @@ public class GroupController {
 
     @Operation(summary = "Add member to group (Automatically syncs to Chat) - OK")
     @PostMapping(Endpoint.Group.MEMBERS_BASE)
-    public ApiResponse<Void> addMember(@PathVariable UUID groupId, @Valid @RequestBody AddMemberRequest request) {
+    public ApiResponse<Void> addMember(@PathVariable("groupId") UUID groupId, @Valid @RequestBody AddMemberRequest request) {
 
         // Service bắn Event MemberJoined -> Tự thêm vào Chat
         // Giả sử request.getUserId() trả về UUID của người được thêm
@@ -112,7 +112,7 @@ public class GroupController {
 
     @Operation(summary = "Get group members list - OK")
     @GetMapping(Endpoint.Group.MEMBERS_BASE)
-    public ApiResponse<List<GroupMemberResponse>> getMembers(@PathVariable UUID groupId) {
+    public ApiResponse<List<GroupMemberResponse>> getMembers(@PathVariable("groupId") UUID groupId) {
         return ApiResponse.<List<GroupMemberResponse>>builder()
                 .data(groupService.getGroupMembers(groupId))
                 .build();
@@ -120,7 +120,7 @@ public class GroupController {
 
     @Operation(summary = "Remove member from group (Automatically kicks from Chat) - OK")
     @DeleteMapping(Endpoint.Group.MEMBERS_ID)
-    public ApiResponse<Void> removeMember(@PathVariable UUID groupId, @PathVariable UUID memberId) {
+    public ApiResponse<Void> removeMember(@PathVariable("groupId") UUID groupId, @PathVariable("memberId") UUID memberId) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         groupService.removeMemberFromGroup(groupId, memberId, currentUserId);
         return ApiResponse.<Void>builder()
@@ -130,7 +130,7 @@ public class GroupController {
 
     @Operation(summary = "Leave group (Self-initiated) - OK")
     @DeleteMapping(Endpoint.Group.MEMBERS_ME)
-    public ApiResponse<Void> leaveGroup(@PathVariable UUID groupId) {
+    public ApiResponse<Void> leaveGroup(@PathVariable("groupId") UUID groupId) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         groupService.leaveGroup(groupId, currentUserId);
         return ApiResponse.<Void>builder()
@@ -141,8 +141,8 @@ public class GroupController {
     @Operation(summary = "Update member role (Leader/CO_LEADER/Member) - OK")
     @PutMapping(Endpoint.Group.MEMBERS_ID)
     public ApiResponse<GroupMemberResponse> updateMemberRole(
-            @PathVariable UUID groupId,
-            @PathVariable UUID memberId,
+            @PathVariable("groupId") UUID groupId,
+            @PathVariable("memberId") UUID memberId,
             @Valid @RequestBody UpdateMemberRoleRequest request) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         return ApiResponse.<GroupMemberResponse>builder()
@@ -153,7 +153,7 @@ public class GroupController {
     @Operation(summary = "Transfer leadership to another member - OK")
     @PostMapping(Endpoint.Group.ID + "/transfer-leadership")
     public ApiResponse<Void> transferLeadership(
-            @PathVariable UUID groupId, @Valid @RequestBody TransferLeadershipRequest request) {
+            @PathVariable("groupId") UUID groupId, @Valid @RequestBody TransferLeadershipRequest request) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         groupService.transferLeadership(groupId, request, currentUserId);
         return ApiResponse.<Void>builder()

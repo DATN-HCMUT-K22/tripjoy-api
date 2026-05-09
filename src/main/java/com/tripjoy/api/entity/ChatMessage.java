@@ -6,11 +6,12 @@ import java.util.Set;
 import jakarta.persistence.*;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @Entity
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(
@@ -21,7 +22,9 @@ public class ChatMessage extends BaseEntity {
     private String messageType;
     private String messageContent;
     private String mediaUrl;
-    private String sharedPostUrl;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shared_post_id")
+    private Post sharedPost;
     private Boolean isBot;
     private String status;
 
@@ -34,6 +37,7 @@ public class ChatMessage extends BaseEntity {
     private ChatMessage parentMessage;
 
     @OneToMany(mappedBy = "parentMessage", fetch = FetchType.LAZY)
+    @Builder.Default
     private Set<ChatMessage> replies = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -1,0 +1,199 @@
+# ================================================================
+# docker-compose.prod.yml — Production Full Stack
+#
+# Cách dùng:
+#   docker compose -f docker-compose.prod.yml up -d
+#
+# File này extend KHÔNG dùng docker-compose.yml base vì muốn
+# kiểm soát hoàn toàn mọi service trong production.
+#
+# Trên EC2, GitHub Actions sẽ tự động chạy file này.
+# ================================================================
+
+services:
+
+  # ============================================================
+  # 1. Spring Boot Application
+  # Image được build và push bởi GitHub Actions CI/CD pipeline
+  # ============================================================
+  tripjoy-api:
+    image: ${DOCKERHUB_USERNAME}/tripjoy-api:${IMAGE_TAG:-latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-tripjoy}-api
+    restart: unless-stopped
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      SERVER_PORT: ${SERVER_PORT:-8080}
+      # Database
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      # Socket.IO
+      SOCKET_HOST: ${SOCKET_HOST:-0.0.0.0}
+      SOCKET_PORT: ${SOCKET_PORT:-8085}
+      # JWT
+      JWT_SIGNER_KEY: ${JWT_SIGNER_KEY}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-3600}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-360000}
+      # External Services
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      GOOGLE_PLACES_API_KEY: ${GOOGLE_PLACES_API_KEY}
+      AI_SERVICE_URL: ${AI_SERVICE_URL:-http://localhost:8000}
+      AI_SERVICE_API_KEY: ${AI_SERVICE_API_KEY}
+      # Swagger
+      SWAGGER_SERVER_URL: ${SWAGGER_SERVER_URL:-http://localhost:8080}
+      SWAGGER_SERVER_DESCRIPTION: ${SWAGGER_SERVER_DESCRIPTION:-Production}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+    # Healthcheck để docker compose biết khi nào app sẵn sàng
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s  # Spring Boot cần thời gian khởi động
+
+  # ============================================================
+  # 2. PostgreSQL + PostGIS
+  # ============================================================
+  postgres:
+    image: postgis/postgis:${POSTGRES_VERSION:-17-3.5}
+    container_name: ${COMPOSE_PROJECT_NAME:-tripjoy}-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgis/init-postgis.sh:/docker-entrypoint-initdb.d/01-init-postgis.sh
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  # ============================================================
+  # 3. Redis
+  # ============================================================
+  redis:
+    image: redis:${REDIS_VERSION:-7.2-alpine}
+    container_name: ${COMPOSE_PROJECT_NAME:-tripjoy}-redis
+    restart: unless-stopped
+    command: redis-server /usr/local/etc/redis/redis.conf --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ============================================================
+  # 4. Prometheus — Thu thập & lưu metrics từ Spring Boot
+  #
+  # Cách hoạt động:
+  #   Prometheus định kỳ (15s) gọi HTTP GET /actuator/prometheus
+  #   trên tripjoy-api → đọc metrics → lưu vào time-series database
+  #   Grafana sau đó query Prometheus để vẽ dashboard
+  # ============================================================
+  prometheus:
+    image: prom/prometheus:v2.51.1
+    container_name: ${COMPOSE_PROJECT_NAME:-tripjoy}-prometheus
+    restart: unless-stopped
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      # Chỉ định file config
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      # Giữ data 15 ngày (điều chỉnh theo nhu cầu)
+      - '--storage.tsdb.retention.time=15d'
+      # Cho phép Prometheus reload config mà không cần restart
+      - '--web.enable-lifecycle'
+    networks:
+      - backend
+    depends_on:
+      - tripjoy-api
+
+  # ============================================================
+  # 5. Grafana — Visualization dashboard
+  #
+  # Cách hoạt động:
+  #   Grafana kết nối tới Prometheus (datasource)
+  #   Đọc metric data → render charts, graphs, alerts
+  #   Dashboard được auto-provisioned từ JSON files trong docker/grafana/
+  # ============================================================
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: ${COMPOSE_PROJECT_NAME:-tripjoy}-grafana
+    restart: unless-stopped
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    environment:
+      # Đổi admin password này! Đây là password đăng nhập Grafana UI
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-tripjoy_grafana_secret}
+      # Tắt sign-up public (chỉ admin mới tạo được user)
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      # Timezone hiển thị
+      GF_DATE_FORMATS_DEFAULT_TIMEZONE: Asia/Ho_Chi_Minh
+    volumes:
+      - grafana-data:/var/lib/grafana
+      # Auto-provision datasource (Prometheus)
+      - ./docker/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      # Auto-provision dashboard config
+      - ./docker/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      # Dashboard JSON files
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - backend
+    depends_on:
+      - prometheus
+
+# ============================================================
+# Networks
+# ============================================================
+networks:
+  backend:
+    name: ${COMPOSE_PROJECT_NAME:-tripjoy}-prod-network
+    driver: bridge
+
+# ============================================================
+# Persistent Volumes
+# ============================================================
+volumes:
+  postgres-data:
+    name: ${COMPOSE_PROJECT_NAME:-tripjoy}-postgres-data
+  redis-data:
+    name: ${COMPOSE_PROJECT_NAME:-tripjoy}-redis-data
+  prometheus-data:
+    name: ${COMPOSE_PROJECT_NAME:-tripjoy}-prometheus-data
+  grafana-data:
+    name: ${COMPOSE_PROJECT_NAME:-tripjoy}-grafana-data

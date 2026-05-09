@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tripjoy.api.configuration.redis.RedisCacheConfig;
 
+import com.tripjoy.api.dto.event.AiChatRequestedEvent;
 import com.tripjoy.api.dto.event.MessageLikedEvent;
 import com.tripjoy.api.dto.event.MessagePinnedEvent;
 import com.tripjoy.api.dto.event.MessageSentEvent;
@@ -28,6 +29,7 @@ import com.tripjoy.api.dto.response.MessageSearchResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import com.tripjoy.api.entity.ChatMessage;
 import com.tripjoy.api.entity.Conversation;
+import com.tripjoy.api.entity.Post;
 import com.tripjoy.api.entity.User;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
@@ -36,8 +38,10 @@ import com.tripjoy.api.mapper.UserMapper;
 import com.tripjoy.api.repository.ChatMessageRepository;
 import com.tripjoy.api.repository.ConversationMemberRepository;
 import com.tripjoy.api.repository.ConversationRepository;
+import com.tripjoy.api.repository.PostRepository;
 import com.tripjoy.api.repository.UserRepository;
 import com.tripjoy.api.service.IChatMessageService;
+import com.tripjoy.api.service.ISystemConfigService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -54,9 +58,11 @@ public class ChatMessageService implements IChatMessageService {
     ChatMessageRepository chatMessageRepository;
     ConversationRepository conversationRepository;
     ConversationMemberRepository conversationMemberRepository;
+    PostRepository postRepository;
     ChatMessageMapper chatMessageMapper;
     UserMapper userMapper;
     ApplicationEventPublisher eventPublisher;
+    ISystemConfigService configService;
 
     @Transactional
     public void likeMessage(UUID messageId, UUID userId) {
@@ -120,6 +126,18 @@ public class ChatMessageService implements IChatMessageService {
         message.setConversation(conversation);
         message.setSender(sender);
         message.setCreatedAt(LocalDateTime.now());
+        
+        if ("SHARE_POST".equals(request.getMessageType()) && request.getSharedPostId() != null) {
+            try {
+                UUID postId = UUID.fromString(request.getSharedPostId());
+                Post post = postRepository.findById(postId)
+                        .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
+                message.setSharedPost(post);
+            } catch (IllegalArgumentException e) {
+                // Ignore invalid UUID or throw exception
+            }
+        }
+        
         // SoftDeleteInfo is already initialized by default
 
         ChatMessage savedMessage = chatMessageRepository.save(message);
@@ -145,10 +163,65 @@ public class ChatMessageService implements IChatMessageService {
 
         eventPublisher.publishEvent(event);
 
+        // --- AI CHATBOT TRIGGER ---
+        // Kích hoạt event gọi AI nếu tin nhắn chứa cú pháp @Tripjoy
+        if (request.getMessageContent() != null && request.getMessageContent().toLowerCase().contains("@tripjoy")) {
+            log.info("AI Trigger detected in conversation: {}", conversationId);
+            AiChatRequestedEvent aiEvent = AiChatRequestedEvent.builder()
+                    .conversationId(conversationId)
+                    .senderId(senderId)
+                    .messageContent(request.getMessageContent())
+                    .build();
+            eventPublisher.publishEvent(aiEvent);
+        }
+
         return response;
     }
 
     @Transactional
+    public ChatMessageResponse sendBotMessage(UUID conversationId, UUID botId, String content) {
+        User sender = userRepository.findById(botId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        Conversation conversation = conversationRepository
+                .findById(conversationId)
+                .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_FOUND));
+
+        ChatMessage message = ChatMessage.builder()
+                .messageContent(content)
+                .messageType("TEXT")
+                .build();
+                
+        message.setConversation(conversation);
+        message.setSender(sender);
+        message.setCreatedAt(LocalDateTime.now());
+
+        ChatMessage savedMessage = chatMessageRepository.save(message);
+
+        conversation.setLastMessageTimestamp(LocalDateTime.now());
+        conversation.setLastMessageId(savedMessage.getId());
+        conversation.setLastMessageContent(savedMessage.getMessageContent());
+        conversation.setLastMessageType(savedMessage.getMessageType());
+        conversation.setLastMessageSenderId(sender.getId());
+        conversation.setLastMessageSenderName(sender.getFullName());
+        conversation.setLastMessageSenderAvatar(sender.getAvatarUrl());
+        conversationRepository.save(conversation);
+
+        conversationMemberRepository.incrementUnreadCountForOthers(conversationId, botId);
+
+        ChatMessageResponse response = chatMessageMapper.toResponse(savedMessage);
+
+        MessageSentEvent event = MessageSentEvent.builder()
+                .conversationId(conversationId)
+                .messageResponse(response)
+                .build();
+
+        eventPublisher.publishEvent(event);
+
+        return response;
+    }
+
+    @Transactional
+    @CacheEvict(value = RedisCacheConfig.CACHE_CHAT_PINNED, key = "#conversationId")
     public void pinMessage(UUID conversationId, UUID messageId, UUID userId) {
         // 1. Verify message exists
         ChatMessage message = chatMessageRepository
@@ -171,18 +244,17 @@ public class ChatMessageService implements IChatMessageService {
             throw new AppException(ErrorCode.MESSAGE_ALREADY_PINNED);
         }
 
-        // 5. Check pin limit (50 max)
+        // 5. Check pin limit
         long pinnedCount = chatMessageRepository.countPinnedByConversationId(conversationId);
-        if (pinnedCount >= 50) {
-            throw new AppException(ErrorCode.PIN_LIMIT_EXCEEDED);
+        int maxPinned = configService.getIntValue("CHAT_MAX_PINNED_MESSAGES", 50);
+        if (pinnedCount >= maxPinned) {
+            throw new AppException(ErrorCode.PIN_LIMIT_EXCEEDED, "Maximum " + maxPinned + " pinned messages allowed");
         }
 
         // 6. Pin the message
         message.setIsPinned(true);
         chatMessageRepository.save(message);
 
-        // Evict pinned message cache for this conversation
-        evictPinnedCache(conversationId);
 
         MessagePinnedEvent event = MessagePinnedEvent.builder()
                 .conversationId(conversationId)
@@ -194,6 +266,7 @@ public class ChatMessageService implements IChatMessageService {
     }
 
     @Transactional
+    @CacheEvict(value = RedisCacheConfig.CACHE_CHAT_PINNED, key = "#conversationId")
     public void unpinMessage(UUID conversationId, UUID messageId, UUID userId) {
         // 1. Verify message exists
         ChatMessage message = chatMessageRepository
@@ -215,8 +288,6 @@ public class ChatMessageService implements IChatMessageService {
         message.setIsPinned(false);
         chatMessageRepository.save(message);
 
-        // Evict pinned message cache for this conversation
-        evictPinnedCache(conversationId);
 
         MessageUnpinnedEvent event = MessageUnpinnedEvent.builder()
                 .conversationId(conversationId)
@@ -247,15 +318,6 @@ public class ChatMessageService implements IChatMessageService {
         return pinnedMessages.stream().map(chatMessageMapper::toResponse).collect(Collectors.toList());
     }
 
-    /**
-     * Programmatic cache eviction helper for pinned messages.
-     * Used by {@link #pinMessage} and {@link #unpinMessage} to clear stale cache
-     * without requiring Spring AOP proxy (avoids self-invocation problem).
-     */
-    @CacheEvict(value = RedisCacheConfig.CACHE_CHAT_PINNED, key = "#conversationId")
-    public void evictPinnedCache(UUID conversationId) {
-        log.debug("Evicting pinned message cache for conversation: {}", conversationId);
-    }
 
     @Override
     @Transactional(readOnly = true)
@@ -377,7 +439,8 @@ public class ChatMessageService implements IChatMessageService {
         }
 
         // 3. Clamp pagination params
-        int pageSize = Math.min(Math.max(size, 1), 50);
+        int maxPageSize = configService.getIntValue("SYSTEM_MAX_PAGE_SIZE", 200);
+        int pageSize = Math.min(Math.max(size, 1), maxPageSize);
         int offset = Math.max(page, 0) * pageSize;
 
         // 4. Search via PostgreSQL Full-Text Search
@@ -411,7 +474,8 @@ public class ChatMessageService implements IChatMessageService {
         }
 
         // 2. Clamp pagination params
-        int pageSize = Math.min(Math.max(size, 1), 50);
+        int maxPageSize = configService.getIntValue("SYSTEM_MAX_PAGE_SIZE", 200);
+        int pageSize = Math.min(Math.max(size, 1), maxPageSize);
         int offset = Math.max(page, 0) * pageSize;
 
         // 3. Global search across all user's conversations

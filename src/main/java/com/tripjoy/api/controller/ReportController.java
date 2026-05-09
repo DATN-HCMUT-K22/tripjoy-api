@@ -54,7 +54,7 @@ public class ReportController {
     @Operation(summary = "Get report details by id (Admin)")
     @GetMapping("/{reportId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ApiResponse<ReportResponse> getReportById(@PathVariable UUID reportId) {
+    public ApiResponse<ReportResponse> getReportById(@PathVariable("reportId") UUID reportId) {
         // reportId here refers to the ID in the "Report_to" table
         return ApiResponse.<ReportResponse>builder()
                 // .data(reportService.getReportById(reportId))
@@ -67,7 +67,7 @@ public class ReportController {
     @PostMapping(Endpoint.Report.ID + "/handle")
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<HandleReportResponse> handleReport(
-            @PathVariable UUID reportId, // ID from Report_to
+            @PathVariable("reportId") UUID reportId, // ID from Report_to
             @Valid @RequestBody HandleReportRequest request) {
 
         // return ApiResponse.<HandleReportResponse>builder()

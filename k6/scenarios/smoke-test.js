@@ -1,72 +1,97 @@
-// Smoke Test - Quick validation that system is working
-// Minimal load, tests only critical endpoints
+/**
+ * TripJoy k6 — SMOKE TEST
+ *
+ * Purpose: Verify the system is alive and all critical endpoints respond.
+ * Load:    1 VU per scenario, 2 minutes.
+ */
 
-import http from 'k6/http';
-import { check, sleep } from 'k6';
-import { buildURL, config } from '../config/dev.js';
+import { sleep, group } from 'k6';
 import { smokeThresholds } from '../config/thresholds.js';
-import { login, getAuthHeaders } from '../lib/auth.js';
-import { checkSuccess } from '../lib/check-utils.js';
+import { env, url } from '../config/environments.js';
+import { login, authHeaders } from '../lib/auth.js';
+import {
+    scenarioGetMyProfile,
+    scenarioSearchUsers,
+    scenarioGetMyGroups,
+    scenarioCreateGroup,
+    scenarioGetGroupMembers,
+    scenarioGetGroupSuggestions,
+    scenarioCreateSuggestion,
+    scenarioDeleteSuggestion,
+    scenarioSearchGroups,
+    scenarioBrowseFeed,
+    scenarioSearchPosts,
+    scenarioCreatePost,
+    scenarioSavePost,
+    scenarioSearchLocations,
+    scenarioNearbyLocations,
+    scenarioLocationAutocomplete,
+    scenarioGetAdministrativeLocations,
+    scenarioCreateItinerary,
+    scenarioCheckNotifications,
+    scenarioGetConversations,
+    scenarioReadMessages,
+    scenarioSendMessage,
+    scenarioSearchMessages,
+    scenarioGetUploadSignature,
+    scenarioGetPublicProfile,
+} from '../lib/scenarios.js';
 
 export const options = {
-    vus: 2,
-    duration: '1m',
-    thresholds: smokeThresholds
+    scenarios: {
+        read: { executor: 'constant-vus', vus: 1, duration: '2m', exec: 'readScenario' },
+        manage: { executor: 'constant-vus', vus: 1, duration: '2m', exec: 'manageScenario' },
+        social: { executor: 'constant-vus', vus: 1, duration: '2m', exec: 'socialScenario' },
+        chat: { executor: 'constant-vus', vus: 1, duration: '2m', exec: 'chatScenario' },
+    },
+    thresholds: smokeThresholds,
+    tags: { testType: 'smoke', project: 'tripjoy' },
 };
 
 export function setup() {
-    // Login to get auth token for tests
-    const token = login(config.defaultUsers.user1.username, config.defaultUsers.user1.password);
-
-    if (!token) {
-        console.error('Setup failed: Could not login with default user');
-        return null;
-    }
-
-    return { token };
+    const r1 = login(env.users.regular.username, env.users.regular.password);
+    if (!r1) throw new Error('[smoke] Cannot login');
+    return { access_token1: r1.access_token };
 }
 
-export default function (data) {
-    if (!data || !data.token) {
-        console.error('No auth token available, skipping tests');
-        return;
-    }
-
-    const headers = getAuthHeaders(data.token);
-
-    // Test 1: Get my info
-    const myInfoRes = http.get(
-        buildURL('/users/me'),
-        { headers, tags: { name: 'get-me' } }
-    );
-
-    checkSuccess(myInfoRes, 'get-me');
-    sleep(0.5);
-
-    // Test 2: Get my groups
-    const myGroupsRes = http.get(
-        buildURL('/groups'),
-        { headers, tags: { name: 'get-my-groups' } }
-    );
-
-    checkSuccess(myGroupsRes, 'get-my-groups');
-    sleep(0.5);
-
-    // Test 3: Get locations (paginated)
-    const locationsRes = http.get(
-        buildURL('/locations?page=0&size=10'),
-        { headers, tags: { name: 'get-locations' } }
-    );
-
-    checkSuccess(locationsRes, 'get-locations');
-    sleep(0.5);
-
-    // Test 4: Get notifications
-    const notificationsRes = http.get(
-        buildURL('/notifications?page=0&size=10'),
-        { headers, tags: { name: 'get-notifications' } }
-    );
-
-    checkSuccess(notificationsRes, 'get-notifications');
+// ──────────────────────────────────────────────────────────────
+// ENTRY POINTS
+// ──────────────────────────────────────────────────────────────
+export function readScenario(data) {
+    const headers = authHeaders(data.access_token1);
+    group('READ_HEAVY_BROWSING', function () {
+        scenarioBrowseFeed(headers);
+        scenarioSearchLocations(headers);
+    });
     sleep(1);
 }
+
+export function manageScenario(data) {
+    const headers = authHeaders(data.access_token1);
+    group('GROUP_AND_ITINERARY_MGMT', function () {
+        scenarioGetMyGroups(headers);
+    });
+    sleep(1);
+}
+
+export function socialScenario(data) {
+    const headers = authHeaders(data.access_token1);
+    group('SOCIAL_INTERACTIONS', function () {
+        scenarioBrowseFeed(headers);
+    });
+    sleep(1);
+}
+
+export function chatScenario(data) {
+    const headers = authHeaders(data.access_token1);
+    group('CHAT_AND_NOTIFICATIONS', function () {
+        scenarioCheckNotifications(headers);
+    });
+    sleep(1);
+}
+
+export function teardown(data) {
+    console.log('[smoke] Smoke test completed.');
+}
+
+export { handleSummary } from '../lib/summary.js';

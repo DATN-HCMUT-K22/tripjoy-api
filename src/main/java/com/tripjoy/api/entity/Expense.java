@@ -12,6 +12,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "expense", indexes = {@Index(name = "idx_expense_itinerary_id", columnList = "itinerary_id")})
 public class Expense extends BaseEntity {
 
     private String name;

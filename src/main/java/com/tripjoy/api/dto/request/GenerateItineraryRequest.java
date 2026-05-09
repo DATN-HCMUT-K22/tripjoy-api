@@ -1,6 +1,7 @@
 package com.tripjoy.api.dto.request;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 import jakarta.validation.constraints.NotBlank;
@@ -38,4 +39,10 @@ public class GenerateItineraryRequest {
     private Double budgetEstimate;
 
     private Set<String> themes;
+
+    /**
+     * Optional: danh sách place_id từ SuggestLocation của group.
+     * AI Service sẽ ưu tiên đưa các địa điểm này vào lịch trình nếu phù hợp.
+     */
+    private List<String> suggestLocations;
 }

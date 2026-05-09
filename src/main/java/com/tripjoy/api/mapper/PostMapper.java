@@ -35,6 +35,11 @@ public interface PostMapper {
     @Mapping(target = "latestComments", ignore = true) // Handled separately if needed
     PostResponse toPostResponse(Post post);
 
+    @Mapping(target = "author", source = "creator")
+    @Mapping(target = "contentSnippet", expression = "java(post.getContent() != null ? (post.getContent().length() > 50 ? post.getContent().substring(0, 50) + \"...\" : post.getContent()) : \"\")")
+    @Mapping(target = "thumbnailUrl", expression = "java(post.getMediaUrls() != null && !post.getMediaUrls().isEmpty() ? post.getMediaUrls().get(0) : null)")
+    com.tripjoy.api.dto.response.simple.PostSimpleResponse toPostSimpleResponse(Post post);
+
     @Named("mapHashtagsToStrings")
     default Set<String> mapHashtagsToStrings(Set<Hashtag> hashtags) {
         if (hashtags == null) {

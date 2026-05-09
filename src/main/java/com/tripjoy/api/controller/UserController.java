@@ -5,6 +5,8 @@ import java.util.UUID;
 
 import jakarta.validation.Valid;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import com.tripjoy.api.constant.Endpoint;
@@ -20,6 +22,7 @@ import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import com.tripjoy.api.service.IUserService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -33,23 +36,21 @@ import lombok.experimental.FieldDefaults;
 public class UserController {
         IUserService userService;
 
-        @Operation(summary = "Search users by username or email", description = "Searches for users whose username or email contains the given keyword. "
-                        + "Uses case-insensitive LIKE matching.")
-        @GetMapping(Endpoint.User.SEARCH)
-        public ApiResponse<List<UserSimpleResponse>> searchUsers(@RequestParam String q) {
-                return ApiResponse.<List<UserSimpleResponse>>builder()
-                                .data(userService.searchUsers(q))
-                                .build();
-        }
+        @Operation(summary = "Get users (Admin only)", description = """
+                        Returns a paginated list of all users. Supports optional keyword filter on
+                        username or email (case-insensitive LIKE).
 
+                        **No `q` param** → returns all users (paginated).
+                        **With `?q=keyword`** → filters by username OR email.
+
+                        Requires `ADMIN` role.
+                        """)
         @GetMapping
-        @Operation(summary = "Get all users", description = "Retrieves a list of all registered users.")
-        // @PreAuthorize("hasRole('SYSTEM_ADMIN')")
-        // @PreAuthorize("hasAuthority('APPROVE_POST')")
-        public ApiResponse<List<UserResponse>> getUsers() {
-
-                return ApiResponse.<List<UserResponse>>builder()
-                                .data(userService.getUsers())
+        public ApiResponse<Page<UserResponse>> getUsers(
+                        @Parameter(description = "Optional keyword filter on username or email", example = "nguyen") @RequestParam(required = false) String q,
+                        Pageable pageable) {
+                return ApiResponse.<Page<UserResponse>>builder()
+                                .data(userService.getUsers(pageable, q))
                                 .build();
         }
 
@@ -59,9 +60,19 @@ public class UserController {
                 return ApiResponse.<UserResponse>builder().data(userService.getMyInfo()).build();
         }
 
+        @Operation(summary = "Global User Search", description = "Search users by username, fullName, email or phoneNumber. Use for search bar in end-user mode.")
+        @GetMapping(Endpoint.User.SEARCH)
+        public ApiResponse<Page<UserSimpleResponse>> searchUsers(
+                        @Parameter(description = "Keyword: username, fullName, email, phoneNumber") @RequestParam("q") String q,
+                        Pageable pageable) {
+                return ApiResponse.<Page<UserSimpleResponse>>builder()
+                                .data(userService.searchUsersGlobal(q, pageable))
+                                .build();
+        }
+
         @GetMapping(Endpoint.User.ID + "/profile")
         @Operation(summary = "Get user's public profile", description = "Returns a public, non-sensitive profile of any user (avatar, bio, fullName). Cached 12h.")
-        public ApiResponse<UserPublicResponse> getPublicProfile(@PathVariable UUID userId) {
+        public ApiResponse<UserPublicResponse> getPublicProfile(@PathVariable("userId") UUID userId) {
                 return ApiResponse.<UserPublicResponse>builder()
                                 .data(userService.getPublicProfile(userId))
                                 .build();
@@ -69,7 +80,7 @@ public class UserController {
 
         @GetMapping(Endpoint.User.ID + "/admin-view")
         @Operation(summary = "Admin: Get full user details", description = "Returns complete user data including sensitive fields. Requires ADMIN role. Cached 12h (admin namespace).")
-        public ApiResponse<UserResponse> getUserDetailsForAdmin(@PathVariable UUID userId) {
+        public ApiResponse<UserResponse> getUserDetailsForAdmin(@PathVariable("userId") UUID userId) {
                 return ApiResponse.<UserResponse>builder()
                                 .data(userService.getUserDetailsForAdmin(userId))
                                 .build();
@@ -101,7 +112,7 @@ public class UserController {
         @Operation(summary = "Assign roles to user (Admin only)", description = "Assigns a set of roles to a specific user.")
         @PutMapping(Endpoint.User.ID_ROLES)
         ApiResponse<UserResponse> assignRoles(
-                        @PathVariable UUID userId, @RequestBody @Valid UserRoleUpdateRequest request) {
+                        @PathVariable("userId") UUID userId, @RequestBody @Valid UserRoleUpdateRequest request) {
                 return ApiResponse.<UserResponse>builder()
                                 .data(userService.assignRoles(userId, request))
                                 .build();
@@ -110,7 +121,7 @@ public class UserController {
         @Operation(summary = "Update user locked status (Admin only)", description = "Locks or unlocks a user account.")
         @PatchMapping(Endpoint.User.ID_STATUS)
         ApiResponse<UserResponse> updateUserStatus(
-                        @PathVariable UUID userId, @RequestBody @Valid UserStatusUpdateRequest request) {
+                        @PathVariable("userId") UUID userId, @RequestBody @Valid UserStatusUpdateRequest request) {
                 return ApiResponse.<UserResponse>builder()
                                 .data(userService.updateUserStatus(userId, request.getIsLocked()))
                                 .build();
@@ -118,7 +129,7 @@ public class UserController {
 
         @Operation(summary = "Delete user by ID", description = "Deletes a user account from the system by their unique ID.")
         @DeleteMapping(Endpoint.User.ID)
-        ApiResponse<Void> deleteUser(@PathVariable UUID userId) {
+        ApiResponse<Void> deleteUser(@PathVariable("userId") UUID userId) {
                 userService.deleteUser(userId);
                 return ApiResponse.<Void>builder().message("User has been deleted").build();
         }

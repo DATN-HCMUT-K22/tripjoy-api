@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -31,8 +32,8 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
         LEFT JOIN itinerary i ON p.itinerary_id = i.id
         WHERE p.is_deleted = false
         AND (:keyword IS NULL OR (
-            to_tsvector('simple', coalesce(p.content, '')) @@ plainto_tsquery('simple', CAST(:keyword AS text))
-            OR p.content ILIKE '%' || CAST(:keyword AS text) || '%'
+            to_tsvector('simple', f_unaccent(coalesce(p.content, ''))) @@ plainto_tsquery('simple', f_unaccent(CAST(:keyword AS text)))
+            OR f_unaccent(p.content) ILIKE '%' || f_unaccent(CAST(:keyword AS text)) || '%'
         ))
         AND (:hashtag IS NULL OR LOWER(h.name) = LOWER(CAST(:hashtag AS text)))
         AND (CAST(:creatorId AS uuid) IS NULL OR p.creator_id = CAST(:creatorId AS uuid))
@@ -49,7 +50,7 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
         AND (CAST(:destinationId AS uuid) IS NULL OR i.destination = CAST(:destinationId AS uuid))
         GROUP BY p.id
         ORDER BY
-            CASE WHEN :sortBy = 'relevance' THEN ts_rank(to_tsvector('simple', coalesce(p.content, '')), plainto_tsquery('simple', coalesce(CAST(:keyword AS text), ''))) END DESC,
+            CASE WHEN :sortBy = 'relevance' THEN ts_rank(to_tsvector('simple', f_unaccent(coalesce(p.content, ''))), plainto_tsquery('simple', f_unaccent(coalesce(CAST(:keyword AS text), '')))) END DESC,
             p.created_at DESC
         LIMIT :limit OFFSET :offset
         """,
@@ -85,8 +86,8 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
         LEFT JOIN itinerary i ON p.itinerary_id = i.id
         WHERE p.is_deleted = false
         AND (:keyword IS NULL OR (
-            to_tsvector('simple', coalesce(p.content, '')) @@ plainto_tsquery('simple', CAST(:keyword AS text))
-            OR p.content ILIKE '%' || CAST(:keyword AS text) || '%'
+            to_tsvector('simple', f_unaccent(coalesce(p.content, ''))) @@ plainto_tsquery('simple', f_unaccent(CAST(:keyword AS text)))
+            OR f_unaccent(p.content) ILIKE '%' || f_unaccent(CAST(:keyword AS text)) || '%'
         ))
         AND (:hashtag IS NULL OR LOWER(h.name) = LOWER(CAST(:hashtag AS text)))
         AND (CAST(:creatorId AS uuid) IS NULL OR p.creator_id = CAST(:creatorId AS uuid))
@@ -119,7 +120,21 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
             @Param("originId") UUID originId,
             @Param("destinationId") UUID destinationId);
 
+    @EntityGraph(attributePaths = {"creator", "itinerary"})
     Page<Post> findBySoftDeleteInfoIsDeletedFalse(Pageable pageable);
 
+    @EntityGraph(attributePaths = {"creator", "itinerary"})
     Page<Post> findBySaveUsersIdAndSoftDeleteInfoIsDeletedFalse(UUID userId, Pageable pageable);
+
+    @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM Post p JOIN p.likeUsers u WHERE p.id = :postId AND u.id = :userId")
+    boolean isLikedByUser(@Param("postId") UUID postId, @Param("userId") UUID userId);
+
+    @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM Post p JOIN p.saveUsers u WHERE p.id = :postId AND u.id = :userId")
+    boolean isSavedByUser(@Param("postId") UUID postId, @Param("userId") UUID userId);
+
+    @Query("SELECT p.id FROM Post p JOIN p.likeUsers u WHERE p.id IN :postIds AND u.id = :userId")
+    List<UUID> findLikedPostIdsByUser(@Param("postIds") List<UUID> postIds, @Param("userId") UUID userId);
+
+    @Query("SELECT p.id FROM Post p JOIN p.saveUsers u WHERE p.id IN :postIds AND u.id = :userId")
+    List<UUID> findSavedPostIdsByUser(@Param("postIds") List<UUID> postIds, @Param("userId") UUID userId);
 }

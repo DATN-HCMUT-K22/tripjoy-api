@@ -50,6 +50,12 @@ public class Endpoint {
 
         /** GET /locations/search — full-text + filter search (alias for GET /locations with q param) */
         public static final String SEARCH = "/search";
+
+        /**
+         * GET /locations/autocomplete — hybrid autocomplete (DB fast-path + Google Places fallback).
+         * Used while user is typing in the location search box. Min 2 chars.
+         */
+        public static final String AUTOCOMPLETE = "/autocomplete";
     }
 
     public static final class Group {
@@ -139,6 +145,9 @@ public class Endpoint {
 
         // AI: Thay thế địa điểm không muốn đi bằng gợi ý mới từ AI
         public static final String AI_MODIFY = ID + "/ai-modify";
+
+        // AI: Gợi ý địa điểm thay thế cho 1 TripItem cụ thể (không lưu DB)
+        public static final String AI_SUGGEST_LOCATION = ID + "/ai-suggest-location";
     }
 
     public static final class TravelNotebook {
@@ -190,8 +199,17 @@ public class Endpoint {
         public static final String ARCHIVE = ID + "/archive";
     }
 
+    public static final class SystemConfig {
+        public static final String BASE = API_PREFIX + "/admin/configs";
+        public static final String KEY = "/{key}";
+    }
+
     public static final class Admin {
         public static final String BASE = API_PREFIX + "/admin";
+    }
+
+    public static final class Ai {
+        public static final String BASE = API_PREFIX + "/ai";
     }
 
     public static final class Media {

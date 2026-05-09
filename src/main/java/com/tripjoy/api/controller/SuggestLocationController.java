@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping
+@RequestMapping(Endpoint.Group.BASE)
 @RequiredArgsConstructor
 @Tag(name = "Location Suggestions", description = "APIs for managing location suggestions in groups")
 public class SuggestLocationController {
@@ -30,7 +30,7 @@ public class SuggestLocationController {
 
     @Operation(summary = "Get all location suggestions for a group - OK")
     @GetMapping(Endpoint.Group.LOCATION_SUGGESTIONS)
-    public ApiResponse<List<SuggestLocationResponse>> getGroupSuggestions(@PathVariable UUID groupId) {
+    public ApiResponse<List<SuggestLocationResponse>> getGroupSuggestions(@PathVariable("groupId") UUID groupId) {
 
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         List<SuggestLocationResponse> suggestions =
@@ -44,7 +44,7 @@ public class SuggestLocationController {
     @Operation(summary = "Suggest a location for the group - OK")
     @PostMapping(Endpoint.Group.LOCATION_SUGGESTIONS)
     public ApiResponse<SuggestLocationResponse> createSuggestion(
-            @PathVariable UUID groupId, @RequestBody @Valid SuggestLocationRequest request) {
+            @PathVariable("groupId") UUID groupId, @RequestBody @Valid SuggestLocationRequest request) {
 
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         SuggestLocationResponse response = suggestLocationService.createSuggestion(groupId, request, currentUserId);
@@ -54,7 +54,7 @@ public class SuggestLocationController {
 
     @Operation(summary = "Delete a suggestion - Owner or Leader/Co-Leader - OK")
     @DeleteMapping(Endpoint.Group.LOCATION_SUGGESTIONS_ID)
-    public ApiResponse<Void> deleteSuggestion(@PathVariable UUID groupId, @PathVariable UUID suggestionId) {
+    public ApiResponse<Void> deleteSuggestion(@PathVariable("groupId") UUID groupId, @PathVariable("suggestionId") UUID suggestionId) {
 
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         suggestLocationService.deleteSuggestion(groupId, suggestionId, currentUserId);

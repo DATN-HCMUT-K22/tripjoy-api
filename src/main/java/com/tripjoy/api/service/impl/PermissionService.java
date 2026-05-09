@@ -1,6 +1,7 @@
 package com.tripjoy.api.service.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -46,7 +47,7 @@ public class PermissionService implements IPermissionService {
     @Cacheable(value = RedisCacheConfig.CACHE_PERMISSION_ALL, key = "'all'")
     public List<PermissionResponse> getAll() {
         var permissions = permissionRepository.findAll();
-        return permissions.stream().map(mapper::toPermissionResponse).toList();
+        return permissions.stream().map(mapper::toPermissionResponse).collect(Collectors.toList());
     }
 
     /**

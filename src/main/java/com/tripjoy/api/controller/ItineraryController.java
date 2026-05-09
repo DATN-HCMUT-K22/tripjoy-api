@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.tripjoy.api.constant.Endpoint;
 import com.tripjoy.api.dto.request.AiModifyItineraryRequest;
+import com.tripjoy.api.dto.request.AiSuggestLocationRequest;
 import com.tripjoy.api.dto.request.GenerateItineraryRequest;
 import com.tripjoy.api.dto.request.ItineraryRequest;
 import com.tripjoy.api.dto.request.TripItemRequest;
@@ -67,9 +68,9 @@ public class ItineraryController {
 
     @Operation(summary = "Get a single itinerary by ID")
     @GetMapping(Endpoint.Itinerary.ID)
-    public ApiResponse<ItineraryResponse> getItinerary(@PathVariable UUID id) {
+    public ApiResponse<ItineraryResponse> getItinerary(@PathVariable("itineraryId") UUID itineraryId) {
         return ApiResponse.<ItineraryResponse>builder()
-                .data(itineraryService.getItineraryById(id))
+                .data(itineraryService.getItineraryById(itineraryId))
                 .build();
     }
 
@@ -90,7 +91,7 @@ public class ItineraryController {
     @Operation(summary = "Update an itinerary")
     @PutMapping(Endpoint.Itinerary.ID)
     public ApiResponse<ItineraryResponse> updateItinerary(
-            @PathVariable UUID itineraryId, @Valid @RequestBody ItineraryRequest request) {
+            @PathVariable("itineraryId") UUID itineraryId, @Valid @RequestBody ItineraryRequest request) {
         return ApiResponse.<ItineraryResponse>builder()
                 .data(itineraryService.updateItinerary(itineraryId, request))
                 .build();
@@ -98,7 +99,7 @@ public class ItineraryController {
 
     @Operation(summary = "Delete an itinerary")
     @DeleteMapping(Endpoint.Itinerary.ID)
-    public ApiResponse<Void> deleteItinerary(@PathVariable UUID itineraryId) {
+    public ApiResponse<Void> deleteItinerary(@PathVariable("itineraryId") UUID itineraryId) {
         itineraryService.deleteItinerary(itineraryId);
         return ApiResponse.<Void>builder()
                 .message("Itinerary deleted successfully")
@@ -109,14 +110,14 @@ public class ItineraryController {
 
     @Operation(summary = "Favorite an itinerary")
     @PostMapping(Endpoint.Itinerary.FAVORITES)
-    public ApiResponse<Void> favoriteItinerary(@PathVariable UUID itineraryId) {
+    public ApiResponse<Void> favoriteItinerary(@PathVariable("itineraryId") UUID itineraryId) {
         itineraryService.favoriteItinerary(itineraryId);
         return ApiResponse.<Void>builder().message("Itinerary favorited").build();
     }
 
     @Operation(summary = "Unfavorite an itinerary")
     @DeleteMapping(Endpoint.Itinerary.FAVORITES)
-    public ApiResponse<Void> unfavoriteItinerary(@PathVariable UUID itineraryId) {
+    public ApiResponse<Void> unfavoriteItinerary(@PathVariable("itineraryId") UUID itineraryId) {
         itineraryService.unfavoriteItinerary(itineraryId);
         return ApiResponse.<Void>builder().message("Itinerary unfavorited").build();
     }
@@ -165,7 +166,7 @@ public class ItineraryController {
             + "The AI will pick suitable replacements and update the itinerary synchronously.")
     @PostMapping(Endpoint.Itinerary.AI_MODIFY)
     public ResponseEntity<ApiResponse<ItineraryResponse>> aiModifyItinerary(
-            @PathVariable UUID itineraryId,
+            @PathVariable("itineraryId") UUID itineraryId,
             @Valid @RequestBody AiModifyItineraryRequest request) {
 
         ItineraryResponse response = itineraryGenerationService.modifyItinerary(itineraryId, request);
@@ -176,4 +177,23 @@ public class ItineraryController {
                         .data(response)
                         .build());
     }
+
+    @Operation(
+            summary = "AI Suggest Location — get alternative location suggestions for a single trip item",
+            description = "Provide the place_id of the trip item to replace. "
+                    + "AI returns candidate locations without modifying the itinerary.")
+    @PostMapping(Endpoint.Itinerary.AI_SUGGEST_LOCATION)
+    public ResponseEntity<ApiResponse<List<TripItemResponse>>> aiSuggestLocation(
+            @PathVariable("itineraryId") UUID itineraryId,
+            @Valid @RequestBody AiSuggestLocationRequest request) {
+
+        List<TripItemResponse> suggestions = itineraryGenerationService.suggestLocation(itineraryId, request);
+
+        return ResponseEntity.ok(
+                ApiResponse.<List<TripItemResponse>>builder()
+                        .message("AI suggested " + suggestions.size() + " alternative location(s)")
+                        .data(suggestions)
+                        .build());
+    }
 }
+
