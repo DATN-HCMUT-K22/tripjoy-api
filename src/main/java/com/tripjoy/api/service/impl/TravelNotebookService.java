@@ -64,6 +64,18 @@ public class TravelNotebookService implements ITravelNotebookService {
                         .build())
                 .collect(Collectors.toList());
 
+        // Robust destination extraction
+        String destinationName = itinerary.getDestination() != null 
+                ? itinerary.getDestination().getName() 
+                : itinerary.getName();
+
+        // Clean up: remove "Trip to ", " Adventure X", etc. to get a clean city name for AI lookup
+        destinationName = destinationName
+                .replaceFirst("(?i)^Trip to\\s+", "")
+                .replaceFirst("(?i)\\s+Adventure\\s+\\d+$", "")
+                .replaceFirst("(?i)\\s+Adventure$", "")
+                .trim();
+
         AiGenerateNotebookRequestDto aiRequest = AiGenerateNotebookRequestDto.builder()
                 .name(itinerary.getName())
                 .startDate(itinerary.getStartDate() != null
@@ -75,9 +87,7 @@ public class TravelNotebookService implements ITravelNotebookService {
                         ? itinerary.getBudgetEstimate().longValue() : null)
                 .themes(itinerary.getThemes().stream()
                         .map(t -> t.getName()).collect(Collectors.toList()))
-                // destination: dùng tên lịch trình — AI sẽ tra Wikipedia theo tên này
-                .destination(itinerary.getName()
-                        .replaceFirst("(?i)^trip to ", "").trim())
+                .destination(destinationName)
                 .tripItems(aiTripItems)
                 .build();
 

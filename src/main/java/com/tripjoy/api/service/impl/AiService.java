@@ -101,7 +101,7 @@ public class AiService implements IAiService {
     @CircuitBreaker(name = AI_SERVICE_NAME, fallbackMethod = "generateNotebookFallback")
     @Retry(name = AI_SERVICE_NAME)
     public Mono<AiNotebookResponseDto> generateNotebook(AiGenerateNotebookRequestDto request) {
-        log.info("Sending generate-notebook request to AI Service for destination: {}", request.getDestination());
+        log.info("Sending generate-notebook request to AI Service for destination: {}. Payload: {}", request.getDestination(), request);
 
         return aiServiceWebClient.post()
                 .uri("/generate-notebook")

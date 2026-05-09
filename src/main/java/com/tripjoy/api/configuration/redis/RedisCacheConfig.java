@@ -134,18 +134,24 @@ public class RedisCacheConfig {
                 objectMapper.registerModule(new JavaTimeModule());
                 objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-                // 2. Best Practice: Security & Stability - Use TypeValidator to prevent gadget attacks
+                // 2. Best Practice: Security & Stability - Use TypeValidator to prevent gadget
+                // attacks
                 PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
                                 .allowIfBaseType(Object.class)
                                 .build();
 
-                // 3. THE FIX: Use WRAPPER_ARRAY. This is the official way to support polymorphic root-level Lists/Arrays.
-                // It serializes as ["class.name", {...data...}], which is valid JSON for any root element.
-                objectMapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_ARRAY);
+                // 3. THE FIX: Use WRAPPER_ARRAY. This is the official way to support
+                // polymorphic root-level Lists/Arrays.
+                // It serializes as ["class.name", {...data...}], which is valid JSON for any
+                // root element.
+                objectMapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL,
+                                JsonTypeInfo.As.WRAPPER_ARRAY);
 
                 // 4. Use GenericJackson2JsonRedisSerializer (Recommended for Spring Cache)
-                // It handles dynamic types and null values more gracefully than the typed version.
-                GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+                // It handles dynamic types and null values more gracefully than the typed
+                // version.
+                GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(
+                                objectMapper);
 
                 // Default config — fallback for any cache not explicitly configured below
                 RedisCacheConfiguration defaults = RedisCacheConfiguration.defaultCacheConfig()
@@ -186,7 +192,7 @@ public class RedisCacheConfig {
 
                 cacheConfigs.put(CACHE_SYSTEM_CONFIG,
                                 defaults.entryTtl(TTL_SYSTEM_CONFIG));
-                
+
                 // Cache user's group list for 10 minutes to hit < 500ms p95 targets
                 cacheConfigs.put(CACHE_GROUPS_BY_USER,
                                 defaults.entryTtl(Duration.ofMinutes(10)));
