@@ -1,159 +1,171 @@
-// Authentication Helper Functions
+/**
+ * TripJoy k6 — Auth Helper Library
+ *
+ * Provides token management with in-memory caching per VU.
+ * Implements: login, register, logout, introspect, refresh.
+ */
 
 import http from 'k6/http';
 import { check } from 'k6';
-import { buildURL } from '../config/dev.js';
+import { url } from '../config/environments.js';
+
+const JSON_HEADERS = { 'Content-Type': 'application/json' };
+
+// ──────────────────────────────────────────────────────────────
+// Core Auth API calls
+// ──────────────────────────────────────────────────────────────
 
 /**
- * Register a new user
- * @param {Object} userData - User registration data
- * @returns {Object} Response with user data
+ * Login with username + password. Returns { token, refreshToken } or null.
  */
-export function registerUser(userData) {
-    const url = buildURL('/auth/register');
-    const payload = JSON.stringify({
+export function login(username, password) {
+    const res = http.post(
+        url('/auth/login'),
+        JSON.stringify({ username, password }),
+        { headers: JSON_HEADERS, tags: { name: 'POST /auth/login', scenario: 'auth' } }
+    );
+
+    const ok = check(res, {
+        'login: status 200': (r) => r.status === 200,
+        'login: has token': (r) => {
+            try { return !!JSON.parse(r.body).data?.access_token; } catch { return false; }
+        },
+    });
+
+    if (!ok) {
+        console.error(`[auth] login failed for ${username}: HTTP ${res.status} — ${res.body?.substring(0, 200)}`);
+        return null;
+    }
+
+    try {
+        const body = JSON.parse(res.body);
+        return {
+            access_token: body.data.access_token,
+            refresh_token: body.data.refresh_token || null,
+            authenticated: body.data.authenticated === true,
+        };
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Register a new user. Returns { token } or null.
+ */
+export function register(userData) {
+    const payload = {
         username: userData.username,
         password: userData.password,
         email: userData.email,
-        fullName: userData.fullName || userData.username
-    });
-
-    const params = {
-        headers: { 'Content-Type': 'application/json' },
-        tags: { name: 'register' }
+        fullName: userData.fullName || userData.username,
     };
 
-    const res = http.post(url, payload, params);
+    const res = http.post(
+        url('/auth/register'),
+        JSON.stringify(payload),
+        { headers: JSON_HEADERS, tags: { name: 'POST /auth/register', scenario: 'auth' } }
+    );
 
-    check(res, {
-        'register: status is 200': (r) => r.status === 200,
-        'register: has data': (r) => r.json('data') !== null
-    });
-
-    return res;
-}
-
-/**
- * Login and get access token
- * @param {string} username - Username
- * @param {string} password - Password
- * @returns {string|null} Access token or null if login failed
- */
-export function login(username, password) {
-    const url = buildURL('/auth/login');
-    const payload = JSON.stringify({
-        username: username,
-        password: password
-    });
-
-    const params = {
-        headers: { 'Content-Type': 'application/json' },
-        tags: { name: 'login' }
-    };
-
-    const res = http.post(url, payload, params);
-
-    const loginSuccess = check(res, {
-        'login: status is 200': (r) => r.status === 200,
-        'login: has token': (r) => r.json('data.token') !== undefined
-    });
-
-    if (loginSuccess && res.json('data.token')) {
-        return res.json('data.token');
-    }
-
-    console.error(`Login failed for ${username}: ${res.status} - ${res.body}`);
-    return null;
-}
-
-/**
- * Refresh access token
- * @param {string} refreshToken - Refresh token
- * @returns {string|null} New access token or null if refresh failed
- */
-export function refreshToken(refreshToken) {
-    const url = buildURL('/auth/refresh');
-    const payload = JSON.stringify({
-        token: refreshToken
-    });
-
-    const params = {
-        headers: { 'Content-Type': 'application/json' },
-        tags: { name: 'refresh' }
-    };
-
-    const res = http.post(url, payload, params);
-
-    const refreshSuccess = check(res, {
-        'refresh: status is 200': (r) => r.status === 200,
-        'refresh: has token': (r) => r.json('data.token') !== undefined
-    });
-
-    if (refreshSuccess && res.json('data.token')) {
-        return res.json('data.token');
-    }
-
-    return null;
-}
-
-/**
- * Introspect token to validate
- * @param {string} token - Access token to validate
- * @returns {boolean} True if token is valid
- */
-export function introspectToken(token) {
-    const url = buildURL('/auth/introspect');
-    const payload = JSON.stringify({
-        token: token
-    });
-
-    const params = {
-        headers: { 'Content-Type': 'application/json' },
-        tags: { name: 'introspect' }
-    };
-
-    const res = http.post(url, payload, params);
-
-    return check(res, {
-        'introspect: status is 200': (r) => r.status === 200,
-        'introspect: token is valid': (r) => r.json('data.valid') === true
-    });
-}
-
-/**
- * Logout from the system
- * @param {string} token - Access token
- * @returns {boolean} True if logout successful
- */
-export function logout(token) {
-    const url = buildURL('/auth/logout');
-    const payload = JSON.stringify({
-        token: token
-    });
-
-    const params = {
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+    const ok = check(res, {
+        'register: status 200': (r) => r.status === 200,
+        'register: has data': (r) => {
+            try { return !!JSON.parse(r.body).data; } catch { return false; }
         },
-        tags: { name: 'logout' }
-    };
-
-    const res = http.post(url, payload, params);
-
-    return check(res, {
-        'logout: status is 200': (r) => r.status === 200
     });
+
+    if (!ok) {
+        console.warn(`[auth] register failed for ${userData.username}: HTTP ${res.status} — ${res.body?.substring(0, 200)}. Trying login...`);
+        // If registration fails, try to login (maybe user already exists)
+        return login(userData.username, userData.password);
+    }
+
+    // After registration, login to get token
+    return login(userData.username, userData.password);
 }
 
 /**
- * Get authorization headers with bearer token
- * @param {string} token - Access token
- * @returns {Object} Headers object with Authorization
+ * Introspect a token to validate it.
  */
-export function getAuthHeaders(token) {
+export function introspect(token) {
+    const res = http.post(
+        url('/auth/introspect'),
+        JSON.stringify({ token }),
+        { headers: JSON_HEADERS, tags: { name: 'POST /auth/introspect', scenario: 'auth' } }
+    );
+
+    const ok = check(res, {
+        'introspect: status 200': (r) => r.status === 200,
+        'introspect: token valid': (r) => {
+            try { return JSON.parse(r.body).data?.valid === true; } catch { return false; }
+        },
+    });
+
+    return ok;
+}
+
+/**
+ * Refresh an access token.
+ */
+export function refreshToken(token) {
+    const res = http.post(
+        url('/auth/refresh'),
+        JSON.stringify({ token }),
+        { headers: JSON_HEADERS, tags: { name: 'POST /auth/refresh', scenario: 'auth' } }
+    );
+
+    const ok = check(res, {
+        'refresh: status 200': (r) => r.status === 200,
+        'refresh: has token': (r) => {
+            try { return !!JSON.parse(r.body).data?.access_token; } catch { return false; }
+        },
+    });
+
+    if (!ok) return null;
+    try {
+        return JSON.parse(res.body).data.access_token;
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Logout — invalidates the given token.
+ */
+export function logout(access_token) {
+    const res = http.post(
+        url('/auth/logout'),
+        JSON.stringify({ token: access_token }),
+        {
+            headers: { ...JSON_HEADERS, Authorization: `Bearer ${access_token}` },
+            tags: { name: 'POST /auth/logout', scenario: 'auth' },
+        }
+    );
+
+    check(res, { 'logout: status 200': (r) => r.status === 200 });
+}
+
+// ──────────────────────────────────────────────────────────────
+// Convenience builders
+// ──────────────────────────────────────────────────────────────
+
+/**
+ * Returns headers with Bearer token.
+ */
+export function authHeaders(access_token) {
     return {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        Authorization: `Bearer ${access_token}`,
     };
+}
+
+/**
+ * Get-or-login: returns a cached token for the given credentials.
+ * Call once in setup(), share via data bag.
+ */
+export function getOrLogin(username, password) {
+    const result = login(username, password);
+    if (!result) {
+        throw new Error(`[auth] Cannot login as ${username} — aborting test`);
+    }
+    return result.access_token;
 }

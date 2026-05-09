@@ -1,12 +1,12 @@
 /**
- * TripJoy k6 — SMOKE TEST
+ * TripJoy k6 — SPIKE TEST
  *
- * Purpose: Verify the system is alive and all critical endpoints respond.
- * Load:    1 VU per scenario, 2 minutes.
+ * Purpose: Verify system recovery after sudden massive load jumps.
+ * Load:    Instant jump to 300 VUs.
  */
 
 import { sleep, group } from 'k6';
-import { smokeThresholds } from '../config/thresholds.js';
+import { stressThresholds } from '../config/thresholds.js';
 import { env, url } from '../config/environments.js';
 import { login, authHeaders } from '../lib/auth.js';
 import {
@@ -39,18 +39,50 @@ import {
 
 export const options = {
     scenarios: {
-        read: { executor: 'constant-vus', vus: 1, duration: '2m', exec: 'readScenario' },
-        manage: { executor: 'constant-vus', vus: 1, duration: '2m', exec: 'manageScenario' },
-        social: { executor: 'constant-vus', vus: 1, duration: '2m', exec: 'socialScenario' },
-        chat: { executor: 'constant-vus', vus: 1, duration: '2m', exec: 'chatScenario' },
+        read: {
+            executor: 'ramping-vus',
+            stages: [
+                { duration: '10s', target: 120 },
+                { duration: '1m',  target: 120 },
+                { duration: '10s', target: 0 },
+            ],
+            exec: 'readScenario',
+        },
+        manage: {
+            executor: 'ramping-vus',
+            stages: [
+                { duration: '10s', target: 90 },
+                { duration: '1m',  target: 90 },
+                { duration: '10s', target: 0 },
+            ],
+            exec: 'manageScenario',
+        },
+        social: {
+            executor: 'ramping-vus',
+            stages: [
+                { duration: '10s', target: 60 },
+                { duration: '1m',  target: 60 },
+                { duration: '10s', target: 0 },
+            ],
+            exec: 'socialScenario',
+        },
+        chat: {
+            executor: 'ramping-vus',
+            stages: [
+                { duration: '10s', target: 30 },
+                { duration: '1m',  target: 30 },
+                { duration: '10s', target: 0 },
+            ],
+            exec: 'chatScenario',
+        },
     },
-    thresholds: smokeThresholds,
-    tags: { testType: 'smoke', project: 'tripjoy' },
+    thresholds: stressThresholds,
+    tags: { testType: 'spike', project: 'tripjoy' },
 };
 
 export function setup() {
     const r1 = login(env.users.regular.username, env.users.regular.password);
-    if (!r1) throw new Error('[smoke] Cannot login');
+    if (!r1) throw new Error('[spike] Cannot login');
     return { access_token1: r1.access_token };
 }
 
@@ -63,15 +95,15 @@ export function readScenario(data) {
         scenarioBrowseFeed(headers);
         scenarioSearchLocations(headers);
     });
-    sleep(1);
+    sleep(0.1); // Fast iterations for spike
 }
 
 export function manageScenario(data) {
     const headers = authHeaders(data.access_token1);
     group('GROUP_AND_ITINERARY_MGMT', function () {
-        scenarioGetMyGroups(headers);
+        scenarioCreateGroup(headers);
     });
-    sleep(1);
+    sleep(0.1);
 }
 
 export function socialScenario(data) {
@@ -79,7 +111,7 @@ export function socialScenario(data) {
     group('SOCIAL_INTERACTIONS', function () {
         scenarioBrowseFeed(headers);
     });
-    sleep(1);
+    sleep(0.1);
 }
 
 export function chatScenario(data) {
@@ -87,11 +119,11 @@ export function chatScenario(data) {
     group('CHAT_AND_NOTIFICATIONS', function () {
         scenarioCheckNotifications(headers);
     });
-    sleep(1);
+    sleep(0.1);
 }
 
 export function teardown(data) {
-    console.log('[smoke] Smoke test completed.');
+    console.log('[spike] Spike test completed.');
 }
 
 export { handleSummary } from '../lib/summary.js';

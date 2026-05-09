@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -69,6 +70,7 @@ public class GroupService implements IGroupService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = RedisCacheConfig.CACHE_GROUPS_BY_USER, key = "#userId")
     public List<GroupResponse> getMyGroups(UUID userId) {
         // Use NOT DELETED query to filter soft-deleted memberships
         List<GroupMember> memberRecords = groupMemberRepository.findByUserIdAndNotDeleted(userId);
@@ -77,7 +79,9 @@ public class GroupService implements IGroupService {
                 .map(GroupMember::getGroup)
                 .filter(group -> !group.getSoftDeleteInfo().isDeleted()) // Also filter deleted groups
                 .map(groupMapper::toGroupResponse)
-                .toList();
+                // Use collect(Collectors.toList()) instead of .toList() to ensure the result is a mutable ArrayList.
+                // Immutable collections from .toList() lack a default constructor, causing Jackson deserialization failures in Redis.
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -204,7 +208,7 @@ public class GroupService implements IGroupService {
         List<GroupMember> members = groupMemberRepository.findByGroupOrderByRoleAsc(group);
 
         // Map to response DTOs
-        return members.stream().map(groupMapper::toGroupMemberResponse).toList();
+        return members.stream().map(groupMapper::toGroupMemberResponse).collect(Collectors.toList());
     }
 
     @Override
@@ -463,6 +467,6 @@ public class GroupService implements IGroupService {
         }
         return groupRepository.searchByName(keyword.trim()).stream()
                 .map(groupMapper::toGroupResponse)
-                .toList();
+                .collect(Collectors.toList());
     }
 }

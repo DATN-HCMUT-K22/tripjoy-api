@@ -1,159 +1,261 @@
-// Load Test - Expected normal traffic
-// Tests all implemented endpoints with realistic load
+/**
+ * TripJoy k6 — LOAD TEST
+ *
+ * Purpose: Simulate realistic concurrent user traffic across all features.
+ * Load:    Ramp up to 50 VUs over 3 stages, 5 min total.
+ */
 
-import http from 'k6/http';
-import { check, sleep } from 'k6';
-import { buildURL, config } from '../config/dev.js';
+import { sleep, group } from 'k6';
 import { loadThresholds } from '../config/thresholds.js';
-import { login, getAuthHeaders } from '../lib/auth.js';
-import { generateGroupName, generateLocationData, generateUserData } from '../lib/utils.js';
-import { checkSuccess, checkHasData } from '../lib/check-utils.js';
+import { env, url } from '../config/environments.js';
+import { login, authHeaders } from '../lib/auth.js';
+import { get, post, expectSuccess, extractData } from '../lib/http.js';
+import {
+    scenarioGetMyProfile,
+    scenarioSearchUsers,
+    scenarioGetMyGroups,
+    scenarioCreateGroup,
+    scenarioGetGroupMembers,
+    scenarioGetGroupSuggestions,
+    scenarioCreateSuggestion,
+    scenarioDeleteSuggestion,
+    scenarioSearchGroups,
+    scenarioBrowseFeed,
+    scenarioSearchPosts,
+    scenarioCreatePost,
+    scenarioSavePost,
+    scenarioSearchLocations,
+    scenarioNearbyLocations,
+    scenarioLocationAutocomplete,
+    scenarioGetAdministrativeLocations,
+    scenarioCreateItinerary,
+    scenarioCheckNotifications,
+    scenarioGetConversations,
+    scenarioReadMessages,
+    scenarioSendMessage,
+    scenarioSearchMessages,
+    scenarioGetUploadSignature,
+    scenarioGetPublicProfile,
+} from '../lib/scenarios.js';
 
+// ──────────────────────────────────────────────────────────────
+// Options
+// ──────────────────────────────────────────────────────────────
 export const options = {
-    stages: [
-        { duration: '1m', target: 20 },   // Ramp up to 20 VUs
-        { duration: '5m', target: 20 },   // Stay at 20 VUs
-        { duration: '1m', target: 0 },    // Ramp down to 0
-    ],
-    thresholds: loadThresholds
+    scenarios: {
+        read: {
+            executor: 'ramping-vus',
+            startVUs: 0,
+            stages: [
+                { duration: '1m', target: 20 }, // 40% of 50
+                { duration: '3m', target: 20 },
+                { duration: '1m', target: 0 },
+            ],
+            exec: 'readScenario',
+        },
+        manage: {
+            executor: 'ramping-vus',
+            startVUs: 0,
+            stages: [
+                { duration: '1m', target: 15 }, // 30% of 50
+                { duration: '3m', target: 15 },
+                { duration: '1m', target: 0 },
+            ],
+            exec: 'manageScenario',
+        },
+        social: {
+            executor: 'ramping-vus',
+            startVUs: 0,
+            stages: [
+                { duration: '1m', target: 10 }, // 20% of 50
+                { duration: '3m', target: 10 },
+                { duration: '1m', target: 0 },
+            ],
+            exec: 'socialScenario',
+        },
+        chat: {
+            executor: 'ramping-vus',
+            startVUs: 0,
+            stages: [
+                { duration: '1m', target: 5 }, // 10% of 50
+                { duration: '3m', target: 5 },
+                { duration: '1m', target: 0 },
+            ],
+            exec: 'chatScenario',
+        },
+    },
+    thresholds: loadThresholds,
+    tags: { testType: 'load', project: 'tripjoy' },
 };
 
+// ──────────────────────────────────────────────────────────────
+// SETUP
+// ──────────────────────────────────────────────────────────────
 export function setup() {
-    // Create test users and login
-    const user1Token = login(config.defaultUsers.user1.username, config.defaultUsers.user1.password);
-    const user2Token = login(config.defaultUsers.user2.username, config.defaultUsers.user2.password);
-
-    if (!user1Token || !user2Token) {
-        console.error('Setup failed: Could not login with default users');
-        return null;
-    }
-
+    const r1 = login(env.users.regular.username, env.users.regular.password);
+    const r2 = login(env.users.regular2.username, env.users.regular2.password);
+    if (!r1) throw new Error('[load] Cannot login user1');
     return {
-        user1Token,
-        user2Token
+        access_token1: r1.access_token,
+        access_token2: r2 ? r2.access_token : null,
     };
 }
 
-export default function (data) {
-    if (!data || !data.user1Token) {
-        console.error('No auth tokens available');
-        return;
-    }
-
-    // Randomly choose a user token
-    const token = Math.random() > 0.5 ? data.user1Token : data.user2Token;
-    const headers = getAuthHeaders(token);
-
-    // Simulate realistic user behavior
-    const scenario = Math.floor(Math.random() * 4);
-
-    switch (scenario) {
-        case 0:
-            // Scenario 1: Browse locations
-            browseLocations(headers);
-            break;
-        case 1:
-            // Scenario 2: Manage groups
-            manageGroups(headers);
-            break;
-        case 2:
-            // Scenario 3: Check notifications
-            checkNotifications(headers);
-            break;
-        case 3:
-            // Scenario 4: User profile
-            viewProfile(headers);
-            break;
-    }
-
-    sleep(Math.random() * 3 + 1); // Random sleep 1-4 seconds
+// ──────────────────────────────────────────────────────────────
+// ENTRY POINTS FOR SCENARIOS
+// ──────────────────────────────────────────────────────────────
+export function readScenario(data) {
+    const headers = authHeaders(data.access_token1);
+    readHeavyJourney(headers);
+    sleep(Math.random() * 2 + 1);
 }
 
-function browseLocations(headers) {
-    // Get all locations
-    const locationsRes = http.get(
-        buildURL('/locations?page=0&size=20'),
-        { headers, tags: { name: 'get-locations' } }
-    );
-    checkSuccess(locationsRes, 'get-locations');
-    sleep(0.5);
-
-    // Search locations
-    const searchRes = http.get(
-        buildURL('/locations/search?query=coffee&page=0&size=10'),
-        { headers, tags: { name: 'search-locations' } }
-    );
-    checkSuccess(searchRes, 'search-locations');
-    sleep(0.5);
-
-    // Find nearby locations
-    const nearbyRes = http.get(
-        buildURL('/locations/nearby?latitude=10.8231&longitude=106.6297&radius=5000'),
-        { headers, tags: { name: 'nearby-locations' } }
-    );
-    checkSuccess(nearbyRes, 'nearby-locations');
+export function manageScenario(data) {
+    const headers = authHeaders(data.access_token1);
+    groupItineraryJourney(headers);
+    sleep(Math.random() * 2 + 1);
 }
 
-function manageGroups(headers) {
-    // Get my groups
-    const myGroupsRes = http.get(
-        buildURL('/groups'),
-        { headers, tags: { name: 'get-my-groups' } }
-    );
-    checkSuccess(myGroupsRes, 'get-my-groups');
-    sleep(0.5);
+export function socialScenario(data) {
+    const headers = authHeaders(data.access_token1);
+    socialJourney(headers);
+    sleep(Math.random() * 2 + 1);
+}
 
-    // Create a new group (some iterations)
-    if (Math.random() > 0.7) {
-        const groupData = {
-            name: generateGroupName(),
-            description: 'Test group for load testing'
-        };
+export function chatScenario(data) {
+    const headers = authHeaders(data.access_token1);
+    chatNotifJourney(headers, data);
+    sleep(Math.random() * 2 + 1);
+}
 
-        const createGroupRes = http.post(
-            buildURL('/groups'),
-            JSON.stringify(groupData),
-            { headers, tags: { name: 'create-group' } }
-        );
-        checkSuccess(createGroupRes, 'create-group');
+// ──────────────────────────────────────────────────────────────
+// JOURNEY FUNCTIONS
+// ──────────────────────────────────────────────────────────────
 
-        // If group created, get its details
-        if (createGroupRes.status === 200) {
-            const groupId = createGroupRes.json('data.id');
-            if (groupId) {
-                sleep(0.5);
-                const groupDetailsRes = http.get(
-                    buildURL(`/groups/${groupId}`),
-                    { headers, tags: { name: 'get-group-details' } }
-                );
-                checkSuccess(groupDetailsRes, 'get-group-details');
+function readHeavyJourney(headers) {
+    group('READ_HEAVY_BROWSING', function () {
+        const step = Math.floor(Math.random() * 6);
+        switch (step) {
+            case 0:
+                scenarioBrowseFeed(headers);
+                scenarioSearchPosts(headers);
+                break;
+            case 1:
+                scenarioSearchLocations(headers);
+                scenarioNearbyLocations(headers);
+                break;
+            case 2:
+                scenarioLocationAutocomplete(headers);
+                scenarioGetAdministrativeLocations(headers);
+                break;
+            case 3:
+                const users = scenarioSearchUsers(headers);
+                scenarioGetMyProfile(headers);
+                if (Array.isArray(users) && users.length > 0) {
+                    scenarioGetPublicProfile(headers, users[0].id);
+                }
+                break;
+            case 4:
+                scenarioSearchGroups(headers);
+                scenarioGetMyGroups(headers);
+                break;
+            case 5:
+                // Fallback search + view
+                const uList = scenarioSearchUsers(headers);
+                if (Array.isArray(uList) && uList.length > 0) {
+                    scenarioGetPublicProfile(headers, uList[0].id);
+                }
+                break;
+        }
+    });
+}
+
+function groupItineraryJourney(headers) {
+    group('GROUP_AND_ITINERARY_MGMT', function () {
+        // Create group → create itinerary inside group
+        const groupId = scenarioCreateGroup(headers);
+        sleep(0.5);
+        if (groupId) {
+            scenarioGetGroupMembers(headers, groupId);
+            sleep(0.3);
+            
+            // Suggestion flow
+            scenarioGetGroupSuggestions(headers, groupId);
+            if (Math.random() < 0.5) {
+                const sid = scenarioCreateSuggestion(headers, groupId);
+                if (sid && Math.random() < 0.3) {
+                    scenarioDeleteSuggestion(headers, groupId, sid);
+                }
+            }
+
+            sleep(0.3);
+            const itineraryId = scenarioCreateItinerary(headers, groupId);
+            if (itineraryId) {
+                sleep(0.3);
             }
         }
-    }
+    });
 }
 
-function checkNotifications(headers) {
-    // Get notifications
-    const notificationsRes = http.get(
-        buildURL('/notifications?page=0&size=20'),
-        { headers, tags: { name: 'get-notifications' } }
-    );
-    checkSuccess(notificationsRes, 'get-notifications');
-    sleep(0.5);
+function socialJourney(headers) {
+    group('SOCIAL_INTERACTIONS', function () {
+        const roll = Math.random();
+        if (roll < 0.7) {
+            // 70% just browse feed and look at profiles
+            scenarioBrowseFeed(headers);
+            sleep(0.4);
+            const uList = scenarioSearchUsers(headers);
+            if (Array.isArray(uList) && uList.length > 0) {
+                scenarioGetPublicProfile(headers, uList[0].id);
+            }
+        } else {
+            // 30% create posts and interact
+            const itisRes = get(url('/itineraries/me'), headers, 'GET /itineraries/me');
+            const itis = extractData(itisRes);
+            let itineraryId = (itis && itis.length > 0) ? itis[0].id : null;
 
-    // Get unread count
-    const unreadCountRes = http.get(
-        buildURL('/notifications/unread-count'),
-        { headers, tags: { name: 'get-unread-count' } }
-    );
-    checkSuccess(unreadCountRes, 'get-unread-count');
+            if (!itineraryId) {
+                const groupId = scenarioCreateGroup(headers);
+                if (groupId) itineraryId = scenarioCreateItinerary(headers, groupId);
+            }
+
+            const postId = scenarioCreatePost(headers, itineraryId);
+            if (postId) {
+                sleep(0.3);
+                scenarioSavePost(headers, postId);
+            }
+        }
+        sleep(0.3);
+        scenarioGetUploadSignature(headers);
+    });
 }
 
-function viewProfile(headers) {
-    // Get my info
-    const myInfoRes = http.get(
-        buildURL('/users/me'),
-        { headers, tags: { name: 'get-my-info' } }
-    );
-    checkSuccess(myInfoRes, 'get-my-info');
+function chatNotifJourney(headers, data) {
+    group('CHAT_AND_NOTIFICATIONS', function () {
+        scenarioCheckNotifications(headers);
+        sleep(0.3);
+        const conversations = scenarioGetConversations(headers);
+        sleep(0.3);
+
+        if (Array.isArray(conversations) && conversations.length > 0) {
+            const convId = conversations[0].id;
+            if (convId) {
+                scenarioReadMessages(headers, convId);
+                sleep(0.3);
+                scenarioSendMessage(headers, convId);
+            }
+        }
+
+        sleep(0.3);
+        scenarioSearchMessages(headers);
+    });
 }
+
+// ──────────────────────────────────────────────────────────────
+// TEARDOWN
+// ──────────────────────────────────────────────────────────────
+export function teardown(data) {
+    console.log('[load] Load test completed.');
+}
+
+export { handleSummary } from '../lib/summary.js';
