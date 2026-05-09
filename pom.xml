@@ -339,14 +339,6 @@
 				<version>3.11.0.3922</version>
 			</plugin>
 
-
-			<!-- SonarCloud: static analysis gate used in CI pipeline -->
-			<plugin>
-				<groupId>org.sonarsource.scanner.maven</groupId>
-				<artifactId>sonar-maven-plugin</artifactId>
-				<version>3.11.0.3922</version>
-			</plugin>
-
 <!--			plugin nay de up len swagger hub-->
 			<plugin>
 				<groupId>io.swagger</groupId>
