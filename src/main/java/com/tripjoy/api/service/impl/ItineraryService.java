@@ -4,9 +4,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tripjoy.api.configuration.redis.RedisCacheConfig;
 import com.tripjoy.api.dto.request.ItineraryRequest;
 import com.tripjoy.api.dto.request.TripItemRequest;
 import com.tripjoy.api.dto.response.ItineraryResponse;
@@ -52,6 +54,7 @@ public class ItineraryService implements IItineraryService {
     ILocationService locationService;
 
     @Override
+    @CacheEvict(value = RedisCacheConfig.CACHE_ITINERARIES_BY_USER, key = "T(com.tripjoy.api.utils.SecurityUtils).getCurrentUserId()")
     public ItineraryResponse createItinerary(ItineraryRequest request) {
         UUID userId = SecurityUtils.getCurrentUserId();
         User user = userRepository.findById(userId)
@@ -91,6 +94,7 @@ public class ItineraryService implements IItineraryService {
     }
 
     @Override
+    @org.springframework.cache.annotation.CacheEvict(value = RedisCacheConfig.CACHE_ITINERARIES_BY_USER, key = "T(com.tripjoy.api.utils.SecurityUtils).getCurrentUserId()")
     public ItineraryResponse updateItinerary(UUID id, ItineraryRequest request) {
         Itinerary itinerary = itineraryRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -114,6 +118,7 @@ public class ItineraryService implements IItineraryService {
     }
 
     @Override
+    @org.springframework.cache.annotation.CacheEvict(value = RedisCacheConfig.CACHE_ITINERARIES_BY_USER, key = "T(com.tripjoy.api.utils.SecurityUtils).getCurrentUserId()")
     public void deleteItinerary(UUID id) {
         Itinerary itinerary = itineraryRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -126,19 +131,22 @@ public class ItineraryService implements IItineraryService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    @org.springframework.cache.annotation.Cacheable(value = RedisCacheConfig.CACHE_ITINERARIES_BY_USER, key = "T(com.tripjoy.api.utils.SecurityUtils).getCurrentUserId()")
     public List<ItineraryResponse> getMyItineraries() {
         UUID userId = SecurityUtils.getCurrentUserId();
-        return itineraryRepository.findByUserIdAndSoftDeleteInfoIsDeletedFalse(userId).stream()
+        return itineraryRepository.findByUserId(userId).stream()
                 .map(itineraryMapper::toItineraryResponse)
-                .collect(Collectors.toList());
+                .collect(java.util.stream.Collectors.toList());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ItineraryResponse> getMyFavoriteItineraries() {
         UUID userId = SecurityUtils.getCurrentUserId();
-        return itineraryRepository.findByFavouriteUsersIdAndSoftDeleteInfoIsDeletedFalse(userId).stream()
+        return itineraryRepository.findByFavouriteUserId(userId).stream()
                 .map(itineraryMapper::toItineraryResponse)
-                .collect(Collectors.toList());
+                .collect(java.util.stream.Collectors.toList());
     }
 
     @Override

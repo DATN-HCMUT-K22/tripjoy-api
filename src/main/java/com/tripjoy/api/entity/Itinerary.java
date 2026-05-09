@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 import com.tripjoy.api.enums.ItineraryStatus;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Formula;
 
 import lombok.*;
 
@@ -22,7 +23,10 @@ import lombok.*;
 @AllArgsConstructor
 @Table(
         name = "itinerary",
-        indexes = {@Index(name = "idx_itinerary_group", columnList = "group_id, is_deleted")})
+        indexes = {
+                @Index(name = "idx_itinerary_group", columnList = "group_id, is_deleted"),
+                @Index(name = "idx_itinerary_user_deleted", columnList = "user_id, is_deleted")
+        })
 public class Itinerary extends BaseEntity {
 
     private String name;
@@ -72,20 +76,26 @@ public class Itinerary extends BaseEntity {
     @Builder.Default
     private Set<Theme> themes = new HashSet<>();
 
+    @org.hibernate.annotations.BatchSize(size = 50)
     @OneToMany(mappedBy = "itinerary", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     @Builder.Default
     private Set<TripItem> tripItems = new HashSet<>();
 
+    @org.hibernate.annotations.BatchSize(size = 50)
     @OneToMany(mappedBy = "itinerary", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     @Builder.Default
     private Set<Expense> expenses = new HashSet<>();
 
+    @Formula("(SELECT COALESCE(SUM(e.amount), 0) FROM expense e WHERE e.itinerary_id = id)")
+    private BigDecimal totalExpense;
+
     @OneToOne(mappedBy = "itinerary", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private TravelNotebook travelNotebook;
 
+    @org.hibernate.annotations.BatchSize(size = 50)
     @ManyToMany
     @JoinTable(
             name = "favourite_itinerary",

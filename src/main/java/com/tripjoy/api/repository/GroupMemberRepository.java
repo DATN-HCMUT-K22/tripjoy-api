@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -41,8 +42,11 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, UUID> 
             "SELECT gm FROM GroupMember gm WHERE gm.group = :group AND gm.softDeleteInfo.isDeleted = false ORDER BY gm.role ASC")
     List<GroupMember> findByGroupAndNotDeletedOrderByRoleAsc(@Param("group") Group group);
 
-    @Query(
-            "SELECT gm FROM GroupMember gm WHERE gm.user.id = :userId AND gm.softDeleteInfo.isDeleted = false ORDER BY gm.group.createdAt DESC")
+    // Optimized EntityGraph: Fetch the group and associated user in a single join.
+    // Avoid deep fetching multiple collections here to prevent Cartesian Product performance issues.
+    // Deep collections (members, itineraries) are handled via @BatchSize in the entity for optimal performance.
+    @EntityGraph(attributePaths = {"group", "user"})
+    @Query("SELECT gm FROM GroupMember gm WHERE gm.user.id = :userId AND gm.softDeleteInfo.isDeleted = false ORDER BY gm.group.createdAt DESC")
     List<GroupMember> findByUserIdAndNotDeleted(@Param("userId") UUID userId);
 
     @Query(

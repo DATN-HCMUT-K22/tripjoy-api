@@ -3,6 +3,7 @@ package com.tripjoy.api.service.impl;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -224,7 +225,9 @@ public class UserService implements IUserService {
         if (keyword == null || keyword.trim().isEmpty()) return List.of();
         return userRepository.searchByUsernameOrEmail(keyword.trim()).stream()
                 .map(userMapper::toUserSimpleResponse)
-                .toList();
+                // Use collect(Collectors.toList()) instead of .toList() to ensure the result is a mutable ArrayList.
+                // Immutable collections from .toList() lack a default constructor, causing Jackson deserialization failures in Redis.
+                .collect(Collectors.toList());
     }
 
     @Override
