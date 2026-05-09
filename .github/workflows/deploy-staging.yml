@@ -184,19 +184,15 @@ jobs:
             
             echo "Writing .env file from GitHub Secret..."
             echo "${{ secrets.ENV_STAGING }}" | base64 -d > .env
-            # Thêm IMAGE_TAG cho staging
+            echo "" >> .env 
+            
             echo "IMAGE_TAG=staging" >> .env
             echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
             
             echo "Pulling new Docker image..."
+            IMAGE_TAG=staging DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }} \
             docker compose -f docker-compose.prod.yml pull tripjoy-api
             
             echo "Restarting services..."
+            IMAGE_TAG=staging DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }} \
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
-            
-            echo "Cleaning up old images..."
-            docker image prune -f
-            
-            echo "Staging deployment complete!"
-            echo "Running containers:"
-            docker compose -f docker-compose.prod.yml ps
