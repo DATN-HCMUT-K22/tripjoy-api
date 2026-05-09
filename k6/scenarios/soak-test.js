@@ -1,84 +1,65 @@
 /**
- * TripJoy k6 — STRESS TEST (Extremely High Load)
+ * TripJoy k6 — SOAK TEST
  *
- * Purpose: Find the absolute breaking point — ramp to 500 VUs.
- * Intensity: Increased by reducing sleep intervals.
+ * Purpose: Verify system stability over an extended period.
+ * Load:    50 VUs sustained for 30 minutes.
  */
 
 import { sleep, group } from 'k6';
-import { stressThresholds } from '../config/thresholds.js';
+import { soakThresholds } from '../config/thresholds.js';
 import { env, url } from '../config/environments.js';
 import { login, authHeaders } from '../lib/auth.js';
 import {
+    scenarioGetMyProfile,
     scenarioSearchUsers,
+    scenarioGetMyGroups,
     scenarioCreateGroup,
+    scenarioGetGroupMembers,
+    scenarioGetGroupSuggestions,
     scenarioCreateSuggestion,
+    scenarioDeleteSuggestion,
     scenarioSearchGroups,
     scenarioBrowseFeed,
+    scenarioSearchPosts,
     scenarioCreatePost,
     scenarioSavePost,
     scenarioSearchLocations,
+    scenarioNearbyLocations,
     scenarioLocationAutocomplete,
+    scenarioGetAdministrativeLocations,
     scenarioCreateItinerary,
     scenarioCheckNotifications,
     scenarioGetConversations,
     scenarioReadMessages,
     scenarioSendMessage,
+    scenarioSearchMessages,
+    scenarioGetUploadSignature,
     scenarioGetPublicProfile,
 } from '../lib/scenarios.js';
 
 export const options = {
     scenarios: {
-        read: {
-            executor: 'ramping-vus',
-            stages: [
-                { duration: '1m', target: 200 }, // Fast ramp
-                { duration: '3m', target: 200 },
-                { duration: '1m', target: 0 },
-            ],
-            exec: 'readScenario',
-        },
-        manage: {
-            executor: 'ramping-vus',
-            stages: [
-                { duration: '1m', target: 150 },
-                { duration: '3m', target: 150 },
-                { duration: '1m', target: 0 },
-            ],
-            exec: 'manageScenario',
-        },
-        social: {
-            executor: 'ramping-vus',
-            stages: [
-                { duration: '1m', target: 100 },
-                { duration: '3m', target: 100 },
-                { duration: '1m', target: 0 },
-            ],
-            exec: 'socialScenario',
-        },
-        chat: {
-            executor: 'ramping-vus',
-            stages: [
-                { duration: '1m', target: 50 },
-                { duration: '3m', target: 50 },
-                { duration: '1m', target: 0 },
-            ],
-            exec: 'chatScenario',
-        },
+        read: { executor: 'constant-vus', vus: 20, duration: '30m', exec: 'readScenario' },
+        manage: { executor: 'constant-vus', vus: 15, duration: '30m', exec: 'manageScenario' },
+        social: { executor: 'constant-vus', vus: 10, duration: '30m', exec: 'socialScenario' },
+        chat: { executor: 'constant-vus', vus: 5, duration: '30m', exec: 'chatScenario' },
     },
-    thresholds: stressThresholds,
-    tags: { testType: 'extreme-stress', project: 'tripjoy' },
+    thresholds: soakThresholds,
+    tags: { testType: 'soak', project: 'tripjoy' },
 };
 
 export function setup() {
     const r1 = login(env.users.regular.username, env.users.regular.password);
-    if (!r1) throw new Error('[stress] Cannot login');
+    if (!r1) throw new Error('[soak] Cannot login');
     return { access_token1: r1.access_token };
 }
 
+// ──────────────────────────────────────────────────────────────
+// ENTRY POINTS
+// ──────────────────────────────────────────────────────────────
 export function readScenario(data) {
     const headers = authHeaders(data.access_token1);
-    const step = Math.floor(Math.random() * 5);
+    const step = Math.floor(Math.random() * 6);
     group('READ_HEAVY_BROWSING', function () {
         switch (step) {
             case 0: scenarioBrowseFeed(headers); break;
@@ -86,9 +67,10 @@ export function readScenario(data) {
             case 2: scenarioLocationAutocomplete(headers); break;
             case 3: scenarioSearchUsers(headers); break;
             case 4: scenarioSearchGroups(headers); break;
+            case 5: scenarioGetPublicProfile(headers, '00000000-0000-0000-0000-000000000001'); break;
         }
     });
-    sleep(Math.random() * 0.5 + 0.1); // Fast pace
+    sleep(Math.random() * 2 + 1);
 }
 
 export function manageScenario(data) {
@@ -100,25 +82,22 @@ export function manageScenario(data) {
             scenarioCreateItinerary(headers, groupId);
         }
     });
-    sleep(Math.random() * 0.5 + 0.1);
+    sleep(Math.random() * 2 + 1);
 }
 
 export function socialScenario(data) {
     const headers = authHeaders(data.access_token1);
     group('SOCIAL_INTERACTIONS', function () {
-        const feed = scenarioBrowseFeed(headers);
-        let itiId = null;
-        // Try to find a valid itinerary from the feed to link to the post
-        if (feed && feed.data && feed.data.length > 0) {
-            itiId = feed.data[0].itineraryId || feed.data[0].id;
-        }
-        
-        if (itiId) {
-            const postId = scenarioCreatePost(headers, itiId);
+        scenarioBrowseFeed(headers);
+        // Interaction
+        const itisRes = scenarioGetMyGroups(headers); // or itineraries
+        const itId = (itisRes && itisRes.length > 0) ? itisRes[0].id : null;
+        if (itId) {
+            const postId = scenarioCreatePost(headers, itId);
             if (postId) scenarioSavePost(headers, postId);
         }
     });
-    sleep(Math.random() * 0.5 + 0.1);
+    sleep(Math.random() * 2 + 1);
 }
 
 export function chatScenario(data) {
@@ -131,11 +110,11 @@ export function chatScenario(data) {
             scenarioSendMessage(headers, convs[0].id);
         }
     });
-    sleep(Math.random() * 0.5 + 0.1);
+    sleep(Math.random() * 2 + 1);
 }
 
 export function teardown(data) {
-    console.log('[stress] Extreme stress test completed.');
+    console.log('[soak] Soak test completed.');
 }
 
 export { handleSummary } from '../lib/summary.js';
