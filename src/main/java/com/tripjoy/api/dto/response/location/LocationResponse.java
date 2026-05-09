@@ -51,7 +51,9 @@ public class LocationResponse {
     @JsonProperty("name_en")
     String nameEn;
 
-    @Schema(description = "Full formatted address from Map API", example = "268 Đ. Lý Thường Kiệt, Ho Chi Minh City, Vietnam")
+    @Schema(
+            description = "Full formatted address from Map API",
+            example = "268 Đ. Lý Thường Kiệt, Ho Chi Minh City, Vietnam")
     @JsonProperty("full_address")
     String fullAddress;
 
@@ -88,7 +90,9 @@ public class LocationResponse {
 
     // ==================== Categories & UI ====================
 
-    @Schema(description = "POI categories from map provider", example = "[\"university\",\"point_of_interest\",\"establishment\"]")
+    @Schema(
+            description = "POI categories from map provider",
+            example = "[\"university\",\"point_of_interest\",\"establishment\"]")
     @JsonProperty("categories")
     List<String> poiCategories;
 

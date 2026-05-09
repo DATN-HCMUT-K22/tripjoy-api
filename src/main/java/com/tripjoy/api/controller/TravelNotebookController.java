@@ -2,8 +2,6 @@ package com.tripjoy.api.controller;
 
 import java.util.UUID;
 
-import jakarta.validation.Valid;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,22 +30,20 @@ public class TravelNotebookController {
     // =========================================================================
 
     @Operation(
-        summary = "AI Generate Travel Notebook",
-        description = "Gọi AI Service (Gemini via Vertex AI) để sinh Travel Notebook "
-            + "cho lịch trình: ẩm thực, khí hậu, văn hóa. "
-            + "Nếu notebook đã tồn tại thì nội dung sẽ được cập nhật lại."
-    )
+            summary = "AI Generate Travel Notebook",
+            description = "Gọi AI Service (Gemini via Vertex AI) để sinh Travel Notebook "
+                    + "cho lịch trình: ẩm thực, khí hậu, văn hóa. "
+                    + "Nếu notebook đã tồn tại thì nội dung sẽ được cập nhật lại.")
     @PostMapping(Endpoint.TravelNotebook.AI_GENERATE)
     public ResponseEntity<ApiResponse<TravelNotebookResponse>> generateNotebook(
             @PathVariable("itineraryId") UUID itineraryId) {
 
         TravelNotebookResponse response = travelNotebookService.generateByItinerary(itineraryId);
 
-        return ResponseEntity.ok(
-                ApiResponse.<TravelNotebookResponse>builder()
-                        .message("Travel notebook generated successfully by AI")
-                        .data(response)
-                        .build());
+        return ResponseEntity.ok(ApiResponse.<TravelNotebookResponse>builder()
+                .message("Travel notebook generated successfully by AI")
+                .data(response)
+                .build());
     }
 
     // =========================================================================
@@ -56,8 +52,7 @@ public class TravelNotebookController {
 
     @Operation(summary = "Get travel notebook for a specific itinerary")
     @GetMapping(Endpoint.TravelNotebook.BY_ITINERARY)
-    public ApiResponse<TravelNotebookResponse> getNotebookByItinerary(
-            @PathVariable("itineraryId") UUID itineraryId) {
+    public ApiResponse<TravelNotebookResponse> getNotebookByItinerary(@PathVariable("itineraryId") UUID itineraryId) {
         return ApiResponse.<TravelNotebookResponse>builder()
                 .data(travelNotebookService.getByItineraryId(itineraryId))
                 .build();
@@ -71,4 +66,3 @@ public class TravelNotebookController {
                 .build();
     }
 }
-

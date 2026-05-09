@@ -49,8 +49,7 @@ public class GooglePlacesService implements IGooglePlacesService {
     private final String apiKey;
 
     public GooglePlacesService(
-            WebClient.Builder webClientBuilder,
-            @Value("${google.places.api-key:UNCONFIGURED_KEY}") String apiKey) {
+            WebClient.Builder webClientBuilder, @Value("${google.places.api-key:UNCONFIGURED_KEY}") String apiKey) {
         this.webClient = webClientBuilder
                 .baseUrl("https://places.googleapis.com/v1")
                 .defaultHeader("X-Goog-Api-Key", apiKey)
@@ -88,16 +87,21 @@ public class GooglePlacesService implements IGooglePlacesService {
 
         Map<String, Object> requestBody = buildAutocompleteRequest(input, cityBias, lat, lng);
 
-        return webClient.post()
+        return webClient
+                .post()
                 .uri("/places:autocomplete")
                 .bodyValue(requestBody)
                 .retrieve()
                 .bodyToMono(GoogleAutocompleteResponse.class)
                 .timeout(TIMEOUT)
-                .doOnNext(resp -> log.debug("Google autocomplete returned {} suggestions",
+                .doOnNext(resp -> log.debug(
+                        "Google autocomplete returned {} suggestions",
                         resp.getSuggestions() != null ? resp.getSuggestions().size() : 0))
                 .onErrorResume(WebClientResponseException.class, e -> {
-                    log.warn("Google Places autocomplete API error {}: {}", e.getStatusCode(), e.getResponseBodyAsString());
+                    log.warn(
+                            "Google Places autocomplete API error {}: {}",
+                            e.getStatusCode(),
+                            e.getResponseBodyAsString());
                     return Mono.empty();
                 })
                 .onErrorResume(Exception.class, e -> {
@@ -121,14 +125,19 @@ public class GooglePlacesService implements IGooglePlacesService {
 
         log.debug("Fetching Google Place Details for place_id: {}", placeId);
 
-        return webClient.get()
+        return webClient
+                .get()
                 .uri("/places/{placeId}?fields={fields}", placeId, PLACE_DETAILS_FIELDS)
                 .retrieve()
                 .bodyToMono(GooglePlaceDetailsDto.class)
                 .timeout(TIMEOUT)
                 .doOnNext(dto -> log.debug("Google Place Details fetched: {}", dto.getDisplayName()))
                 .onErrorResume(WebClientResponseException.class, e -> {
-                    log.warn("Google Places Details API error for placeId={}: {} — {}", placeId, e.getStatusCode(), e.getMessage());
+                    log.warn(
+                            "Google Places Details API error for placeId={}: {} — {}",
+                            placeId,
+                            e.getStatusCode(),
+                            e.getMessage());
                     return Mono.empty();
                 })
                 .onErrorResume(Exception.class, e -> {
@@ -146,21 +155,24 @@ public class GooglePlacesService implements IGooglePlacesService {
     private Map<String, Object> buildAutocompleteRequest(String input, String cityBias, Double lat, Double lng) {
         Map<String, Object> body = new HashMap<>();
         body.put("input", input.trim());
-        body.put("languageCode", "vi");       // Vietnamese-biased results for TripJoy VN
-        body.put("regionCode", "VN");         // Bias to Vietnam results
-        body.put("includedPrimaryTypes", new String[]{  // Focus on POI types relevant to travel
-                "restaurant", "cafe", "lodging", "tourist_attraction",
-                "museum", "park", "shopping_mall", "airport", "hotel"
+        body.put("languageCode", "vi"); // Vietnamese-biased results for TripJoy VN
+        body.put("regionCode", "VN"); // Bias to Vietnam results
+        body.put("includedPrimaryTypes", new String[] { // Focus on POI types relevant to travel
+            "restaurant", "cafe", "lodging", "tourist_attraction", "museum", "park", "shopping_mall", "airport", "hotel"
         });
 
         // Location bias: user's current position (if available) or city center
         if (lat != null && lng != null) {
-            body.put("locationBias", Map.of(
-                    "circle", Map.of(
-                            "center", Map.of("latitude", lat, "longitude", lng),
-                            "radius", 50000.0  // 50km radius bias
-                    )
-            ));
+            body.put(
+                    "locationBias",
+                    Map.of(
+                            "circle",
+                            Map.of(
+                                    "center",
+                                    Map.of("latitude", lat, "longitude", lng),
+                                    "radius",
+                                    50000.0 // 50km radius bias
+                                    )));
         }
 
         return body;

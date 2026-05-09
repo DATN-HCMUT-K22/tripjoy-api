@@ -7,7 +7,7 @@ import lombok.*;
 /**
  * DTO nhận response từ AI Service endpoint POST /generate-notebook.
  * Khớp 1:1 với Python model {@code TravelNotebook}:
- * 
+ *
  * <pre>
  * @dataclass
  * class TravelNotebook:

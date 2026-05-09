@@ -37,17 +37,18 @@ public class ThemeService implements IThemeService {
 
         // Batch fetch
         List<Theme> existingThemes = themeRepository.findByNameIn(cleanedNames);
-        Map<String, Theme> existingMap = existingThemes.stream()
-                .collect(Collectors.toMap(Theme::getName, t -> t));
+        Map<String, Theme> existingMap = existingThemes.stream().collect(Collectors.toMap(Theme::getName, t -> t));
 
         // Sync logic
-        return cleanedNames.stream().map(name -> {
-            if (existingMap.containsKey(name)) {
-                return existingMap.get(name);
-            } else {
-                Theme newTheme = Theme.builder().name(name).build();
-                return themeRepository.save(newTheme);
-            }
-        }).collect(Collectors.toSet());
+        return cleanedNames.stream()
+                .map(name -> {
+                    if (existingMap.containsKey(name)) {
+                        return existingMap.get(name);
+                    } else {
+                        Theme newTheme = Theme.builder().name(name).build();
+                        return themeRepository.save(newTheme);
+                    }
+                })
+                .collect(Collectors.toSet());
     }
 }

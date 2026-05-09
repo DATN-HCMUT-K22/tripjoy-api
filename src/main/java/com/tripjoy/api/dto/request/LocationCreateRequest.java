@@ -83,13 +83,17 @@ public class LocationCreateRequest {
     @JsonProperty("full_address")
     String fullAddress;
 
-    @Schema(description = "Short place-level formatted address (Mapbox: place_formatted)", example = "Quận 10, Hồ Chí Minh, Vietnam")
+    @Schema(
+            description = "Short place-level formatted address (Mapbox: place_formatted)",
+            example = "Quận 10, Hồ Chí Minh, Vietnam")
     @JsonProperty("place_formatted")
     String placeFormatted;
 
     // ==================== Routable Point ====================
 
-    @Schema(description = "Routable entry-point latitude (navigation target, Mapbox: routable_points)", example = "10.77320000")
+    @Schema(
+            description = "Routable entry-point latitude (navigation target, Mapbox: routable_points)",
+            example = "10.77320000")
     @JsonProperty("routable_latitude")
     Double routableLatitude;
 
@@ -125,7 +129,9 @@ public class LocationCreateRequest {
     @Schema(description = "Maki icon identifier (Mapbox icon set)", example = "school")
     String maki;
 
-    @Schema(description = "Map provider icon URL. Google Maps: icon.", example = "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/school-71.png")
+    @Schema(
+            description = "Map provider icon URL. Google Maps: icon.",
+            example = "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/school-71.png")
     @JsonProperty("icon_url")
     String iconUrl;
 
@@ -189,7 +195,8 @@ public class LocationCreateRequest {
     // ==================== Raw Response ====================
 
     @Schema(
-            description = "Full raw JSON response from the map provider API. Stored as JSONB for forward-compatibility.",
+            description =
+                    "Full raw JSON response from the map provider API. Stored as JSONB for forward-compatibility.",
             example = "{\"place_id\":\"ChIJ...\",\"name\":\"...\",\"types\":[...]}")
     @JsonProperty("raw_map_response")
     String rawMapResponse;

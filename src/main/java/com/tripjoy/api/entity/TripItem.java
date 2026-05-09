@@ -12,7 +12,9 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "trip_item", indexes = {@Index(name = "idx_trip_item_itinerary_id", columnList = "itinerary_id")})
+@Table(
+        name = "trip_item",
+        indexes = {@Index(name = "idx_trip_item_itinerary_id", columnList = "itinerary_id")})
 public class TripItem extends BaseEntity {
 
     private LocalDateTime startTime;

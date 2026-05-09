@@ -22,7 +22,6 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.retry.RetryConfig;
 import io.github.resilience4j.retry.RetryRegistry;
-
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -39,9 +38,11 @@ public class SystemConfigService implements ISystemConfigService {
     RetryRegistry retryRegistry;
 
     private static final String AI_SERVICE_NAME = "aiService";
+
     @Cacheable(value = RedisCacheConfig.CACHE_SYSTEM_CONFIG, key = "#key")
     public String getValue(String key, String defaultValue) {
-        return systemConfigRepository.findById(key)
+        return systemConfigRepository
+                .findById(key)
                 .map(SystemConfig::getConfigValue)
                 .orElse(defaultValue);
     }
@@ -83,7 +84,8 @@ public class SystemConfigService implements ISystemConfigService {
     @Transactional
     @CacheEvict(value = RedisCacheConfig.CACHE_SYSTEM_CONFIG, key = "#key")
     public SystemConfigResponse updateConfig(String key, SystemConfigUpdateRequest request) {
-        SystemConfig config = systemConfigRepository.findById(key)
+        SystemConfig config = systemConfigRepository
+                .findById(key)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Config key not found: " + key));
 
         config.setConfigValue(request.getValue());
@@ -93,7 +95,7 @@ public class SystemConfigService implements ISystemConfigService {
 
         config = systemConfigRepository.save(config);
         log.info("System config updated: {} = {}", key, request.getValue());
-        
+
         // Trigger resilience refresh if needed
         if (key.startsWith("AI_CB_") || key.startsWith("AI_RETRY_")) {
             refreshResilienceConfigs();
@@ -104,16 +106,16 @@ public class SystemConfigService implements ISystemConfigService {
 
     private void refreshResilienceConfigs() {
         log.info("Refreshing Resilience4j configs for AI Service...");
-        
+
         // 1. Update Circuit Breaker
         circuitBreakerRegistry.find(AI_SERVICE_NAME).ifPresent(cb -> {
             CircuitBreakerConfig currentConfig = cb.getCircuitBreakerConfig();
             CircuitBreakerConfig newConfig = CircuitBreakerConfig.from(currentConfig)
-                .slidingWindowSize(getIntValue("AI_CB_SLIDING_WINDOW_SIZE", 5))
-                .minimumNumberOfCalls(getIntValue("AI_CB_MIN_CALLS", 3))
-                .failureRateThreshold(getIntValue("AI_CB_FAILURE_RATE_THRESHOLD", 50))
-                .build();
-            
+                    .slidingWindowSize(getIntValue("AI_CB_SLIDING_WINDOW_SIZE", 5))
+                    .minimumNumberOfCalls(getIntValue("AI_CB_MIN_CALLS", 3))
+                    .failureRateThreshold(getIntValue("AI_CB_FAILURE_RATE_THRESHOLD", 50))
+                    .build();
+
             // Re-register to apply changes
             circuitBreakerRegistry.remove(AI_SERVICE_NAME);
             circuitBreakerRegistry.circuitBreaker(AI_SERVICE_NAME, newConfig);
@@ -124,10 +126,10 @@ public class SystemConfigService implements ISystemConfigService {
         retryRegistry.find(AI_SERVICE_NAME).ifPresent(r -> {
             RetryConfig currentConfig = r.getRetryConfig();
             RetryConfig newConfig = RetryConfig.from(currentConfig)
-                .maxAttempts(getIntValue("AI_RETRY_MAX_ATTEMPTS", 3))
-                .waitDuration(java.time.Duration.ofSeconds(getIntValue("AI_RETRY_WAIT_DURATION", 2)))
-                .build();
-            
+                    .maxAttempts(getIntValue("AI_RETRY_MAX_ATTEMPTS", 3))
+                    .waitDuration(java.time.Duration.ofSeconds(getIntValue("AI_RETRY_WAIT_DURATION", 2)))
+                    .build();
+
             retryRegistry.remove(AI_SERVICE_NAME);
             retryRegistry.retry(AI_SERVICE_NAME, newConfig);
             log.info("Updated Retry config for {}", AI_SERVICE_NAME);

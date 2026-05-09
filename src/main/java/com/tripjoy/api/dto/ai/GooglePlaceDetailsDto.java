@@ -1,6 +1,7 @@
 package com.tripjoy.api.dto.ai;
 
 import java.util.List;
+
 import lombok.Data;
 
 @Data

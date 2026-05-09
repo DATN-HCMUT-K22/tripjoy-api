@@ -13,6 +13,6 @@ import lombok.experimental.FieldDefaults;
 public class SystemConfigUpdateRequest {
     @NotBlank(message = "Config value is required")
     String value;
-    
+
     String description;
 }

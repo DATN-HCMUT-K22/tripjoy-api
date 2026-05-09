@@ -15,12 +15,16 @@ import lombok.experimental.FieldDefaults;
 public class SystemConfigResponse {
     String key;
     String value;
+
     @JsonProperty("data_type")
     String dataType;
+
     String group;
     String description;
+
     @JsonProperty("updated_at")
     LocalDateTime updatedAt;
+
     @JsonProperty("updated_by")
     String updatedBy;
 }

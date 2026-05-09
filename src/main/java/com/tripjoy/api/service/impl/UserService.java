@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Collectors;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -90,7 +89,8 @@ public class UserService implements IUserService {
      */
     @Override
     public UserResponse getMyInfo() {
-        String currentUserId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String currentUserId =
+                SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository
                 .findById(UUID.fromString(currentUserId))
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
@@ -108,8 +108,7 @@ public class UserService implements IUserService {
     @Cacheable(value = RedisCacheConfig.CACHE_USER_PUBLIC, key = "#id")
     public UserPublicResponse getPublicProfile(UUID id) {
         log.debug("Cache MISS — loading public profile from DB: {}", id);
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         return userMapper.toPublicResponse(user);
     }
 
@@ -136,11 +135,11 @@ public class UserService implements IUserService {
     @PreAuthorize("hasRole('ADMIN')")
     public Page<UserResponse> getUsers(Pageable pageable, String q) {
         if (q != null && !q.trim().isBlank()) {
-            return userRepository.searchByUsernameOrEmailPaged(q.trim(), pageable)
+            return userRepository
+                    .searchByUsernameOrEmailPaged(q.trim(), pageable)
                     .map(userMapper::toUserResponse);
         }
-        return userRepository.findAll(pageable)
-                .map(userMapper::toUserResponse);
+        return userRepository.findAll(pageable).map(userMapper::toUserResponse);
     }
 
     public UserResponse createUser(UserCreationRequest request) {
@@ -155,12 +154,14 @@ public class UserService implements IUserService {
      * Key for eviction comes from the saved entity's ID (resolved via SpEL on return value).
      */
     @Override
-    @Caching(evict = {
-        @CacheEvict(value = RedisCacheConfig.CACHE_USER_PUBLIC,     key = "#result.id"),
-        @CacheEvict(value = RedisCacheConfig.CACHE_USER_ADMIN_VIEW, key = "#result.id")
-    })
+    @Caching(
+            evict = {
+                @CacheEvict(value = RedisCacheConfig.CACHE_USER_PUBLIC, key = "#result.id"),
+                @CacheEvict(value = RedisCacheConfig.CACHE_USER_ADMIN_VIEW, key = "#result.id")
+            })
     public UserResponse updateMyProfile(UserProfileUpdateRequest request) {
-        String currentUserId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String currentUserId =
+                SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository
                 .findById(UUID.fromString(currentUserId))
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
@@ -171,7 +172,8 @@ public class UserService implements IUserService {
 
     @Override
     public void changeMyPassword(ChangePasswordRequest request) {
-        String currentUserId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String currentUserId =
+                SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository
                 .findById(UUID.fromString(currentUserId))
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
@@ -189,10 +191,11 @@ public class UserService implements IUserService {
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
-    @Caching(evict = {
-        @CacheEvict(value = RedisCacheConfig.CACHE_USER_PUBLIC,     key = "#userId"),
-        @CacheEvict(value = RedisCacheConfig.CACHE_USER_ADMIN_VIEW, key = "#userId")
-    })
+    @Caching(
+            evict = {
+                @CacheEvict(value = RedisCacheConfig.CACHE_USER_PUBLIC, key = "#userId"),
+                @CacheEvict(value = RedisCacheConfig.CACHE_USER_ADMIN_VIEW, key = "#userId")
+            })
     public UserResponse assignRoles(UUID userId, UserRoleUpdateRequest request) {
         User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         List<Role> roles = roleRepository.findAllById(request.getRoles());
@@ -202,10 +205,11 @@ public class UserService implements IUserService {
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
-    @Caching(evict = {
-        @CacheEvict(value = RedisCacheConfig.CACHE_USER_PUBLIC,     key = "#userId"),
-        @CacheEvict(value = RedisCacheConfig.CACHE_USER_ADMIN_VIEW, key = "#userId")
-    })
+    @Caching(
+            evict = {
+                @CacheEvict(value = RedisCacheConfig.CACHE_USER_PUBLIC, key = "#userId"),
+                @CacheEvict(value = RedisCacheConfig.CACHE_USER_ADMIN_VIEW, key = "#userId")
+            })
     public UserResponse updateUserStatus(UUID userId, boolean isLocked) {
         User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         user.setIsLocked(isLocked);
@@ -213,10 +217,11 @@ public class UserService implements IUserService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @Caching(evict = {
-        @CacheEvict(value = RedisCacheConfig.CACHE_USER_PUBLIC,     key = "#userId"),
-        @CacheEvict(value = RedisCacheConfig.CACHE_USER_ADMIN_VIEW, key = "#userId")
-    })
+    @Caching(
+            evict = {
+                @CacheEvict(value = RedisCacheConfig.CACHE_USER_PUBLIC, key = "#userId"),
+                @CacheEvict(value = RedisCacheConfig.CACHE_USER_ADMIN_VIEW, key = "#userId")
+            })
     public void deleteUser(UUID userId) {
         userRepository.deleteById(userId);
     }
@@ -227,7 +232,8 @@ public class UserService implements IUserService {
         return userRepository.searchByUsernameOrEmail(keyword.trim()).stream()
                 .map(userMapper::toUserSimpleResponse)
                 // Use collect(Collectors.toList()) instead of .toList() to ensure the result is a mutable ArrayList.
-                // Immutable collections from .toList() lack a default constructor, causing Jackson deserialization failures in Redis.
+                // Immutable collections from .toList() lack a default constructor, causing Jackson deserialization
+                // failures in Redis.
                 .collect(Collectors.toList());
     }
 
@@ -236,7 +242,6 @@ public class UserService implements IUserService {
         if (keyword == null || keyword.trim().isEmpty()) {
             return Page.empty();
         }
-        return userRepository.searchGlobalUsers(keyword.trim(), pageable)
-                .map(userMapper::toUserSimpleResponse);
+        return userRepository.searchGlobalUsers(keyword.trim(), pageable).map(userMapper::toUserSimpleResponse);
     }
 }

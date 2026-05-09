@@ -27,7 +27,7 @@ public class PostResponse extends BaseResponse {
     List<String> mediaUrls;
 
     String content;
-    
+
     PostVisibility visibility;
 
     // createdAt, updatedAt đã có từ BaseResponse - REMOVED

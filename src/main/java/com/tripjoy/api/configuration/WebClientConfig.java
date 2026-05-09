@@ -24,15 +24,16 @@ public class WebClientConfig {
     public WebClient aiServiceWebClient(WebClient.Builder webClientBuilder) {
         HttpClient httpClient = HttpClient.create()
                 .responseTimeout(Duration.ofSeconds(aiServiceProperties.getTimeoutSeconds()))
-                .doOnConnected(conn -> conn
-                        .addHandlerLast(new ReadTimeoutHandler(aiServiceProperties.getTimeoutSeconds()))
-                        .addHandlerLast(new WriteTimeoutHandler(aiServiceProperties.getTimeoutSeconds())));
+                .doOnConnected(
+                        conn -> conn.addHandlerLast(new ReadTimeoutHandler(aiServiceProperties.getTimeoutSeconds()))
+                                .addHandlerLast(new WriteTimeoutHandler(aiServiceProperties.getTimeoutSeconds())));
 
         return webClientBuilder
                 .baseUrl(aiServiceProperties.getBaseUrl())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024)) // 16MB max response size
+                .codecs(configurer ->
+                        configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024)) // 16MB max response size
                 .build();
     }
 }

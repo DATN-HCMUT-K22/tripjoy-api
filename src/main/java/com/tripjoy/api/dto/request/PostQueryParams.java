@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 
@@ -107,11 +106,13 @@ public class PostQueryParams {
 
     @Builder.Default
     @Pattern(regexp = "^(relevance|newest)$", message = "Sort must be 'relevance' or 'newest'")
-    @Schema(description = """
-            Sort strategy:
-            - `relevance`: FTS ranking (only meaningful when `q` is provided)
-            - `newest`: sort by creation date desc (default)
-            """,
+    @Schema(
+            description =
+                    """
+			Sort strategy:
+			- `relevance`: FTS ranking (only meaningful when `q` is provided)
+			- `newest`: sort by creation date desc (default)
+			""",
             allowableValues = {"relevance", "newest"},
             defaultValue = "newest")
     String sort = "newest";

@@ -1,7 +1,6 @@
 package com.tripjoy.api.dto.response;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 

@@ -18,4 +18,3 @@ public interface TravelNotebookMapper {
     @Mapping(source = "name", target = "name")
     ItinerarySimpleResponse toItinerarySimpleResponse(Itinerary itinerary);
 }
-

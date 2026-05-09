@@ -1,8 +1,6 @@
 package com.tripjoy.api.mapper;
 
-import java.math.BigDecimal;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -14,11 +12,12 @@ import org.mapstruct.Named;
 import com.tripjoy.api.configuration.mapper.BaseMapperConfig;
 import com.tripjoy.api.dto.request.ItineraryRequest;
 import com.tripjoy.api.dto.response.ItineraryResponse;
-import com.tripjoy.api.entity.Expense;
 import com.tripjoy.api.entity.Itinerary;
 import com.tripjoy.api.entity.Theme;
 
-@Mapper(config = BaseMapperConfig.class, uses = {UserMapper.class})
+@Mapper(
+        config = BaseMapperConfig.class,
+        uses = {UserMapper.class})
 public interface ItineraryMapper {
 
     @Mapping(target = "user", ignore = true)

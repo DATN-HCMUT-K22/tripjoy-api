@@ -6,8 +6,6 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-
 import com.tripjoy.api.dto.request.LocationCreateRequest;
 import com.tripjoy.api.dto.request.LocationQueryParams;
 import com.tripjoy.api.dto.response.location.AdministrativeLocationResponse;

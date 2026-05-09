@@ -25,4 +25,3 @@ public interface ITravelNotebookService {
      */
     TravelNotebookResponse getById(UUID notebookId);
 }
-

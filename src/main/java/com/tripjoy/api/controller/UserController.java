@@ -1,6 +1,5 @@
 package com.tripjoy.api.controller;
 
-import java.util.List;
 import java.util.UUID;
 
 import jakarta.validation.Valid;
@@ -34,103 +33,125 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Tag(name = "Users", description = "Endpoints for managing user accounts")
 public class UserController {
-        IUserService userService;
+    IUserService userService;
 
-        @Operation(summary = "Get users (Admin only)", description = """
-                        Returns a paginated list of all users. Supports optional keyword filter on
-                        username or email (case-insensitive LIKE).
+    @Operation(
+            summary = "Get users (Admin only)",
+            description =
+                    """
+						Returns a paginated list of all users. Supports optional keyword filter on
+						username or email (case-insensitive LIKE).
 
-                        **No `q` param** → returns all users (paginated).
-                        **With `?q=keyword`** → filters by username OR email.
+						**No `q` param** → returns all users (paginated).
+						**With `?q=keyword`** → filters by username OR email.
 
-                        Requires `ADMIN` role.
-                        """)
-        @GetMapping
-        public ApiResponse<Page<UserResponse>> getUsers(
-                        @Parameter(description = "Optional keyword filter on username or email", example = "nguyen") @RequestParam(required = false) String q,
-                        Pageable pageable) {
-                return ApiResponse.<Page<UserResponse>>builder()
-                                .data(userService.getUsers(pageable, q))
-                                .build();
-        }
+						Requires `ADMIN` role.
+						""")
+    @GetMapping
+    public ApiResponse<Page<UserResponse>> getUsers(
+            @Parameter(description = "Optional keyword filter on username or email", example = "nguyen")
+                    @RequestParam(required = false)
+                    String q,
+            Pageable pageable) {
+        return ApiResponse.<Page<UserResponse>>builder()
+                .data(userService.getUsers(pageable, q))
+                .build();
+    }
 
-        @GetMapping(Endpoint.User.ME)
-        @Operation(summary = "Get current user's info", description = "Retrieves the profile information of the currently authenticated user. Full data including credits and email.")
-        public ApiResponse<UserResponse> getMyInfo() {
-                return ApiResponse.<UserResponse>builder().data(userService.getMyInfo()).build();
-        }
+    @GetMapping(Endpoint.User.ME)
+    @Operation(
+            summary = "Get current user's info",
+            description =
+                    "Retrieves the profile information of the currently authenticated user. Full data including credits and email.")
+    public ApiResponse<UserResponse> getMyInfo() {
+        return ApiResponse.<UserResponse>builder().data(userService.getMyInfo()).build();
+    }
 
-        @Operation(summary = "Global User Search", description = "Search users by username, fullName, email or phoneNumber. Use for search bar in end-user mode.")
-        @GetMapping(Endpoint.User.SEARCH)
-        public ApiResponse<Page<UserSimpleResponse>> searchUsers(
-                        @Parameter(description = "Keyword: username, fullName, email, phoneNumber") @RequestParam("q") String q,
-                        Pageable pageable) {
-                return ApiResponse.<Page<UserSimpleResponse>>builder()
-                                .data(userService.searchUsersGlobal(q, pageable))
-                                .build();
-        }
+    @Operation(
+            summary = "Global User Search",
+            description =
+                    "Search users by username, fullName, email or phoneNumber. Use for search bar in end-user mode.")
+    @GetMapping(Endpoint.User.SEARCH)
+    public ApiResponse<Page<UserSimpleResponse>> searchUsers(
+            @Parameter(description = "Keyword: username, fullName, email, phoneNumber") @RequestParam("q") String q,
+            Pageable pageable) {
+        return ApiResponse.<Page<UserSimpleResponse>>builder()
+                .data(userService.searchUsersGlobal(q, pageable))
+                .build();
+    }
 
-        @GetMapping(Endpoint.User.ID + "/profile")
-        @Operation(summary = "Get user's public profile", description = "Returns a public, non-sensitive profile of any user (avatar, bio, fullName). Cached 12h.")
-        public ApiResponse<UserPublicResponse> getPublicProfile(@PathVariable("userId") UUID userId) {
-                return ApiResponse.<UserPublicResponse>builder()
-                                .data(userService.getPublicProfile(userId))
-                                .build();
-        }
+    @GetMapping(Endpoint.User.ID + "/profile")
+    @Operation(
+            summary = "Get user's public profile",
+            description = "Returns a public, non-sensitive profile of any user (avatar, bio, fullName). Cached 12h.")
+    public ApiResponse<UserPublicResponse> getPublicProfile(@PathVariable("userId") UUID userId) {
+        return ApiResponse.<UserPublicResponse>builder()
+                .data(userService.getPublicProfile(userId))
+                .build();
+    }
 
-        @GetMapping(Endpoint.User.ID + "/admin-view")
-        @Operation(summary = "Admin: Get full user details", description = "Returns complete user data including sensitive fields. Requires ADMIN role. Cached 12h (admin namespace).")
-        public ApiResponse<UserResponse> getUserDetailsForAdmin(@PathVariable("userId") UUID userId) {
-                return ApiResponse.<UserResponse>builder()
-                                .data(userService.getUserDetailsForAdmin(userId))
-                                .build();
-        }
+    @GetMapping(Endpoint.User.ID + "/admin-view")
+    @Operation(
+            summary = "Admin: Get full user details",
+            description =
+                    "Returns complete user data including sensitive fields. Requires ADMIN role. Cached 12h (admin namespace).")
+    public ApiResponse<UserResponse> getUserDetailsForAdmin(@PathVariable("userId") UUID userId) {
+        return ApiResponse.<UserResponse>builder()
+                .data(userService.getUserDetailsForAdmin(userId))
+                .build();
+    }
 
-        @Operation(summary = "Create a new user", description = "Creates a new user account based on the provided request.")
-        @PostMapping
-        public ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
-                return ApiResponse.<UserResponse>builder()
-                                .data(userService.createUser(request))
-                                .build();
-        }
+    @Operation(summary = "Create a new user", description = "Creates a new user account based on the provided request.")
+    @PostMapping
+    public ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
+        return ApiResponse.<UserResponse>builder()
+                .data(userService.createUser(request))
+                .build();
+    }
 
-        @Operation(summary = "Update my profile", description = "Updates the authenticated user's profile information.")
-        @PatchMapping(Endpoint.User.ME)
-        ApiResponse<UserResponse> updateMyProfile(@RequestBody @Valid UserProfileUpdateRequest request) {
-                return ApiResponse.<UserResponse>builder()
-                                .data(userService.updateMyProfile(request))
-                                .build();
-        }
+    @Operation(summary = "Update my profile", description = "Updates the authenticated user's profile information.")
+    @PatchMapping(Endpoint.User.ME)
+    ApiResponse<UserResponse> updateMyProfile(@RequestBody @Valid UserProfileUpdateRequest request) {
+        return ApiResponse.<UserResponse>builder()
+                .data(userService.updateMyProfile(request))
+                .build();
+    }
 
-        @Operation(summary = "Change my password", description = "Changes the authenticated user's password securely.")
-        @PutMapping(Endpoint.User.ME_PASSWORD)
-        ApiResponse<Void> changeMyPassword(@RequestBody @Valid ChangePasswordRequest request) {
-                userService.changeMyPassword(request);
-                return ApiResponse.<Void>builder().message("Password changed successfully").build();
-        }
+    @Operation(summary = "Change my password", description = "Changes the authenticated user's password securely.")
+    @PutMapping(Endpoint.User.ME_PASSWORD)
+    ApiResponse<Void> changeMyPassword(@RequestBody @Valid ChangePasswordRequest request) {
+        userService.changeMyPassword(request);
+        return ApiResponse.<Void>builder()
+                .message("Password changed successfully")
+                .build();
+    }
 
-        @Operation(summary = "Assign roles to user (Admin only)", description = "Assigns a set of roles to a specific user.")
-        @PutMapping(Endpoint.User.ID_ROLES)
-        ApiResponse<UserResponse> assignRoles(
-                        @PathVariable("userId") UUID userId, @RequestBody @Valid UserRoleUpdateRequest request) {
-                return ApiResponse.<UserResponse>builder()
-                                .data(userService.assignRoles(userId, request))
-                                .build();
-        }
+    @Operation(
+            summary = "Assign roles to user (Admin only)",
+            description = "Assigns a set of roles to a specific user.")
+    @PutMapping(Endpoint.User.ID_ROLES)
+    ApiResponse<UserResponse> assignRoles(
+            @PathVariable("userId") UUID userId, @RequestBody @Valid UserRoleUpdateRequest request) {
+        return ApiResponse.<UserResponse>builder()
+                .data(userService.assignRoles(userId, request))
+                .build();
+    }
 
-        @Operation(summary = "Update user locked status (Admin only)", description = "Locks or unlocks a user account.")
-        @PatchMapping(Endpoint.User.ID_STATUS)
-        ApiResponse<UserResponse> updateUserStatus(
-                        @PathVariable("userId") UUID userId, @RequestBody @Valid UserStatusUpdateRequest request) {
-                return ApiResponse.<UserResponse>builder()
-                                .data(userService.updateUserStatus(userId, request.getIsLocked()))
-                                .build();
-        }
+    @Operation(summary = "Update user locked status (Admin only)", description = "Locks or unlocks a user account.")
+    @PatchMapping(Endpoint.User.ID_STATUS)
+    ApiResponse<UserResponse> updateUserStatus(
+            @PathVariable("userId") UUID userId, @RequestBody @Valid UserStatusUpdateRequest request) {
+        return ApiResponse.<UserResponse>builder()
+                .data(userService.updateUserStatus(userId, request.getIsLocked()))
+                .build();
+    }
 
-        @Operation(summary = "Delete user by ID", description = "Deletes a user account from the system by their unique ID.")
-        @DeleteMapping(Endpoint.User.ID)
-        ApiResponse<Void> deleteUser(@PathVariable("userId") UUID userId) {
-                userService.deleteUser(userId);
-                return ApiResponse.<Void>builder().message("User has been deleted").build();
-        }
+    @Operation(
+            summary = "Delete user by ID",
+            description = "Deletes a user account from the system by their unique ID.")
+    @DeleteMapping(Endpoint.User.ID)
+    ApiResponse<Void> deleteUser(@PathVariable("userId") UUID userId) {
+        userService.deleteUser(userId);
+        return ApiResponse.<Void>builder().message("User has been deleted").build();
+    }
 }

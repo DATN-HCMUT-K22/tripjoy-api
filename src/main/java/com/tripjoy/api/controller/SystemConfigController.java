@@ -38,8 +38,7 @@ public class SystemConfigController {
     @PatchMapping(Endpoint.SystemConfig.BASE + Endpoint.SystemConfig.KEY)
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<SystemConfigResponse> update(
-            @PathVariable("key") String key,
-            @RequestBody SystemConfigUpdateRequest request) {
+            @PathVariable("key") String key, @RequestBody SystemConfigUpdateRequest request) {
         return ApiResponse.<SystemConfigResponse>builder()
                 .data(systemConfigService.updateConfig(key, request))
                 .build();

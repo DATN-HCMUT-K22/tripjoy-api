@@ -30,7 +30,8 @@ public class NotificationController {
     @Operation(summary = "Get all notifications", description = "Get paginated list of notifications for current user")
     @GetMapping
     public ApiResponse<Page<NotificationResponse>> getNotifications(
-            @RequestParam(value = "unreadOnly", required = false, defaultValue = "false") Boolean unreadOnly, Pageable pageable) {
+            @RequestParam(value = "unreadOnly", required = false, defaultValue = "false") Boolean unreadOnly,
+            Pageable pageable) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         Page<NotificationResponse> notifications =
                 notificationService.getNotifications(currentUserId, pageable, unreadOnly);

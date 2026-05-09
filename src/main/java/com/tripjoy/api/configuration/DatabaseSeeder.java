@@ -27,10 +27,12 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     private void seedBotUser() {
         if (!userRepository.existsById(AppConstants.TRIPJOY_AI_USER_ID)) {
-            String sql = "INSERT INTO users (id, username, full_name, email, password, bio, avatar_url, is_email_verified, is_locked, created_at, updated_at) " +
-                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
-            
-            jdbcTemplate.update(sql,
+            String sql =
+                    "INSERT INTO users (id, username, full_name, email, password, bio, avatar_url, is_email_verified, is_locked, created_at, updated_at) "
+                            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+
+            jdbcTemplate.update(
+                    sql,
                     AppConstants.TRIPJOY_AI_USER_ID,
                     "tripjoy_ai",
                     "TripJoy AI",
@@ -39,8 +41,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                     "Tôi là trợ lý AI chuyên nghiệp của TripJoy. Tag @Tripjoy để được hỗ trợ!",
                     "https://res.cloudinary.com/dv6tzvj3e/image/upload/v1714101826/tripjoy_ai_avatar.png",
                     true,
-                    false
-            );
+                    false);
 
             log.info("Seeded TripJoy AI Bot User with ID: {}", AppConstants.TRIPJOY_AI_USER_ID);
         } else {

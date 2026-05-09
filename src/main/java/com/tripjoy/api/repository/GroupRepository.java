@@ -22,6 +22,7 @@ public interface GroupRepository extends JpaRepository<Group, UUID> {
     List<Group> findAllNotDeleted();
 
     @EntityGraph(attributePaths = {"members"})
-    @Query("SELECT g FROM Group g WHERE CAST(function('lower', function('f_unaccent', g.name)) AS string) LIKE CAST(function('lower', function('f_unaccent', CONCAT('%', :keyword, '%'))) AS string) AND g.softDeleteInfo.isDeleted = false")
+    @Query(
+            "SELECT g FROM Group g WHERE CAST(function('lower', function('f_unaccent', g.name)) AS string) LIKE CAST(function('lower', function('f_unaccent', CONCAT('%', :keyword, '%'))) AS string) AND g.softDeleteInfo.isDeleted = false")
     List<Group> searchByName(@Param("keyword") String keyword);
 }

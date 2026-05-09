@@ -1,16 +1,14 @@
 package com.tripjoy.api.service;
 
-import com.tripjoy.api.enums.GroupRole;
-
 import java.util.List;
 import java.util.UUID;
-import com.tripjoy.api.enums.GroupRole;
 
 import com.tripjoy.api.dto.request.GroupRequest;
 import com.tripjoy.api.dto.request.member.TransferLeadershipRequest;
 import com.tripjoy.api.dto.request.member.UpdateMemberRoleRequest;
 import com.tripjoy.api.dto.response.GroupMemberResponse;
 import com.tripjoy.api.dto.response.GroupResponse;
+import com.tripjoy.api.enums.GroupRole;
 
 public interface IGroupService {
     GroupResponse createGroup(GroupRequest request, UUID ownerId);

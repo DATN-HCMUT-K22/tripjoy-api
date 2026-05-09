@@ -38,12 +38,14 @@ public class ExpenseService implements IExpenseService {
 
     @Override
     public ExpenseResponse addExpense(UUID itineraryId, ExpenseRequest request) {
-        Itinerary itinerary = itineraryRepository.findById(itineraryId)
+        Itinerary itinerary = itineraryRepository
+                .findById(itineraryId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
         validateOwnership(itinerary);
 
-        User user = userRepository.findById(SecurityUtils.getCurrentUserId())
+        User user = userRepository
+                .findById(SecurityUtils.getCurrentUserId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         Expense expense = expenseMapper.toExpense(request);
@@ -56,8 +58,7 @@ public class ExpenseService implements IExpenseService {
 
     @Override
     public List<ExpenseResponse> getExpenses(UUID itineraryId) {
-        itineraryRepository.findById(itineraryId)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        itineraryRepository.findById(itineraryId).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
         return expenseRepository.findByItineraryId(itineraryId).stream()
                 .map(expenseMapper::toExpenseResponse)
@@ -66,13 +67,14 @@ public class ExpenseService implements IExpenseService {
 
     @Override
     public ExpenseResponse updateExpense(UUID itineraryId, UUID expenseId, ExpenseRequest request) {
-        Itinerary itinerary = itineraryRepository.findById(itineraryId)
+        Itinerary itinerary = itineraryRepository
+                .findById(itineraryId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
         validateOwnership(itinerary);
 
-        Expense expense = expenseRepository.findById(expenseId)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        Expense expense =
+                expenseRepository.findById(expenseId).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
         if (!expense.getItinerary().getId().equals(itineraryId)) {
             throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
@@ -86,13 +88,14 @@ public class ExpenseService implements IExpenseService {
 
     @Override
     public void removeExpense(UUID itineraryId, UUID expenseId) {
-        Itinerary itinerary = itineraryRepository.findById(itineraryId)
+        Itinerary itinerary = itineraryRepository
+                .findById(itineraryId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
         validateOwnership(itinerary);
 
-        Expense expense = expenseRepository.findById(expenseId)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        Expense expense =
+                expenseRepository.findById(expenseId).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
         if (!expense.getItinerary().getId().equals(itineraryId)) {
             throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
@@ -113,7 +116,7 @@ public class ExpenseService implements IExpenseService {
                     .anyMatch(member -> member.getUser().getId().equals(currentUserId));
             if (isInGroup) return;
         }
-        
+
         throw new AppException(ErrorCode.UNAUTHORIZED);
     }
 }

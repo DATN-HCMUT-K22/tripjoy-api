@@ -7,11 +7,12 @@ import java.util.Set;
 
 import jakarta.persistence.*;
 
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Formula;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 import com.tripjoy.api.enums.ItineraryStatus;
-import org.hibernate.annotations.BatchSize;
-import org.hibernate.annotations.Formula;
 
 import lombok.*;
 
@@ -24,8 +25,8 @@ import lombok.*;
 @Table(
         name = "itinerary",
         indexes = {
-                @Index(name = "idx_itinerary_group", columnList = "group_id, is_deleted"),
-                @Index(name = "idx_itinerary_user_deleted", columnList = "user_id, is_deleted")
+            @Index(name = "idx_itinerary_group", columnList = "group_id, is_deleted"),
+            @Index(name = "idx_itinerary_user_deleted", columnList = "user_id, is_deleted")
         })
 public class Itinerary extends BaseEntity {
 
@@ -68,10 +69,9 @@ public class Itinerary extends BaseEntity {
 
     @ManyToMany
     @JoinTable(
-        name = "itinerary_theme_mapping",
-        joinColumns = @JoinColumn(name = "itinerary_id"),
-        inverseJoinColumns = @JoinColumn(name = "theme_id")
-    )
+            name = "itinerary_theme_mapping",
+            joinColumns = @JoinColumn(name = "itinerary_id"),
+            inverseJoinColumns = @JoinColumn(name = "theme_id"))
     @BatchSize(size = 20)
     @Builder.Default
     private Set<Theme> themes = new HashSet<>();

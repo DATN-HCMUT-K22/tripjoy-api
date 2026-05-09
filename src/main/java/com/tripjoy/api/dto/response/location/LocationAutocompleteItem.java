@@ -39,7 +39,9 @@ public class LocationAutocompleteItem {
      * Internal TripJoy location ID — present only when this location already exists in DB.
      * If null, frontend must call POST /locations/resolve before using this location.
      */
-    @Schema(description = "Internal TripJoy UUID — null means location is not yet in DB", example = "550e8400-e29b-41d4-a716-446655440000")
+    @Schema(
+            description = "Internal TripJoy UUID — null means location is not yet in DB",
+            example = "550e8400-e29b-41d4-a716-446655440000")
     @JsonProperty("location_id")
     String locationId;
 
@@ -49,7 +51,9 @@ public class LocationAutocompleteItem {
      * TripJoy internal: "vn-province-79"
      * Frontend sends this back in POST /locations/resolve.
      */
-    @Schema(description = "Provider place ID (e.g. Google place_id) — used in POST /locations/resolve", example = "ChIJ0T2NLikpdTERgJJ6o5gX1Kw")
+    @Schema(
+            description = "Provider place ID (e.g. Google place_id) — used in POST /locations/resolve",
+            example = "ChIJ0T2NLikpdTERgJJ6o5gX1Kw")
     @JsonProperty("provider_id")
     String providerId;
 
@@ -98,6 +102,9 @@ public class LocationAutocompleteItem {
      * Source of this suggestion — for frontend analytics and resolve logic.
      * "DB" = from TripJoy database, "GOOGLE_MAPS" = from Google Places API.
      */
-    @Schema(description = "Data source: DB or GOOGLE_MAPS", example = "GOOGLE_MAPS", allowableValues = {"DB", "GOOGLE_MAPS"})
+    @Schema(
+            description = "Data source: DB or GOOGLE_MAPS",
+            example = "GOOGLE_MAPS",
+            allowableValues = {"DB", "GOOGLE_MAPS"})
     String source;
 }

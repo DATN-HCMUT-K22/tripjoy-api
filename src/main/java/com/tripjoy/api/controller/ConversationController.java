@@ -50,15 +50,16 @@ public class ConversationController {
 
     @Operation(
             summary = "Create or get existing 1-on-1 Direct conversation",
-            description = """
-                    Idempotent: if a DIRECT conversation between the two users already exists,
-                    the existing conversation is returned — no duplicate is created.
+            description =
+                    """
+					Idempotent: if a DIRECT conversation between the two users already exists,
+					the existing conversation is returned — no duplicate is created.
 
-                    On creation, both users receive a `new_conversation` Socket.IO event on their
-                    personal room (`user_{userId}`). The client should:
-                    1. Add the conversation to the inbox.
-                    2. Emit `join_conversation` with the conversationId to start receiving messages.
-                    """)
+					On creation, both users receive a `new_conversation` Socket.IO event on their
+					personal room (`user_{userId}`). The client should:
+					1. Add the conversation to the inbox.
+					2. Emit `join_conversation` with the conversationId to start receiving messages.
+					""")
     @PostMapping
     public ApiResponse<ConversationResponse> createDirectConversation(
             @Valid @RequestBody DirectConversationCreationRequest request) {
@@ -84,7 +85,8 @@ public class ConversationController {
     @Operation(summary = "Update conversation settings (name for group chats, isPinned)")
     @PutMapping(Endpoint.Conversation.ID)
     public ApiResponse<ConversationResponse> updateConversation(
-            @PathVariable("conversationId") UUID conversationId, @Valid @RequestBody ConversationUpdateRequest request) {
+            @PathVariable("conversationId") UUID conversationId,
+            @Valid @RequestBody ConversationUpdateRequest request) {
 
         UUID currentUserId = SecurityUtils.getCurrentUserId();
 
@@ -100,9 +102,7 @@ public class ConversationController {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         conversationService.resetUnreadCount(conversationId, currentUserId);
 
-        return ApiResponse.<Void>builder()
-                .message("Unread count reset to 0")
-                .build();
+        return ApiResponse.<Void>builder().message("Unread count reset to 0").build();
     }
 
     // --- QUẢN LÝ TIN NHẮN (MESSAGES) ---
@@ -145,7 +145,8 @@ public class ConversationController {
 
     @Operation(summary = "Get all pinned messages in conversation")
     @GetMapping(Endpoint.Conversation.PINNED_MESSAGES)
-    public ApiResponse<List<ChatMessageResponse>> getPinnedMessages(@PathVariable("conversationId") UUID conversationId) {
+    public ApiResponse<List<ChatMessageResponse>> getPinnedMessages(
+            @PathVariable("conversationId") UUID conversationId) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
 
         return ApiResponse.<List<ChatMessageResponse>>builder()

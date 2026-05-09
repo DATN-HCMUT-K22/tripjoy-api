@@ -4,14 +4,12 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.context.ApplicationEventPublisher;
 
 import com.tripjoy.api.dto.event.PostLikedEvent;
 import com.tripjoy.api.dto.request.PostQueryParams;
@@ -20,10 +18,10 @@ import com.tripjoy.api.dto.response.PostResponse;
 import com.tripjoy.api.entity.Itinerary;
 import com.tripjoy.api.entity.Post;
 import com.tripjoy.api.entity.User;
+import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
+import com.tripjoy.api.enums.PostVisibility;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
-import com.tripjoy.api.enums.PostVisibility;
-import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
 import com.tripjoy.api.mapper.PostMapper;
 import com.tripjoy.api.repository.ItineraryRepository;
 import com.tripjoy.api.repository.PostRepository;
@@ -52,8 +50,7 @@ public class PostService implements IPostService {
     @Transactional
     public PostResponse createPost(PostRequest request) {
         UUID userId = SecurityUtils.getCurrentUserId();
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         Post post = Post.builder()
                 .content(request.getContent())
@@ -65,7 +62,8 @@ public class PostService implements IPostService {
                 .build();
 
         if (request.getItineraryId() != null) {
-            Itinerary itinerary = itineraryRepository.findById(request.getItineraryId())
+            Itinerary itinerary = itineraryRepository
+                    .findById(request.getItineraryId())
                     .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
             post.setItinerary(itinerary);
         }
@@ -98,18 +96,41 @@ public class PostService implements IPostService {
         String hashtag = params.normalizedHashtag();
 
         List<Post> posts = postRepository.searchPosts(
-                keyword, hashtag, params.getCreatorId(), params.getItineraryId(),
-                params.getStartDate(), params.getEndDate(), params.getMinDays(), params.getMaxDays(),
-                params.getMinBudget(), params.getMaxBudget(), params.getMinPeople(), params.getMaxPeople(),
-                params.getOriginId(), params.getDestinationId(), params.getSort(), size, offset);
+                keyword,
+                hashtag,
+                params.getCreatorId(),
+                params.getItineraryId(),
+                params.getStartDate(),
+                params.getEndDate(),
+                params.getMinDays(),
+                params.getMaxDays(),
+                params.getMinBudget(),
+                params.getMaxBudget(),
+                params.getMinPeople(),
+                params.getMaxPeople(),
+                params.getOriginId(),
+                params.getDestinationId(),
+                params.getSort(),
+                size,
+                offset);
 
         long totalElements = 0;
         if (!posts.isEmpty() || pageNum > 0) {
             totalElements = postRepository.countSearchPosts(
-                    keyword, hashtag, params.getCreatorId(), params.getItineraryId(),
-                    params.getStartDate(), params.getEndDate(), params.getMinDays(), params.getMaxDays(),
-                    params.getMinBudget(), params.getMaxBudget(), params.getMinPeople(), params.getMaxPeople(),
-                    params.getOriginId(), params.getDestinationId());
+                    keyword,
+                    hashtag,
+                    params.getCreatorId(),
+                    params.getItineraryId(),
+                    params.getStartDate(),
+                    params.getEndDate(),
+                    params.getMinDays(),
+                    params.getMaxDays(),
+                    params.getMinBudget(),
+                    params.getMaxBudget(),
+                    params.getMinPeople(),
+                    params.getMaxPeople(),
+                    params.getOriginId(),
+                    params.getDestinationId());
         }
 
         List<PostResponse> responses = getPostResponsesWithContext(posts, currentUserId);
@@ -120,8 +141,7 @@ public class PostService implements IPostService {
     @Override
     @Transactional(readOnly = true)
     public PostResponse getPostById(UUID postId, UUID currentUserId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
         if (post.getSoftDeleteInfo() != null && post.getSoftDeleteInfo().isDeleted()) {
             throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
@@ -133,8 +153,7 @@ public class PostService implements IPostService {
     @Override
     @Transactional
     public PostResponse updatePost(UUID postId, PostRequest request) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
         validateOwnership(post);
 
@@ -142,7 +161,8 @@ public class PostService implements IPostService {
         post.setMediaUrls(request.getMediaUrls());
 
         if (request.getItineraryId() != null) {
-            Itinerary itinerary = itineraryRepository.findById(request.getItineraryId())
+            Itinerary itinerary = itineraryRepository
+                    .findById(request.getItineraryId())
                     .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
             post.setItinerary(itinerary);
         } else {
@@ -160,8 +180,7 @@ public class PostService implements IPostService {
     @Override
     @Transactional
     public void deletePost(UUID postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
         validateOwnership(post);
 
@@ -172,10 +191,10 @@ public class PostService implements IPostService {
     @Override
     @Transactional
     public void likePost(UUID postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        User user = userRepository.findById(SecurityUtils.getCurrentUserId())
+        User user = userRepository
+                .findById(SecurityUtils.getCurrentUserId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         post.getLikeUsers().add(user);
@@ -187,10 +206,10 @@ public class PostService implements IPostService {
     @Override
     @Transactional
     public void unlikePost(UUID postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        User user = userRepository.findById(SecurityUtils.getCurrentUserId())
+        User user = userRepository
+                .findById(SecurityUtils.getCurrentUserId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         post.getLikeUsers().remove(user);
@@ -208,10 +227,10 @@ public class PostService implements IPostService {
     @Override
     @Transactional
     public void savePost(UUID postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        User user = userRepository.findById(SecurityUtils.getCurrentUserId())
+        User user = userRepository
+                .findById(SecurityUtils.getCurrentUserId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         post.getSaveUsers().add(user);
@@ -221,17 +240,15 @@ public class PostService implements IPostService {
     @Override
     @Transactional
     public void unsavePost(UUID postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        User user = userRepository.findById(SecurityUtils.getCurrentUserId())
+        User user = userRepository
+                .findById(SecurityUtils.getCurrentUserId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         post.getSaveUsers().remove(user);
         postRepository.save(post);
     }
-
-
 
     private PostResponse getPostResponseWithContext(Post post, UUID currentUserId) {
         PostResponse response = postMapper.toPostResponse(post);
@@ -246,12 +263,10 @@ public class PostService implements IPostService {
     }
 
     private List<PostResponse> getPostResponsesWithContext(List<Post> posts, UUID currentUserId) {
-        if (posts.isEmpty())
-            return List.of();
+        if (posts.isEmpty()) return List.of();
 
-        List<PostResponse> responses = posts.stream()
-                .map(postMapper::toPostResponse)
-                .collect(Collectors.toList());
+        List<PostResponse> responses =
+                posts.stream().map(postMapper::toPostResponse).collect(Collectors.toList());
 
         if (currentUserId != null) {
             List<UUID> postIds = posts.stream().map(Post::getId).collect(Collectors.toList());

@@ -66,10 +66,10 @@ public class LocationSeeder implements ApplicationRunner {
     // Seed files to load — add new files here for new countries/types
     static final List<SeedFile> SEED_FILES = List.of(
             new SeedFile("seed/locations/VN_PROVINCE.json", LocationType.PROVINCE, "VN"),
-            new SeedFile("seed/locations/VN_COUNTRY.json",  LocationType.COUNTRY,  "VN")
+            new SeedFile("seed/locations/VN_COUNTRY.json", LocationType.COUNTRY, "VN")
             // Future: new SeedFile("seed/locations/TH_PROVINCE.json", LocationType.PROVINCE, "TH"),
             // Future: new SeedFile("seed/locations/JP_PROVINCE.json", LocationType.PROVINCE, "JP"),
-    );
+            );
 
     static final GeometryFactory GEO_FACTORY = new GeometryFactory(new PrecisionModel(), 4326);
 

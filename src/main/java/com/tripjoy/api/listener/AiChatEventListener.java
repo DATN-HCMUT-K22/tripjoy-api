@@ -1,7 +1,5 @@
 package com.tripjoy.api.listener;
 
-import java.util.UUID;
-
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -37,13 +35,14 @@ public class AiChatEventListener {
         try {
             log.info("Handling AI Chat request for conversation: {}", event.getConversationId());
 
-            Conversation conversation = conversationRepository.findById(event.getConversationId())
-                    .orElse(null);
+            Conversation conversation =
+                    conversationRepository.findById(event.getConversationId()).orElse(null);
 
             AiFinalItineraryDto contextItinerary = null;
             if (conversation != null && conversation.getGroup() != null) {
                 // Fetch the latest itinerary for the group to provide context to AI
-                contextItinerary = itineraryGenerationService.getLatestAiItineraryByGroupId(conversation.getGroup().getId());
+                contextItinerary = itineraryGenerationService.getLatestAiItineraryByGroupId(
+                        conversation.getGroup().getId());
             }
 
             AiChatRequestDto aiRequest = AiChatRequestDto.builder()
@@ -59,24 +58,23 @@ public class AiChatEventListener {
                 // Send the bot message and save it to DB. This will also fire a MessageSentEvent
                 // which will be caught by MessageEventListener to broadcast via Socket.IO.
                 chatMessageService.sendBotMessage(
-                        event.getConversationId(), 
-                        AppConstants.TRIPJOY_AI_USER_ID, 
-                        aiResponse.getMessage()
-                );
+                        event.getConversationId(), AppConstants.TRIPJOY_AI_USER_ID, aiResponse.getMessage());
                 log.info("Successfully sent AI bot response to conversation: {}", event.getConversationId());
             } else {
                 log.warn("AI Service returned empty response for conversation: {}", event.getConversationId());
             }
 
         } catch (Exception e) {
-            log.error("Error occurred while processing AI Chat request for conversation: {}", event.getConversationId(), e);
+            log.error(
+                    "Error occurred while processing AI Chat request for conversation: {}",
+                    event.getConversationId(),
+                    e);
             // Optionally, we could send a fallback error message from the bot to the chat
             try {
                 chatMessageService.sendBotMessage(
-                    event.getConversationId(), 
-                    AppConstants.TRIPJOY_AI_USER_ID, 
-                    "Xin lỗi, hiện tại tôi đang quá tải hoặc gặp sự cố. Vui lòng thử lại sau nhé!"
-                );
+                        event.getConversationId(),
+                        AppConstants.TRIPJOY_AI_USER_ID,
+                        "Xin lỗi, hiện tại tôi đang quá tải hoặc gặp sự cố. Vui lòng thử lại sau nhé!");
             } catch (Exception ex) {
                 log.error("Failed to send fallback AI message", ex);
             }

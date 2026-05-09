@@ -46,7 +46,7 @@ public interface LocationMapper {
     @Mapping(source = "rawMapResponse", target = "rawResponse", qualifiedByName = "validateJson")
     @Mapping(target = "isVerified", constant = "false")
     @Mapping(target = "usageCount", constant = "0")
-    @Mapping(target = "searchVector", ignore = true)   // managed by DB trigger
+    @Mapping(target = "searchVector", ignore = true) // managed by DB trigger
     @Mapping(target = "suggestLocations", ignore = true)
     Location toEntity(LocationCreateRequest request);
 
@@ -62,9 +62,9 @@ public interface LocationMapper {
     @Mapping(source = "provider", target = "provider", qualifiedByName = "stringToMapProvider")
     @Mapping(source = "operationalStatus", target = "operationalStatus", qualifiedByName = "stringToOperationalStatus")
     @Mapping(source = "rawMapResponse", target = "rawResponse", qualifiedByName = "validateJson")
-    @Mapping(target = "isVerified", ignore = true)      // only admin can change
-    @Mapping(target = "usageCount", ignore = true)       // managed by batch job
-    @Mapping(target = "searchVector", ignore = true)     // managed by DB trigger
+    @Mapping(target = "isVerified", ignore = true) // only admin can change
+    @Mapping(target = "usageCount", ignore = true) // managed by batch job
+    @Mapping(target = "searchVector", ignore = true) // managed by DB trigger
     @Mapping(target = "suggestLocations", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)

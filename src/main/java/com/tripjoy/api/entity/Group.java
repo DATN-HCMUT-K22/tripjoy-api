@@ -3,10 +3,10 @@ package com.tripjoy.api.entity;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.hibernate.annotations.Formula;
-import org.hibernate.annotations.BatchSize;
-
 import jakarta.persistence.*;
+
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Formula;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;

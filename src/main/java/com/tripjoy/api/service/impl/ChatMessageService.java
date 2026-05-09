@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tripjoy.api.configuration.redis.RedisCacheConfig;
-
 import com.tripjoy.api.dto.event.AiChatRequestedEvent;
 import com.tripjoy.api.dto.event.MessageLikedEvent;
 import com.tripjoy.api.dto.event.MessagePinnedEvent;
@@ -126,18 +125,18 @@ public class ChatMessageService implements IChatMessageService {
         message.setConversation(conversation);
         message.setSender(sender);
         message.setCreatedAt(LocalDateTime.now());
-        
+
         if ("SHARE_POST".equals(request.getMessageType()) && request.getSharedPostId() != null) {
             try {
                 UUID postId = UUID.fromString(request.getSharedPostId());
-                Post post = postRepository.findById(postId)
-                        .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
+                Post post =
+                        postRepository.findById(postId).orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
                 message.setSharedPost(post);
             } catch (IllegalArgumentException e) {
                 // Ignore invalid UUID or throw exception
             }
         }
-        
+
         // SoftDeleteInfo is already initialized by default
 
         ChatMessage savedMessage = chatMessageRepository.save(message);
@@ -165,7 +164,8 @@ public class ChatMessageService implements IChatMessageService {
 
         // --- AI CHATBOT TRIGGER ---
         // Kích hoạt event gọi AI nếu tin nhắn chứa cú pháp @Tripjoy
-        if (request.getMessageContent() != null && request.getMessageContent().toLowerCase().contains("@tripjoy")) {
+        if (request.getMessageContent() != null
+                && request.getMessageContent().toLowerCase().contains("@tripjoy")) {
             log.info("AI Trigger detected in conversation: {}", conversationId);
             AiChatRequestedEvent aiEvent = AiChatRequestedEvent.builder()
                     .conversationId(conversationId)
@@ -190,7 +190,7 @@ public class ChatMessageService implements IChatMessageService {
                 .messageContent(content)
                 .messageType("TEXT")
                 .build();
-                
+
         message.setConversation(conversation);
         message.setSender(sender);
         message.setCreatedAt(LocalDateTime.now());
@@ -255,7 +255,6 @@ public class ChatMessageService implements IChatMessageService {
         message.setIsPinned(true);
         chatMessageRepository.save(message);
 
-
         MessagePinnedEvent event = MessagePinnedEvent.builder()
                 .conversationId(conversationId)
                 .messageId(messageId)
@@ -288,7 +287,6 @@ public class ChatMessageService implements IChatMessageService {
         message.setIsPinned(false);
         chatMessageRepository.save(message);
 
-
         MessageUnpinnedEvent event = MessageUnpinnedEvent.builder()
                 .conversationId(conversationId)
                 .messageId(messageId)
@@ -317,7 +315,6 @@ public class ChatMessageService implements IChatMessageService {
         // 3. Map to response DTOs
         return pinnedMessages.stream().map(chatMessageMapper::toResponse).collect(Collectors.toList());
     }
-
 
     @Override
     @Transactional(readOnly = true)

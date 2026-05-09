@@ -9,7 +9,9 @@ import com.tripjoy.api.dto.request.TripItemRequest;
 import com.tripjoy.api.dto.response.TripItemResponse;
 import com.tripjoy.api.entity.TripItem;
 
-@Mapper(config = BaseMapperConfig.class, uses = {LocationMapper.class})
+@Mapper(
+        config = BaseMapperConfig.class,
+        uses = {LocationMapper.class})
 public interface TripItemMapper {
 
     TripItem toTripItem(TripItemRequest request);

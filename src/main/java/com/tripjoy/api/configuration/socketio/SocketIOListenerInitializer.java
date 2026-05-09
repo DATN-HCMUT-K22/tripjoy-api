@@ -2,10 +2,9 @@ package com.tripjoy.api.configuration.socketio;
 
 import jakarta.annotation.PostConstruct;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
-
-import org.springframework.context.annotation.Profile;
 
 import com.corundumstudio.socketio.SocketIOServer;
 import com.tripjoy.api.service.impl.SocketService;

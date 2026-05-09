@@ -1,5 +1,6 @@
 package com.tripjoy.api.repository;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -11,7 +12,6 @@ import org.springframework.stereotype.Repository;
 
 import com.tripjoy.api.entity.Comment;
 import com.tripjoy.api.entity.User;
-import java.util.List;
 
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, UUID> {

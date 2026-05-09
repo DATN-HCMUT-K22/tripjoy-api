@@ -15,7 +15,6 @@ import com.tripjoy.api.dto.request.member.UpdateMemberRoleRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.GroupMemberResponse;
 import com.tripjoy.api.dto.response.GroupResponse;
-import com.tripjoy.api.enums.GroupRole;
 import com.tripjoy.api.service.IGroupService;
 import com.tripjoy.api.utils.SecurityUtils;
 
@@ -38,7 +37,8 @@ public class GroupController {
 
     @Operation(
             summary = "Search groups by name",
-            description = "Searches for groups whose name contains the given keyword. Uses case-insensitive LIKE matching.")
+            description =
+                    "Searches for groups whose name contains the given keyword. Uses case-insensitive LIKE matching.")
     @GetMapping(Endpoint.Group.SEARCH)
     public ApiResponse<List<GroupResponse>> searchGroups(@RequestParam("q") String q) {
         return ApiResponse.<List<GroupResponse>>builder()
@@ -99,7 +99,8 @@ public class GroupController {
 
     @Operation(summary = "Add member to group (Automatically syncs to Chat) - OK")
     @PostMapping(Endpoint.Group.MEMBERS_BASE)
-    public ApiResponse<Void> addMember(@PathVariable("groupId") UUID groupId, @Valid @RequestBody AddMemberRequest request) {
+    public ApiResponse<Void> addMember(
+            @PathVariable("groupId") UUID groupId, @Valid @RequestBody AddMemberRequest request) {
 
         // Service bắn Event MemberJoined -> Tự thêm vào Chat
         // Giả sử request.getUserId() trả về UUID của người được thêm
@@ -120,7 +121,8 @@ public class GroupController {
 
     @Operation(summary = "Remove member from group (Automatically kicks from Chat) - OK")
     @DeleteMapping(Endpoint.Group.MEMBERS_ID)
-    public ApiResponse<Void> removeMember(@PathVariable("groupId") UUID groupId, @PathVariable("memberId") UUID memberId) {
+    public ApiResponse<Void> removeMember(
+            @PathVariable("groupId") UUID groupId, @PathVariable("memberId") UUID memberId) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         groupService.removeMemberFromGroup(groupId, memberId, currentUserId);
         return ApiResponse.<Void>builder()

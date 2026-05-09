@@ -72,19 +72,18 @@ public class PostController {
      */
     @Operation(
             summary = "Get / search posts (unified)",
-            description = """
-                    Unified collection endpoint. All parameters are optional:
-                    - No params → paginated feed (all active posts, newest first)
-                    - `q` → full-text search on post content
-                    - `hashtag`, `creator_id`, budget/date/people ranges → multi-criteria filter
-                    - All active filters combine as AND conditions
-                    
-                    Pagination: standard Spring params `page`, `size`, `sort`.
-                    """)
+            description =
+                    """
+					Unified collection endpoint. All parameters are optional:
+					- No params → paginated feed (all active posts, newest first)
+					- `q` → full-text search on post content
+					- `hashtag`, `creator_id`, budget/date/people ranges → multi-criteria filter
+					- All active filters combine as AND conditions
+
+					Pagination: standard Spring params `page`, `size`, `sort`.
+					""")
     @GetMapping
-    public ApiResponse<Page<PostResponse>> getPosts(
-            @Valid @ModelAttribute PostQueryParams params,
-            Pageable pageable) {
+    public ApiResponse<Page<PostResponse>> getPosts(@Valid @ModelAttribute PostQueryParams params, Pageable pageable) {
         UUID currentUserId = SecurityUtils.getCurrentUserIdSafe();
         return ApiResponse.<Page<PostResponse>>builder()
                 .data(postService.getPosts(params, pageable, currentUserId))
@@ -102,7 +101,8 @@ public class PostController {
 
     @Operation(summary = "Update a post")
     @PutMapping(Endpoint.Post.ID)
-    public ApiResponse<PostResponse> updatePost(@PathVariable("postId") UUID postId, @Valid @RequestBody PostRequest request) {
+    public ApiResponse<PostResponse> updatePost(
+            @PathVariable("postId") UUID postId, @Valid @RequestBody PostRequest request) {
         return ApiResponse.<PostResponse>builder()
                 .data(postService.updatePost(postId, request))
                 .build();

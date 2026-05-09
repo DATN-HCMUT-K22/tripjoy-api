@@ -75,19 +75,21 @@ public class ConversationService implements IConversationService {
         }
 
         // 2. Validate: target user phải tồn tại
-        User initiator = userRepository.findById(initiatorId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-        User target = userRepository.findById(targetUserId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        User initiator =
+                userRepository.findById(initiatorId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        User target =
+                userRepository.findById(targetUserId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         // 3. Idempotency: nếu DM đã tồn tại → trả về conversation cũ
         //    Không tạo duplicate dù client gọi API nhiều lần
-        Optional<Conversation> existing = conversationRepository
-                .findDirectConversation(initiatorId, targetUserId);
+        Optional<Conversation> existing = conversationRepository.findDirectConversation(initiatorId, targetUserId);
 
         if (existing.isPresent()) {
-            log.info("DM already exists between {} and {} — returning existing conversation: {}",
-                    initiatorId, targetUserId, existing.get().getId());
+            log.info(
+                    "DM already exists between {} and {} — returning existing conversation: {}",
+                    initiatorId,
+                    targetUserId,
+                    existing.get().getId());
             Conversation existingConv = existing.get();
             ConversationResponse response = conversationMapper.toResponse(existingConv, initiatorId);
             enrichConversationResponse(response, existingConv, initiatorId);
@@ -95,12 +97,14 @@ public class ConversationService implements IConversationService {
         }
 
         // 4. Tạo Conversation mới (type = DIRECT, không có group)
-        Conversation conversation = Conversation.builder()
-                .type(ConversationType.DIRECT)
-                .build();
+        Conversation conversation =
+                Conversation.builder().type(ConversationType.DIRECT).build();
         conversation = conversationRepository.save(conversation);
-        log.info("Created new DIRECT conversation: {} between {} and {}",
-                conversation.getId(), initiatorId, targetUserId);
+        log.info(
+                "Created new DIRECT conversation: {} between {} and {}",
+                conversation.getId(),
+                initiatorId,
+                targetUserId);
 
         // 5. Tạo ConversationMember cho cả 2 user
         ConversationMember initiatorMember = ConversationMember.builder()
@@ -214,11 +218,11 @@ public class ConversationService implements IConversationService {
             }
 
             ChatMessageSimpleResponse lastMsg = ChatMessageSimpleResponse.builder()
-                            .id(conversation.getLastMessageId())
-                            .messageContent(conversation.getLastMessageContent())
-                            .messageType(conversation.getLastMessageType())
-                            .sender(sender)
-                            .build();
+                    .id(conversation.getLastMessageId())
+                    .messageContent(conversation.getLastMessageContent())
+                    .messageType(conversation.getLastMessageType())
+                    .sender(sender)
+                    .build();
 
             response.setLastMessage(lastMsg);
         }
@@ -268,6 +272,7 @@ public class ConversationService implements IConversationService {
         enrichConversationResponse(response, conversation, currentUserId);
         return response;
     }
+
     @Transactional
     public void resetUnreadCount(UUID conversationId, UUID currentUserId) {
         // Verify user is member
@@ -278,5 +283,4 @@ public class ConversationService implements IConversationService {
 
         conversationMemberRepository.resetUnreadCount(conversationId, currentUserId);
     }
-
 }
