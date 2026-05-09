@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.hibernate.annotations.BatchSize;
+
 import jakarta.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -19,6 +21,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "users")
+@BatchSize(size = 20)
 public class User extends BaseEntity {
 
     private String username;

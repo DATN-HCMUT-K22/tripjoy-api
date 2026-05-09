@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,9 +19,13 @@ public interface ItineraryRepository extends JpaRepository<Itinerary, UUID> {
     @Query("SELECT i FROM Itinerary i WHERE i.group.id = :groupId AND i.softDeleteInfo.isDeleted = false")
     List<Itinerary> findByGroupIdAndNotDeleted(@Param("groupId") UUID groupId);
 
-    List<Itinerary> findByUserIdAndSoftDeleteInfoIsDeletedFalse(UUID userId);
+    @EntityGraph(attributePaths = {"user", "group", "origin", "destination", "travelNotebook", "themes"})
+    @Query("SELECT i FROM Itinerary i WHERE i.user.id = :userId AND i.softDeleteInfo.isDeleted = false")
+    List<Itinerary> findByUserId(@Param("userId") UUID userId);
 
-    List<Itinerary> findByFavouriteUsersIdAndSoftDeleteInfoIsDeletedFalse(UUID userId);
+    @EntityGraph(attributePaths = {"user", "group", "origin", "destination", "travelNotebook", "themes"})
+    @Query("SELECT i FROM Itinerary i JOIN i.favouriteUsers f WHERE f.id = :userId AND i.softDeleteInfo.isDeleted = false")
+    List<Itinerary> findByFavouriteUserId(@Param("userId") UUID userId);
 
     // === SOFT DELETE CASCADE METHODS ===
 

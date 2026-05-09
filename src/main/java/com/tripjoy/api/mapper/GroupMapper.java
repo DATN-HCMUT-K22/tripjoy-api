@@ -19,7 +19,6 @@ public interface GroupMapper {
     Group toGroup(GroupRequest request);
 
     // 2. Entity -> Response
-    @Mapping(target = "itiCount", expression = "java(group.getItineraries() != null ? group.getItineraries().size() : 0)")
     GroupResponse toGroupResponse(Group group);
 
     // 3. Update Entity từ Request (Dùng cho hàm updateGroup)

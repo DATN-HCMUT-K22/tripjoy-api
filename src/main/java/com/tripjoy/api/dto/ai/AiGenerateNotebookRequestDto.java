@@ -19,6 +19,7 @@ import lombok.*;
 @AllArgsConstructor
 public class AiGenerateNotebookRequestDto {
 
+    @JsonProperty("name")
     private String name;
 
     @JsonProperty("start_date")
@@ -34,12 +35,14 @@ public class AiGenerateNotebookRequestDto {
     @JsonProperty("budget_estimate")
     private Long budgetEstimate;
 
+    @JsonProperty("themes")
     private List<String> themes;
 
     /**
      * Tên điểm đến — AI dùng để tra Wikipedia.
      * Ví dụ: "Da Lat", "Hoi An", "Nha Trang"
      */
+    @JsonProperty("destination")
     private String destination;
 
     @JsonProperty("trip_items")

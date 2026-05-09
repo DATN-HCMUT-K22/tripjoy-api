@@ -83,8 +83,9 @@ public class PostService implements IPostService {
     public Page<PostResponse> getPosts(PostQueryParams params, Pageable pageable, UUID currentUserId) {
         // Fast path: no filter criteria — use simple paginated findAll (no FTS overhead)
         if (params == null || params.isEmpty()) {
-            return postRepository.findBySoftDeleteInfoIsDeletedFalse(pageable)
-                    .map(post -> getPostResponseWithContext(post, currentUserId));
+            Page<Post> postPage = postRepository.findBySoftDeleteInfoIsDeletedFalse(pageable);
+            List<PostResponse> responses = getPostResponsesWithContext(postPage.getContent(), currentUserId);
+            return new PageImpl<>(responses, pageable, postPage.getTotalElements());
         }
 
         // Filter path: delegate to FTS + multi-criteria native query
@@ -111,9 +112,7 @@ public class PostService implements IPostService {
                     params.getOriginId(), params.getDestinationId());
         }
 
-        List<PostResponse> responses = posts.stream()
-                .map(post -> getPostResponseWithContext(post, currentUserId))
-                .collect(Collectors.toList());
+        List<PostResponse> responses = getPostResponsesWithContext(posts, currentUserId);
 
         return new PageImpl<>(responses, pageable, totalElements);
     }
@@ -201,8 +200,9 @@ public class PostService implements IPostService {
     @Override
     @Transactional(readOnly = true)
     public Page<PostResponse> getSavedPosts(Pageable pageable, UUID currentUserId) {
-        return postRepository.findBySaveUsersIdAndSoftDeleteInfoIsDeletedFalse(currentUserId, pageable)
-                .map(post -> getPostResponseWithContext(post, currentUserId));
+        Page<Post> postPage = postRepository.findBySaveUsersIdAndSoftDeleteInfoIsDeletedFalse(currentUserId, pageable);
+        List<PostResponse> responses = getPostResponsesWithContext(postPage.getContent(), currentUserId);
+        return new PageImpl<>(responses, pageable, postPage.getTotalElements());
     }
 
     @Override
@@ -236,13 +236,39 @@ public class PostService implements IPostService {
     private PostResponse getPostResponseWithContext(Post post, UUID currentUserId) {
         PostResponse response = postMapper.toPostResponse(post);
         if (currentUserId != null) {
-            response.setIsLiked(post.getLikeUsers() != null && post.getLikeUsers().stream().anyMatch(u -> u.getId().equals(currentUserId)));
-            response.setIsSaved(post.getSaveUsers() != null && post.getSaveUsers().stream().anyMatch(u -> u.getId().equals(currentUserId)));
+            response.setIsLiked(postRepository.isLikedByUser(post.getId(), currentUserId));
+            response.setIsSaved(postRepository.isSavedByUser(post.getId(), currentUserId));
         } else {
             response.setIsLiked(false);
             response.setIsSaved(false);
         }
         return response;
+    }
+
+    private List<PostResponse> getPostResponsesWithContext(List<Post> posts, UUID currentUserId) {
+        if (posts.isEmpty())
+            return List.of();
+
+        List<PostResponse> responses = posts.stream()
+                .map(postMapper::toPostResponse)
+                .collect(Collectors.toList());
+
+        if (currentUserId != null) {
+            List<UUID> postIds = posts.stream().map(Post::getId).collect(Collectors.toList());
+            List<UUID> likedIds = postRepository.findLikedPostIdsByUser(postIds, currentUserId);
+            List<UUID> savedIds = postRepository.findSavedPostIdsByUser(postIds, currentUserId);
+
+            responses.forEach(res -> {
+                res.setIsLiked(likedIds.contains(res.getId()));
+                res.setIsSaved(savedIds.contains(res.getId()));
+            });
+        } else {
+            responses.forEach(res -> {
+                res.setIsLiked(false);
+                res.setIsSaved(false);
+            });
+        }
+        return responses;
     }
 
     private void validateOwnership(Post post) {

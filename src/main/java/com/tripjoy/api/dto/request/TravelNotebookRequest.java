@@ -39,7 +39,7 @@ public class TravelNotebookRequest {
             example = "List of must-try dishes and restaurants.")
     String description;
 
-    @NotNull
+    @NotNull(message = "INVALID_REQUEST")
     @JsonProperty("itinerary_id")
     @Schema(description = "UUID of the itinerary this notebook belongs to", requiredMode = Schema.RequiredMode.REQUIRED)
     UUID itineraryId;

@@ -30,9 +30,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Query(value = """
             SELECT * FROM users u
-            WHERE (lower(unaccent(u.username)) LIKE lower(unaccent(CONCAT('%', :keyword, '%')))
-                OR lower(unaccent(u.full_name)) LIKE lower(unaccent(CONCAT('%', :keyword, '%')))
-                OR lower(unaccent(u.email))     LIKE lower(unaccent(CONCAT('%', :keyword, '%')))
+            WHERE (lower(f_unaccent(u.username)) LIKE lower(f_unaccent(CONCAT('%', :keyword, '%')))
+                OR lower(f_unaccent(u.full_name)) LIKE lower(f_unaccent(CONCAT('%', :keyword, '%')))
+                OR lower(f_unaccent(u.email))     LIKE lower(f_unaccent(CONCAT('%', :keyword, '%')))
                 OR u.phone_number LIKE CONCAT('%', :keyword, '%'))
               AND u.is_deleted = false
             """, nativeQuery = true)
@@ -44,8 +44,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
      */
     @Query(value = """
             SELECT * FROM users u
-            WHERE (lower(unaccent(u.username)) LIKE lower(unaccent(CONCAT('%', :keyword, '%')))
-                OR lower(unaccent(u.email))    LIKE lower(unaccent(CONCAT('%', :keyword, '%'))))
+            WHERE (lower(f_unaccent(u.username)) LIKE lower(f_unaccent(CONCAT('%', :keyword, '%')))
+                OR lower(f_unaccent(u.email))    LIKE lower(f_unaccent(CONCAT('%', :keyword, '%'))))
               AND u.is_deleted = false
             """, nativeQuery = true)
     Page<User> searchByUsernameOrEmailPaged(@Param("keyword") String keyword, Pageable pageable);
@@ -58,8 +58,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Query(value = """
             SELECT * FROM users u
-            WHERE (lower(unaccent(u.username)) LIKE lower(unaccent(CONCAT('%', :keyword, '%')))
-                OR lower(unaccent(u.email))    LIKE lower(unaccent(CONCAT('%', :keyword, '%'))))
+            WHERE (lower(f_unaccent(u.username)) LIKE lower(f_unaccent(CONCAT('%', :keyword, '%')))
+                OR lower(f_unaccent(u.email))    LIKE lower(f_unaccent(CONCAT('%', :keyword, '%'))))
               AND u.is_deleted = false
             """, nativeQuery = true)
     List<User> searchByUsernameOrEmail(@Param("keyword") String keyword);

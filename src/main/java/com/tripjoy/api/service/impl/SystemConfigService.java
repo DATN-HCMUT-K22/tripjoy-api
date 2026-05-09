@@ -18,10 +18,8 @@ import com.tripjoy.api.exception.ErrorCode;
 import com.tripjoy.api.repository.SystemConfigRepository;
 import com.tripjoy.api.service.ISystemConfigService;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
-import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
 import io.github.resilience4j.retry.RetryRegistry;
 

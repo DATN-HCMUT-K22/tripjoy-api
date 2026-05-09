@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,10 +21,7 @@ public interface GroupRepository extends JpaRepository<Group, UUID> {
     @Query("SELECT g FROM Group g WHERE g.softDeleteInfo.isDeleted = false")
     List<Group> findAllNotDeleted();
 
-    @Query(value = """
-            SELECT * FROM "group" g
-            WHERE lower(unaccent(g.name)) LIKE lower(unaccent(CONCAT('%', :keyword, '%')))
-              AND g.is_deleted = false
-            """, nativeQuery = true)
+    @EntityGraph(attributePaths = {"members"})
+    @Query("SELECT g FROM Group g WHERE CAST(function('lower', function('f_unaccent', g.name)) AS string) LIKE CAST(function('lower', function('f_unaccent', CONCAT('%', :keyword, '%'))) AS string) AND g.softDeleteInfo.isDeleted = false")
     List<Group> searchByName(@Param("keyword") String keyword);
 }

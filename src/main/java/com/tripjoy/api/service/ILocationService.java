@@ -18,10 +18,13 @@ import com.tripjoy.api.enums.LocationType;
 /**
  * Location service contract — provider-agnostic, high-scale.
  *
- * <p>Two main resolution flows:
+ * <p>
+ * Two main resolution flows:
  * <ol>
- *   <li>Admin / Seed flow: {@link #getOrCreateLocation} — upserts a location from map API data.
- *   <li>Query flow: {@link #getLocations} / {@link #searchLocations} — fetch with rich filtering.
+ * <li>Admin / Seed flow: {@link #getOrCreateLocation} — upserts a location from
+ * map API data.
+ * <li>Query flow: {@link #getLocations} / {@link #searchLocations} — fetch with
+ * rich filtering.
  * </ol>
  */
 public interface ILocationService {
@@ -41,7 +44,8 @@ public interface ILocationService {
     LocationResponse updateLocation(UUID locationId, LocationCreateRequest request);
 
     /**
-     * Resolves a location by Google Place ID. If it doesn't exist in DB, fetches from Google Places API and saves it.
+     * Resolves a location by Google Place ID. If it doesn't exist in DB, fetches
+     * from Google Places API and saves it.
      */
     LocationResponse resolveByPlaceId(String placeId);
 
@@ -49,7 +53,8 @@ public interface ILocationService {
 
     /**
      * Async batch increment of usage_count for a list of location IDs.
-     * Called after trip items, itineraries, suggestions, or posts reference locations.
+     * Called after trip items, itineraries, suggestions, or posts reference
+     * locations.
      */
     void incrementUsageCount(List<UUID> locationIds);
 
@@ -79,13 +84,15 @@ public interface ILocationService {
     /**
      * Hybrid autocomplete — DB fast-path first, Google Places API fallback.
      *
-     * <p>Ranking: DB results (with usageCount) shown first, then Google suggestions appended
+     * <p>
+     * Ranking: DB results (with usageCount) shown first, then Google suggestions
+     * appended
      * without duplicates (deduplicated by providerId).
      *
-     * @param q       Partial text input (min 2 chars)
-     * @param city    Optional city to bias results
-     * @param lat     Optional user latitude for proximity ranking
-     * @param lng     Optional user longitude for proximity ranking
+     * @param q    Partial text input (min 2 chars)
+     * @param city Optional city to bias results
+     * @param lat  Optional user latitude for proximity ranking
+     * @param lng  Optional user longitude for proximity ranking
      * @return merged, deduplicated list (max 10 items)
      */
     List<LocationAutocompleteItem> autocomplete(String q, String city, Double lat, Double lng);
