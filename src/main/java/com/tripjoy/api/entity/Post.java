@@ -26,6 +26,7 @@ public class Post extends BaseEntity {
     @Builder.Default
     @ElementCollection
     @CollectionTable(name = "post_media", joinColumns = @JoinColumn(name = "post_id"))
+    @BatchSize(size = 20)
     @Column(name = "media_url", length = 1024)
     @OrderColumn(name = "media_order")
     private List<String> mediaUrls = new ArrayList<>();
@@ -55,13 +56,13 @@ public class Post extends BaseEntity {
     @Builder.Default
     private Set<Comment> comments = new HashSet<>();
 
+    @BatchSize(size = 50)
     @ManyToMany
     @JoinTable(
         name = "post_hashtag_mapping",
         joinColumns = @JoinColumn(name = "post_id"),
         inverseJoinColumns = @JoinColumn(name = "hashtag_id")
     )
-    @BatchSize(size = 20)
     @Builder.Default
     private Set<Hashtag> hashtags = new HashSet<>();
 
@@ -70,6 +71,7 @@ public class Post extends BaseEntity {
             name = "save_post",
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @BatchSize(size = 20)
     @Builder.Default
     private Set<User> saveUsers = new HashSet<>();
 
@@ -78,6 +80,7 @@ public class Post extends BaseEntity {
             name = "like_post",
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @BatchSize(size = 20)
     @Builder.Default
     private Set<User> likeUsers = new HashSet<>();
 }

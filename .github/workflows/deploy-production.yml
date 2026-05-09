@@ -206,13 +206,16 @@ jobs:
             
             echo "Writing production .env..."
             echo "${{ secrets.ENV_PROD }}" | base64 -d > .env
+            echo "" >> .env 
+            
             echo "IMAGE_TAG=${{ needs.build-and-push.outputs.version-tag }}" >> .env
             echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
             
             echo "Pulling new Docker image..."
+            IMAGE_TAG=${{ needs.build-and-push.outputs.version-tag }} DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }} \
             docker compose -f docker-compose.prod.yml pull tripjoy-api
             
-            echo "Performing rolling restart..."
+            IMAGE_TAG=${{ needs.build-and-push.outputs.version-tag }} DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }} \
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
             
             echo "Waiting for health check (60s)..."
