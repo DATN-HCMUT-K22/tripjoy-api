@@ -75,7 +75,8 @@ public class ChatMessageController {
 
     @Operation(summary = "Pin a message in conversation")
     @PostMapping(Endpoint.Message.PIN)
-    public ApiResponse<Void> pinMessage(@PathVariable("messageId") UUID messageId, @RequestParam("conversationId") UUID conversationId) {
+    public ApiResponse<Void> pinMessage(
+            @PathVariable("messageId") UUID messageId, @RequestParam("conversationId") UUID conversationId) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         messageService.pinMessage(conversationId, messageId, currentUserId);
 
@@ -86,7 +87,8 @@ public class ChatMessageController {
 
     @Operation(summary = "Unpin a message from conversation")
     @DeleteMapping(Endpoint.Message.PIN)
-    public ApiResponse<Void> unpinMessage(@PathVariable("messageId") UUID messageId, @RequestParam("conversationId") UUID conversationId) {
+    public ApiResponse<Void> unpinMessage(
+            @PathVariable("messageId") UUID messageId, @RequestParam("conversationId") UUID conversationId) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         messageService.unpinMessage(conversationId, messageId, currentUserId);
 

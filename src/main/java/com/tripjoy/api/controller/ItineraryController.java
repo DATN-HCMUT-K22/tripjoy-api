@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import jakarta.validation.Valid;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.tripjoy.api.constant.Endpoint;
@@ -16,10 +17,9 @@ import com.tripjoy.api.dto.request.TripItemRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.ItineraryResponse;
 import com.tripjoy.api.dto.response.TripItemResponse;
-import com.tripjoy.api.service.IItineraryService;
 import com.tripjoy.api.service.IItineraryGenerationService;
+import com.tripjoy.api.service.IItineraryService;
 import com.tripjoy.api.utils.SecurityUtils;
-import org.springframework.http.ResponseEntity;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -51,8 +51,8 @@ public class ItineraryController {
         itineraryGenerationService.processGenerationAsync(response.getId(), request);
 
         // 3. Return 202 Accepted
-        return ResponseEntity.accepted().body(
-                ApiResponse.<ItineraryResponse>builder()
+        return ResponseEntity.accepted()
+                .body(ApiResponse.<ItineraryResponse>builder()
                         .message("Itinerary generation has started and will be available shortly")
                         .data(response)
                         .build());
@@ -162,20 +162,20 @@ public class ItineraryController {
 
     // --- AI Modification ---
 
-    @Operation(summary = "AI Modify Itinerary — replace unwanted locations with AI-suggested alternatives", description = "Provide a list of Google Place IDs you don't want. "
-            + "The AI will pick suitable replacements and update the itinerary synchronously.")
+    @Operation(
+            summary = "AI Modify Itinerary — replace unwanted locations with AI-suggested alternatives",
+            description = "Provide a list of Google Place IDs you don't want. "
+                    + "The AI will pick suitable replacements and update the itinerary synchronously.")
     @PostMapping(Endpoint.Itinerary.AI_MODIFY)
     public ResponseEntity<ApiResponse<ItineraryResponse>> aiModifyItinerary(
-            @PathVariable("itineraryId") UUID itineraryId,
-            @Valid @RequestBody AiModifyItineraryRequest request) {
+            @PathVariable("itineraryId") UUID itineraryId, @Valid @RequestBody AiModifyItineraryRequest request) {
 
         ItineraryResponse response = itineraryGenerationService.modifyItinerary(itineraryId, request);
 
-        return ResponseEntity.ok(
-                ApiResponse.<ItineraryResponse>builder()
-                        .message("Itinerary has been successfully modified by AI")
-                        .data(response)
-                        .build());
+        return ResponseEntity.ok(ApiResponse.<ItineraryResponse>builder()
+                .message("Itinerary has been successfully modified by AI")
+                .data(response)
+                .build());
     }
 
     @Operation(
@@ -184,16 +184,13 @@ public class ItineraryController {
                     + "AI returns candidate locations without modifying the itinerary.")
     @PostMapping(Endpoint.Itinerary.AI_SUGGEST_LOCATION)
     public ResponseEntity<ApiResponse<List<TripItemResponse>>> aiSuggestLocation(
-            @PathVariable("itineraryId") UUID itineraryId,
-            @Valid @RequestBody AiSuggestLocationRequest request) {
+            @PathVariable("itineraryId") UUID itineraryId, @Valid @RequestBody AiSuggestLocationRequest request) {
 
         List<TripItemResponse> suggestions = itineraryGenerationService.suggestLocation(itineraryId, request);
 
-        return ResponseEntity.ok(
-                ApiResponse.<List<TripItemResponse>>builder()
-                        .message("AI suggested " + suggestions.size() + " alternative location(s)")
-                        .data(suggestions)
-                        .build());
+        return ResponseEntity.ok(ApiResponse.<List<TripItemResponse>>builder()
+                .message("AI suggested " + suggestions.size() + " alternative location(s)")
+                .data(suggestions)
+                .build());
     }
 }
-

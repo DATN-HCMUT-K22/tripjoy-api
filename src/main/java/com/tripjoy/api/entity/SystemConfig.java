@@ -41,16 +41,16 @@ public class SystemConfig {
     public void onPrePersist() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = this.createdAt;
-        this.updatedBy = SecurityUtils.getCurrentUserIdSafe() != null 
-                ? SecurityUtils.getCurrentUserIdSafe().toString() 
+        this.updatedBy = SecurityUtils.getCurrentUserIdSafe() != null
+                ? SecurityUtils.getCurrentUserIdSafe().toString()
                 : "SYSTEM";
     }
 
     @PreUpdate
     public void onPreUpdate() {
         this.updatedAt = LocalDateTime.now();
-        this.updatedBy = SecurityUtils.getCurrentUserIdSafe() != null 
-                ? SecurityUtils.getCurrentUserIdSafe().toString() 
+        this.updatedBy = SecurityUtils.getCurrentUserIdSafe() != null
+                ? SecurityUtils.getCurrentUserIdSafe().toString()
                 : "SYSTEM";
     }
 }

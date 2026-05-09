@@ -24,7 +24,8 @@ public interface ItineraryRepository extends JpaRepository<Itinerary, UUID> {
     List<Itinerary> findByUserId(@Param("userId") UUID userId);
 
     @EntityGraph(attributePaths = {"user", "group", "origin", "destination", "travelNotebook", "themes"})
-    @Query("SELECT i FROM Itinerary i JOIN i.favouriteUsers f WHERE f.id = :userId AND i.softDeleteInfo.isDeleted = false")
+    @Query(
+            "SELECT i FROM Itinerary i JOIN i.favouriteUsers f WHERE f.id = :userId AND i.softDeleteInfo.isDeleted = false")
     List<Itinerary> findByFavouriteUserId(@Param("userId") UUID userId);
 
     // === SOFT DELETE CASCADE METHODS ===

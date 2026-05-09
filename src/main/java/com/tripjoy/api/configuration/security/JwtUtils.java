@@ -175,11 +175,11 @@ public class JwtUtils {
      * @return true if the token has been invalidated (logged out)
      */
     @Cacheable(
-        value = RedisCacheConfig.CACHE_INVALIDATED_TOKEN,
-        key = "#jti",
-        condition = "#jti != null",
-        unless = "#result == false"   // do NOT cache 'false' — only cache invalidated tokens
-    )
+            value = RedisCacheConfig.CACHE_INVALIDATED_TOKEN,
+            key = "#jti",
+            condition = "#jti != null",
+            unless = "#result == false" // do NOT cache 'false' — only cache invalidated tokens
+            )
     public boolean existsInBlacklist(String jti) {
         log.debug("Cache MISS — checking token blacklist in DB: jti={}", jti);
         return invalidatedTokenRepository.existsById(UUID.fromString(jti));

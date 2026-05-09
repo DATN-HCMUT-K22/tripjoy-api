@@ -20,8 +20,6 @@ import com.tripjoy.api.entity.Notification;
 import com.tripjoy.api.entity.Post;
 import com.tripjoy.api.entity.User;
 import com.tripjoy.api.enums.NotificationType;
-import com.tripjoy.api.exception.AppException;
-import com.tripjoy.api.exception.ErrorCode;
 import com.tripjoy.api.repository.CommentRepository;
 import com.tripjoy.api.repository.GroupMemberRepository;
 import com.tripjoy.api.repository.NotificationRepository;
@@ -81,8 +79,7 @@ public class NotificationEventListener {
                     group.getId().toString(),
                     joiner.getFullName() + " đã tham gia nhóm " + group.getName(),
                     "Thành viên mới",
-                    meta
-            );
+                    meta);
         }
     }
 
@@ -108,8 +105,7 @@ public class NotificationEventListener {
                     group.getId().toString(),
                     "Thông tin nhóm " + group.getName() + " đã được cập nhật bởi " + actor.getFullName(),
                     "Nhóm đã cập nhật",
-                    meta
-            );
+                    meta);
         }
     }
 
@@ -131,10 +127,10 @@ public class NotificationEventListener {
                 actor.getId(),
                 "Group",
                 group.getId().toString(),
-                actor.getFullName() + " đã thay đổi vai trò của bạn thành " + event.getNewRole().name() + " trong nhóm " + group.getName(),
+                actor.getFullName() + " đã thay đổi vai trò của bạn thành "
+                        + event.getNewRole().name() + " trong nhóm " + group.getName(),
                 "Thay đổi vai trò",
-                meta
-        );
+                meta);
     }
 
     @Async
@@ -155,10 +151,10 @@ public class NotificationEventListener {
                     oldLeader.getId(),
                     "Group",
                     group.getId().toString(),
-                    oldLeader.getFullName() + " đã chuyển quyền trưởng nhóm cho " + newLeader.getFullName() + " trong nhóm " + group.getName(),
+                    oldLeader.getFullName() + " đã chuyển quyền trưởng nhóm cho " + newLeader.getFullName()
+                            + " trong nhóm " + group.getName(),
                     "Chuyển quyền trưởng nhóm",
-                    meta
-            );
+                    meta);
         }
     }
 
@@ -171,7 +167,8 @@ public class NotificationEventListener {
         // Using ChatMessageService to fetch sender might cause cyclic dependency if this is deep.
         // Assuming we pass senderId in event or query it. Wait, MessageLikedEvent doesn't have message owner.
         // Actually this requires hitting DB for chat_message but we only want to fix notifications right now.
-        // The user wants Post and Comment notifications prioritized, let's skip ChatMessage for a bit or implement basically.
+        // The user wants Post and Comment notifications prioritized, let's skip ChatMessage for a bit or implement
+        // basically.
     }
 
     // --- POST & COMMENT EVENTS ---
@@ -196,8 +193,7 @@ public class NotificationEventListener {
                 post.getId().toString(),
                 actor.getFullName() + " đã thích bài viết của bạn.",
                 "Lượt thích mới",
-                meta
-        );
+                meta);
     }
 
     @Async
@@ -221,8 +217,7 @@ public class NotificationEventListener {
                 comment.getId().toString(),
                 actor.getFullName() + " đã thích bình luận của bạn.",
                 "Lượt thích mới",
-                meta
-        );
+                meta);
     }
 
     @Async
@@ -231,7 +226,7 @@ public class NotificationEventListener {
         Comment comment = event.getComment();
         User actor = event.getActor();
         Post post = comment.getPost();
-        
+
         Comment parentComment = comment.getParentComment();
 
         Map<String, Object> meta = new HashMap<>();
@@ -250,8 +245,7 @@ public class NotificationEventListener {
                         post.getId().toString(),
                         actor.getFullName() + " đã bình luận về bài viết của bạn.",
                         "Bình luận mới",
-                        meta
-                );
+                        meta);
             }
 
             // Optional: notify others who commented on this post
@@ -267,8 +261,7 @@ public class NotificationEventListener {
                         post.getId().toString(),
                         actor.getFullName() + " cũng đã bình luận về một bài viết mà bạn đang theo dõi.",
                         "Bình luận mới",
-                        meta
-                );
+                        meta);
             }
         } else {
             // Case 2: Reply -> Notify Parent Comment Owner & other replies
@@ -282,8 +275,7 @@ public class NotificationEventListener {
                         parentComment.getId().toString(),
                         actor.getFullName() + " đã trả lời bình luận của bạn.",
                         "Trả lời mới",
-                        meta
-                );
+                        meta);
             }
 
             // Notify other repliers to the SAME parent
@@ -299,12 +291,10 @@ public class NotificationEventListener {
                         parentComment.getId().toString(),
                         actor.getFullName() + " đã cùng trả lời một bình luận.",
                         "Trả lời mới",
-                        meta
-                );
+                        meta);
             }
         }
     }
-
 
     // =========================================================================
     // 2. CORE NOTIFICATION LOGIC
@@ -353,12 +343,19 @@ public class NotificationEventListener {
             Notification savedNotification = notificationRepository.save(notification);
             socketService.sendNotification(recipientId, savedNotification);
 
-            log.info("Notification created and sent: id={}, type={}, recipient={}",
-                    savedNotification.getId(), type, recipient.getUsername());
+            log.info(
+                    "Notification created and sent: id={}, type={}, recipient={}",
+                    savedNotification.getId(),
+                    type,
+                    recipient.getUsername());
 
         } catch (Exception e) {
-            log.error("Failed to create and send notification: type={}, recipient={}, error={}",
-                    type, recipientId, e.getMessage(), e);
+            log.error(
+                    "Failed to create and send notification: type={}, recipient={}, error={}",
+                    type,
+                    recipientId,
+                    e.getMessage(),
+                    e);
         }
     }
 
@@ -376,7 +373,6 @@ public class NotificationEventListener {
                 event.getEntityId(),
                 event.getMessage(),
                 event.getTitle(),
-                event.getMetadata()
-        );
+                event.getMetadata());
     }
 }

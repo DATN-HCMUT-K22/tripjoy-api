@@ -3,9 +3,8 @@ package com.tripjoy.api.configuration.socketio;
 import jakarta.annotation.PreDestroy;
 
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
-
 import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 import com.corundumstudio.socketio.SocketIOServer;
 

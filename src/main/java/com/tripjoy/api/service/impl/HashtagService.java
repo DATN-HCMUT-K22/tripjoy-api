@@ -39,18 +39,20 @@ public class HashtagService implements IHashtagService {
 
         // 2. Fetch existing hashtags in one batch
         List<Hashtag> existingHashtags = hashtagRepository.findByNameIn(cleanedNames);
-        Map<String, Hashtag> existingMap = existingHashtags.stream()
-                .collect(Collectors.toMap(Hashtag::getName, h -> h));
+        Map<String, Hashtag> existingMap =
+                existingHashtags.stream().collect(Collectors.toMap(Hashtag::getName, h -> h));
 
         // 3. Create missing hashtags
-        Set<Hashtag> finalHashtags = cleanedNames.stream().map(name -> {
-            if (existingMap.containsKey(name)) {
-                return existingMap.get(name);
-            } else {
-                Hashtag newHashtag = Hashtag.builder().name(name).build();
-                return hashtagRepository.save(newHashtag);
-            }
-        }).collect(Collectors.toSet());
+        Set<Hashtag> finalHashtags = cleanedNames.stream()
+                .map(name -> {
+                    if (existingMap.containsKey(name)) {
+                        return existingMap.get(name);
+                    } else {
+                        Hashtag newHashtag = Hashtag.builder().name(name).build();
+                        return hashtagRepository.save(newHashtag);
+                    }
+                })
+                .collect(Collectors.toSet());
 
         return finalHashtags;
     }

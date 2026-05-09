@@ -54,25 +54,27 @@ public class ItineraryService implements IItineraryService {
     ILocationService locationService;
 
     @Override
-    @CacheEvict(value = RedisCacheConfig.CACHE_ITINERARIES_BY_USER, key = "T(com.tripjoy.api.utils.SecurityUtils).getCurrentUserId()")
+    @CacheEvict(
+            value = RedisCacheConfig.CACHE_ITINERARIES_BY_USER,
+            key = "T(com.tripjoy.api.utils.SecurityUtils).getCurrentUserId()")
     public ItineraryResponse createItinerary(ItineraryRequest request) {
         UUID userId = SecurityUtils.getCurrentUserId();
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         Itinerary itinerary = itineraryMapper.toItinerary(request);
         itinerary.setUser(user);
-        
+
         if (request.getThemes() != null) {
             itinerary.setThemes(themeService.syncThemes(request.getThemes()));
         }
-        
+
         if (request.getStatus() == null) {
             itinerary.setStatus(ItineraryStatus.DRAFT);
         }
 
         if (request.getGroupId() != null) {
-            Group group = groupRepository.findById(UUID.fromString(request.getGroupId()))
+            Group group = groupRepository
+                    .findById(UUID.fromString(request.getGroupId()))
                     .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
             itinerary.setGroup(group);
         }
@@ -83,21 +85,23 @@ public class ItineraryService implements IItineraryService {
 
     @Override
     public ItineraryResponse getItineraryById(UUID id) {
-        Itinerary itinerary = itineraryRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
-                
+        Itinerary itinerary =
+                itineraryRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+
         if (itinerary.getSoftDeleteInfo().isDeleted()) {
-             throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
         }
-        
+
         return itineraryMapper.toItineraryResponse(itinerary);
     }
 
     @Override
-    @org.springframework.cache.annotation.CacheEvict(value = RedisCacheConfig.CACHE_ITINERARIES_BY_USER, key = "T(com.tripjoy.api.utils.SecurityUtils).getCurrentUserId()")
+    @org.springframework.cache.annotation.CacheEvict(
+            value = RedisCacheConfig.CACHE_ITINERARIES_BY_USER,
+            key = "T(com.tripjoy.api.utils.SecurityUtils).getCurrentUserId()")
     public ItineraryResponse updateItinerary(UUID id, ItineraryRequest request) {
-        Itinerary itinerary = itineraryRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        Itinerary itinerary =
+                itineraryRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
         validateOwnership(itinerary);
 
@@ -108,7 +112,8 @@ public class ItineraryService implements IItineraryService {
         }
 
         if (request.getGroupId() != null) {
-            Group group = groupRepository.findById(UUID.fromString(request.getGroupId()))
+            Group group = groupRepository
+                    .findById(UUID.fromString(request.getGroupId()))
                     .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
             itinerary.setGroup(group);
         }
@@ -118,21 +123,27 @@ public class ItineraryService implements IItineraryService {
     }
 
     @Override
-    @org.springframework.cache.annotation.CacheEvict(value = RedisCacheConfig.CACHE_ITINERARIES_BY_USER, key = "T(com.tripjoy.api.utils.SecurityUtils).getCurrentUserId()")
+    @org.springframework.cache.annotation.CacheEvict(
+            value = RedisCacheConfig.CACHE_ITINERARIES_BY_USER,
+            key = "T(com.tripjoy.api.utils.SecurityUtils).getCurrentUserId()")
     public void deleteItinerary(UUID id) {
-        Itinerary itinerary = itineraryRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        Itinerary itinerary =
+                itineraryRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
         validateOwnership(itinerary);
 
-        itinerary.getSoftDeleteInfo().markAsDeleted(SecurityUtils.getCurrentUserId().toString());
-        
+        itinerary
+                .getSoftDeleteInfo()
+                .markAsDeleted(SecurityUtils.getCurrentUserId().toString());
+
         itineraryRepository.save(itinerary);
     }
 
     @Override
     @Transactional(readOnly = true)
-    @org.springframework.cache.annotation.Cacheable(value = RedisCacheConfig.CACHE_ITINERARIES_BY_USER, key = "T(com.tripjoy.api.utils.SecurityUtils).getCurrentUserId()")
+    @org.springframework.cache.annotation.Cacheable(
+            value = RedisCacheConfig.CACHE_ITINERARIES_BY_USER,
+            key = "T(com.tripjoy.api.utils.SecurityUtils).getCurrentUserId()")
     public List<ItineraryResponse> getMyItineraries() {
         UUID userId = SecurityUtils.getCurrentUserId();
         return itineraryRepository.findByUserId(userId).stream()
@@ -151,10 +162,11 @@ public class ItineraryService implements IItineraryService {
 
     @Override
     public void favoriteItinerary(UUID id) {
-        Itinerary itinerary = itineraryRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
-                
-        User user = userRepository.findById(SecurityUtils.getCurrentUserId())
+        Itinerary itinerary =
+                itineraryRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        User user = userRepository
+                .findById(SecurityUtils.getCurrentUserId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         itinerary.getFavouriteUsers().add(user);
@@ -163,10 +175,11 @@ public class ItineraryService implements IItineraryService {
 
     @Override
     public void unfavoriteItinerary(UUID id) {
-        Itinerary itinerary = itineraryRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
-                
-        User user = userRepository.findById(SecurityUtils.getCurrentUserId())
+        Itinerary itinerary =
+                itineraryRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        User user = userRepository
+                .findById(SecurityUtils.getCurrentUserId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         itinerary.getFavouriteUsers().remove(user);
@@ -175,19 +188,23 @@ public class ItineraryService implements IItineraryService {
 
     @Override
     public TripItemResponse addTripItem(UUID itineraryId, TripItemRequest request) {
-        Itinerary itinerary = itineraryRepository.findById(itineraryId)
+        Itinerary itinerary = itineraryRepository
+                .findById(itineraryId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
         validateOwnership(itinerary);
 
         Location location;
         if (request.getLocationId() != null) {
-            location = locationRepository.findById(request.getLocationId())
+            location = locationRepository
+                    .findById(request.getLocationId())
                     .orElseThrow(() -> new AppException(ErrorCode.LOCATION_NOT_FOUND));
         } else if (request.getPlaceId() != null) {
             // Auto-enrichment flow for AI Suggestions
-            com.tripjoy.api.dto.response.location.LocationResponse locResponse = locationService.resolveByPlaceId(request.getPlaceId());
-            location = locationRepository.findById(locResponse.getId())
+            com.tripjoy.api.dto.response.location.LocationResponse locResponse =
+                    locationService.resolveByPlaceId(request.getPlaceId());
+            location = locationRepository
+                    .findById(locResponse.getId())
                     .orElseThrow(() -> new AppException(ErrorCode.LOCATION_NOT_FOUND));
         } else {
             throw new AppException(ErrorCode.INVALID_REQUEST, "Either location_id or place_id must be provided");
@@ -207,8 +224,7 @@ public class ItineraryService implements IItineraryService {
 
     @Override
     public List<TripItemResponse> getTripItems(UUID itineraryId) {
-        itineraryRepository.findById(itineraryId)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        itineraryRepository.findById(itineraryId).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
         return tripItemRepository.findByItineraryId(itineraryId).stream()
                 .map(tripItemMapper::toTripItemResponse)
@@ -217,32 +233,38 @@ public class ItineraryService implements IItineraryService {
 
     @Override
     public TripItemResponse updateTripItem(UUID itineraryId, UUID tripItemId, TripItemRequest request) {
-        Itinerary itinerary = itineraryRepository.findById(itineraryId)
+        Itinerary itinerary = itineraryRepository
+                .findById(itineraryId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
         validateOwnership(itinerary);
 
-        TripItem tripItem = tripItemRepository.findById(tripItemId)
+        TripItem tripItem = tripItemRepository
+                .findById(tripItemId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
         if (!tripItem.getItinerary().getId().equals(itineraryId)) {
-            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND); 
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
         }
 
         tripItemMapper.updateTripItem(tripItem, request);
 
-        if (request.getLocationId() != null && !request.getLocationId().equals(tripItem.getLocation().getId())) {
-             Location location = locationRepository.findById(request.getLocationId())
-                .orElseThrow(() -> new AppException(ErrorCode.LOCATION_NOT_FOUND));
-             tripItem.setLocation(location);
-        } else if (request.getLocationId() == null && request.getPlaceId() != null) {
-             // AI suggestion resolution
-             com.tripjoy.api.dto.response.location.LocationResponse locResponse = locationService.resolveByPlaceId(request.getPlaceId());
-             if (!locResponse.getId().equals(tripItem.getLocation().getId())) {
-                 Location location = locationRepository.findById(locResponse.getId())
+        if (request.getLocationId() != null
+                && !request.getLocationId().equals(tripItem.getLocation().getId())) {
+            Location location = locationRepository
+                    .findById(request.getLocationId())
                     .orElseThrow(() -> new AppException(ErrorCode.LOCATION_NOT_FOUND));
-                 tripItem.setLocation(location);
-             }
+            tripItem.setLocation(location);
+        } else if (request.getLocationId() == null && request.getPlaceId() != null) {
+            // AI suggestion resolution
+            com.tripjoy.api.dto.response.location.LocationResponse locResponse =
+                    locationService.resolveByPlaceId(request.getPlaceId());
+            if (!locResponse.getId().equals(tripItem.getLocation().getId())) {
+                Location location = locationRepository
+                        .findById(locResponse.getId())
+                        .orElseThrow(() -> new AppException(ErrorCode.LOCATION_NOT_FOUND));
+                tripItem.setLocation(location);
+            }
         }
 
         tripItem = tripItemRepository.save(tripItem);
@@ -251,16 +273,18 @@ public class ItineraryService implements IItineraryService {
 
     @Override
     public void removeTripItem(UUID itineraryId, UUID tripItemId) {
-        Itinerary itinerary = itineraryRepository.findById(itineraryId)
+        Itinerary itinerary = itineraryRepository
+                .findById(itineraryId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
         validateOwnership(itinerary);
 
-        TripItem tripItem = tripItemRepository.findById(tripItemId)
+        TripItem tripItem = tripItemRepository
+                .findById(tripItemId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
         if (!tripItem.getItinerary().getId().equals(itineraryId)) {
-             throw new AppException(ErrorCode.RESOURCE_NOT_FOUND); 
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
         }
 
         tripItemRepository.delete(tripItem);
@@ -278,7 +302,7 @@ public class ItineraryService implements IItineraryService {
                     .anyMatch(member -> member.getUser().getId().equals(currentUserId));
             if (isInGroup) return;
         }
-        
+
         throw new AppException(ErrorCode.UNAUTHORIZED);
     }
 }

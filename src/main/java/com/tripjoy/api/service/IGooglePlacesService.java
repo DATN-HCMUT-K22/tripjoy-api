@@ -1,9 +1,9 @@
 package com.tripjoy.api.service;
 
-import reactor.core.publisher.Mono;
-
 import com.tripjoy.api.dto.ai.GooglePlaceDetailsDto;
 import com.tripjoy.api.dto.response.location.GoogleAutocompleteResponse;
+
+import reactor.core.publisher.Mono;
 
 /**
  * Contract for Google Places API (New) v1 integration.

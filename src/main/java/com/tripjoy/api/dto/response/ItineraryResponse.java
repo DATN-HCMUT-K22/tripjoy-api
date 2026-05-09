@@ -6,8 +6,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.tripjoy.api.enums.ItineraryStatus;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
+import com.tripjoy.api.enums.ItineraryStatus;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -42,7 +42,7 @@ public class ItineraryResponse extends BaseResponse {
     UserSimpleResponse createdByUser;
 
     Set<String> themes;
-    
+
     @JsonProperty("budget_estimate")
     BigDecimal budgetEstimate;
 

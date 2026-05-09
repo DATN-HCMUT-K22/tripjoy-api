@@ -7,9 +7,10 @@ import java.util.Set;
 
 import jakarta.persistence.*;
 
+import org.hibernate.annotations.BatchSize;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tripjoy.api.entity.embeddable.SoftDeleteInfo;
-import org.hibernate.annotations.BatchSize;
 import com.tripjoy.api.enums.PostVisibility;
 
 import lombok.*;
@@ -59,10 +60,9 @@ public class Post extends BaseEntity {
     @BatchSize(size = 50)
     @ManyToMany
     @JoinTable(
-        name = "post_hashtag_mapping",
-        joinColumns = @JoinColumn(name = "post_id"),
-        inverseJoinColumns = @JoinColumn(name = "hashtag_id")
-    )
+            name = "post_hashtag_mapping",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "hashtag_id"))
     @Builder.Default
     private Set<Hashtag> hashtags = new HashSet<>();
 

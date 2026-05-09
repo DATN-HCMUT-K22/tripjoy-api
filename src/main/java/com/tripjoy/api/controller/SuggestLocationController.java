@@ -54,7 +54,8 @@ public class SuggestLocationController {
 
     @Operation(summary = "Delete a suggestion - Owner or Leader/Co-Leader - OK")
     @DeleteMapping(Endpoint.Group.LOCATION_SUGGESTIONS_ID)
-    public ApiResponse<Void> deleteSuggestion(@PathVariable("groupId") UUID groupId, @PathVariable("suggestionId") UUID suggestionId) {
+    public ApiResponse<Void> deleteSuggestion(
+            @PathVariable("groupId") UUID groupId, @PathVariable("suggestionId") UUID suggestionId) {
 
         UUID currentUserId = SecurityUtils.getCurrentUserId();
         suggestLocationService.deleteSuggestion(groupId, suggestionId, currentUserId);

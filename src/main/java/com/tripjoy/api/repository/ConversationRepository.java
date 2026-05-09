@@ -31,9 +31,7 @@ public interface ConversationRepository extends JpaRepository<Conversation, UUID
             + "  SELECT 1 FROM ConversationMember cm2 "
             + "  WHERE cm2.conversation.id = c.id AND cm2.user.id = :userBId"
             + ")")
-    Optional<Conversation> findDirectConversation(
-            @Param("userAId") UUID userAId,
-            @Param("userBId") UUID userBId);
+    Optional<Conversation> findDirectConversation(@Param("userAId") UUID userAId, @Param("userBId") UUID userBId);
 
     /**
      * Get all conversations for a user (Inbox), including both GROUP and DIRECT types.

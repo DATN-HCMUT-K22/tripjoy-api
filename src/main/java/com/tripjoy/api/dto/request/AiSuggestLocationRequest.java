@@ -1,7 +1,5 @@
 package com.tripjoy.api.dto.request;
 
-import java.util.UUID;
-
 import jakarta.validation.constraints.NotNull;
 
 import lombok.*;
@@ -28,5 +26,6 @@ public class AiSuggestLocationRequest {
      * Nếu không cung cấp, backend sẽ tự suy ra từ các TripItem hiện có.
      */
     private Double latitude;
+
     private Double longitude;
 }

@@ -1,14 +1,14 @@
 package com.tripjoy.api.service.impl;
 
-import java.util.stream.Collectors;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.context.ApplicationEventPublisher;
 
 import com.tripjoy.api.dto.event.CommentCreatedEvent;
 import com.tripjoy.api.dto.event.CommentLikedEvent;
@@ -45,10 +45,10 @@ public class CommentService implements ICommentService {
     @Transactional
     public CommentResponse createComment(CommentRequest request) {
         UUID userId = SecurityUtils.getCurrentUserId();
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        Post post = postRepository.findById(request.getPostId())
+        Post post = postRepository
+                .findById(request.getPostId())
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
         Comment comment = Comment.builder()
@@ -59,7 +59,8 @@ public class CommentService implements ICommentService {
                 .build();
 
         if (request.getParentCommentId() != null) {
-            Comment parent = commentRepository.findById(request.getParentCommentId())
+            Comment parent = commentRepository
+                    .findById(request.getParentCommentId())
                     .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
             comment.setParentComment(parent);
         }
@@ -74,17 +75,19 @@ public class CommentService implements ICommentService {
     @Override
     @Transactional(readOnly = true)
     public Page<CommentResponse> getCommentsByPostId(UUID postId, Pageable pageable, UUID currentUserId) {
-        return commentRepository.findByPostIdAndParentCommentIsNullAndIsDeletedFalse(postId, pageable)
+        return commentRepository
+                .findByPostIdAndParentCommentIsNullAndIsDeletedFalse(postId, pageable)
                 .map(comment -> getCommentResponseWithContext(comment, currentUserId, true));
     }
 
     @Override
     @Transactional
     public void likeComment(UUID commentId) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        Comment comment =
+                commentRepository.findById(commentId).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        User user = userRepository.findById(SecurityUtils.getCurrentUserId())
+        User user = userRepository
+                .findById(SecurityUtils.getCurrentUserId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         comment.getLikeUsers().add(user);
@@ -96,10 +99,11 @@ public class CommentService implements ICommentService {
     @Override
     @Transactional
     public void unlikeComment(UUID commentId) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        Comment comment =
+                commentRepository.findById(commentId).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        User user = userRepository.findById(SecurityUtils.getCurrentUserId())
+        User user = userRepository
+                .findById(SecurityUtils.getCurrentUserId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         comment.getLikeUsers().remove(user);
@@ -109,8 +113,8 @@ public class CommentService implements ICommentService {
     @Override
     @Transactional
     public void deleteComment(UUID commentId) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        Comment comment =
+                commentRepository.findById(commentId).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
         UUID userId = SecurityUtils.getCurrentUserId();
         if (!comment.getUser().getId().equals(userId)) {
@@ -124,20 +128,26 @@ public class CommentService implements ICommentService {
     @Override
     @Transactional(readOnly = true)
     public Page<CommentResponse> getRepliesForComment(UUID commentId, Pageable pageable, UUID currentUserId) {
-        return commentRepository.findByParentCommentIdAndIsDeletedFalseOrderByCreatedAtAsc(commentId, pageable)
+        return commentRepository
+                .findByParentCommentIdAndIsDeletedFalseOrderByCreatedAtAsc(commentId, pageable)
                 .map(reply -> getCommentResponseWithContext(reply, currentUserId, false));
     }
 
     private CommentResponse getCommentResponseWithContext(Comment comment, UUID currentUserId, boolean includeReplies) {
         CommentResponse response = commentMapper.toCommentResponse(comment);
         if (currentUserId != null && comment.getLikeUsers() != null) {
-            response.setIsLiked(comment.getLikeUsers().stream().anyMatch(u -> u.getId().equals(currentUserId)));
+            response.setIsLiked(
+                    comment.getLikeUsers().stream().anyMatch(u -> u.getId().equals(currentUserId)));
         } else {
             response.setIsLiked(false);
         }
 
-        if (includeReplies && comment.getParentComment() == null && comment.getReplies() != null && !comment.getReplies().isEmpty()) {
-            List<Comment> latestReplies = commentRepository.findTop2ByParentCommentIdAndIsDeletedFalseOrderByCreatedAtAsc(comment.getId());
+        if (includeReplies
+                && comment.getParentComment() == null
+                && comment.getReplies() != null
+                && !comment.getReplies().isEmpty()) {
+            List<Comment> latestReplies =
+                    commentRepository.findTop2ByParentCommentIdAndIsDeletedFalseOrderByCreatedAtAsc(comment.getId());
             response.setLatestReplies(latestReplies.stream()
                     .map(reply -> getCommentResponseWithContext(reply, currentUserId, false))
                     .collect(Collectors.toList()));

@@ -48,7 +48,9 @@ public class AdministrativeLocationResponse {
     @Schema(description = "Longitude", example = "106.660172")
     Double longitude;
 
-    @Schema(description = "Recommended map viewport", example = "{\"northeast\":{\"lat\":11.16,\"lng\":107.03},\"southwest\":{\"lat\":10.35,\"lng\":106.36}}")
+    @Schema(
+            description = "Recommended map viewport",
+            example = "{\"northeast\":{\"lat\":11.16,\"lng\":107.03},\"southwest\":{\"lat\":10.35,\"lng\":106.36}}")
     String viewport;
 
     @Schema(description = "ISO 3166-1 alpha-2 country code", example = "VN")
@@ -69,7 +71,9 @@ public class AdministrativeLocationResponse {
     @JsonProperty("usage_count")
     Integer usageCount;
 
-    @Schema(description = "Provider's unique place ID (for map SDK integration)", example = "ChIJo4EX8ompMTERBrgMc-blO0A")
+    @Schema(
+            description = "Provider's unique place ID (for map SDK integration)",
+            example = "ChIJo4EX8ompMTERBrgMc-blO0A")
     @JsonProperty("provider_id")
     String providerId;
 }

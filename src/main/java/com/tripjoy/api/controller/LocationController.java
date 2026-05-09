@@ -2,6 +2,7 @@ package com.tripjoy.api.controller;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import jakarta.validation.Valid;
 
@@ -29,8 +30,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * Location API — unified, high-scale endpoint design.
@@ -81,24 +80,25 @@ public class LocationController {
      */
     @Operation(
             summary = "Get verified administrative locations (provinces, countries, etc.)",
-            description = """
-                    Returns a flat list of verified, pre-seeded administrative locations.
-                    Designed for itinerary origin/destination selectors and filter chips.
-                    
-                    **Global scale examples:**
-                    - `?type=PROVINCE&country=VN` → 63 Vietnam provinces
-                    - `?type=PROVINCE&country=TH` → Thailand provinces  
-                    - `?type=COUNTRY`             → all available countries
-                    
-                    **Performance:** Results are HTTP-cached (Cache-Control: public, max-age=86400).
-                    Frontend should also cache in localStorage with 24h TTL.
-                    """)
+            description =
+                    """
+					Returns a flat list of verified, pre-seeded administrative locations.
+					Designed for itinerary origin/destination selectors and filter chips.
+
+					**Global scale examples:**
+					- `?type=PROVINCE&country=VN` → 63 Vietnam provinces
+					- `?type=PROVINCE&country=TH` → Thailand provinces
+					- `?type=COUNTRY`             → all available countries
+
+					**Performance:** Results are HTTP-cached (Cache-Control: public, max-age=86400).
+					Frontend should also cache in localStorage with 24h TTL.
+					""")
     @GetMapping(Endpoint.Location.ADMINISTRATIVE)
     public ResponseEntity<ApiResponse<List<AdministrativeLocationResponse>>> getAdministrativeLocations(
-            @Parameter(description = "Location type", example = "PROVINCE")
-            @RequestParam("type") LocationType type,
+            @Parameter(description = "Location type", example = "PROVINCE") @RequestParam("type") LocationType type,
             @Parameter(description = "ISO 3166-1 alpha-2 country code (omit for cross-country)", example = "VN")
-            @RequestParam(value = "country", required = false) String country) {
+                    @RequestParam(value = "country", required = false)
+                    String country) {
 
         List<AdministrativeLocationResponse> locations = locationService.getAdministrativeLocations(type, country);
 
@@ -124,38 +124,52 @@ public class LocationController {
      */
     @Operation(
             summary = "Search locations by text and filters",
-            description = """
-                    Full-text search with optional filters. Uses GIN-indexed tsvector for fast FTS.
-                    
-                    When `lat` + `lng` are provided, results are ranked by proximity (nearest first).
-                    Otherwise, ranked by FTS relevance + usage_count (popularity).
-                    
-                    Supports pagination via Spring `page` + `size` + `sort` parameters.
-                    """)
+            description =
+                    """
+					Full-text search with optional filters. Uses GIN-indexed tsvector for fast FTS.
+
+					When `lat` + `lng` are provided, results are ranked by proximity (nearest first).
+					Otherwise, ranked by FTS relevance + usage_count (popularity).
+
+					Supports pagination via Spring `page` + `size` + `sort` parameters.
+					""")
     @GetMapping(Endpoint.Location.SEARCH)
     public ApiResponse<Page<LocationResponse>> searchLocations(
             @Parameter(description = "Text search query", example = "Highlands Coffee")
-            @RequestParam(value = "q", required = false) String q,
+                    @RequestParam(value = "q", required = false)
+                    String q,
             @Parameter(description = "Location type filter", example = "POI")
-            @RequestParam(value = "type", required = false) LocationType type,
+                    @RequestParam(value = "type", required = false)
+                    LocationType type,
             @Parameter(description = "ISO 3166-1 alpha-2 country code", example = "VN")
-            @RequestParam(value = "country", required = false) String country,
+                    @RequestParam(value = "country", required = false)
+                    String country,
             @Parameter(description = "City or province name", example = "Ho Chi Minh City")
-            @RequestParam(value = "city", required = false) String city,
+                    @RequestParam(value = "city", required = false)
+                    String city,
             @Parameter(description = "District name", example = "Quận 1")
-            @RequestParam(value = "district", required = false) String district,
+                    @RequestParam(value = "district", required = false)
+                    String district,
             @Parameter(description = "POI category filter (multi-value)", example = "cafe")
-            @RequestParam(value = "categories", required = false) List<String> categories,
+                    @RequestParam(value = "categories", required = false)
+                    List<String> categories,
             @Parameter(description = "User latitude for proximity ranking", example = "10.762622")
-            @RequestParam(value = "lat", required = false) Double lat,
+                    @RequestParam(value = "lat", required = false)
+                    Double lat,
             @Parameter(description = "User longitude for proximity ranking", example = "106.660172")
-            @RequestParam(value = "lng", required = false) Double lng,
+                    @RequestParam(value = "lng", required = false)
+                    Double lng,
             Pageable pageable) {
 
         LocationQueryParams params = LocationQueryParams.builder()
-                .q(q).type(type).country(country)
-                .city(city).district(district).categories(categories)
-                .lat(lat).lng(lng)
+                .q(q)
+                .type(type)
+                .country(country)
+                .city(city)
+                .district(district)
+                .categories(categories)
+                .lat(lat)
+                .lng(lng)
                 .build();
 
         Pageable sqlPageable = PageableUtils.toSnakeCase(pageable);
@@ -170,32 +184,41 @@ public class LocationController {
      */
     @Operation(
             summary = "Find nearby locations by coordinates",
-            description = """
-                    Searches for locations within a given radius using PostGIS ST_DWithin.
-                    Results are ordered by distance (nearest first).
-                    
-                    - Default radius: 5km (5000m). Max: 50km.
-                    - Default limit: 50. Max: 200.
-                    - Use `type=POI` to restrict to points of interest only.
-                    """)
+            description =
+                    """
+					Searches for locations within a given radius using PostGIS ST_DWithin.
+					Results are ordered by distance (nearest first).
+
+					- Default radius: 5km (5000m). Max: 50km.
+					- Default limit: 50. Max: 200.
+					- Use `type=POI` to restrict to points of interest only.
+					""")
     @GetMapping(Endpoint.Location.NEARBY)
     public ApiResponse<List<LocationResponse>> getNearbyLocations(
-            @Parameter(description = "Latitude", example = "10.762622", required = true)
-            @RequestParam("lat") Double lat,
-            @Parameter(description = "Longitude", example = "106.660172", required = true)
-            @RequestParam("lng") Double lng,
+            @Parameter(description = "Latitude", example = "10.762622", required = true) @RequestParam("lat")
+                    Double lat,
+            @Parameter(description = "Longitude", example = "106.660172", required = true) @RequestParam("lng")
+                    Double lng,
             @Parameter(description = "Radius in meters (default 5000, max 50000)", example = "5000")
-            @RequestParam(value = "radius", required = false, defaultValue = "5000") Integer radius,
+                    @RequestParam(value = "radius", required = false, defaultValue = "5000")
+                    Integer radius,
             @Parameter(description = "Location type filter", example = "POI")
-            @RequestParam(value = "type", required = false) LocationType type,
+                    @RequestParam(value = "type", required = false)
+                    LocationType type,
             @Parameter(description = "POI category filter (multi-value)", example = "cafe")
-            @RequestParam(value = "categories", required = false) List<String> categories,
+                    @RequestParam(value = "categories", required = false)
+                    List<String> categories,
             @Parameter(description = "Max results (default 50, max 200)", example = "50")
-            @RequestParam(value = "limit", required = false, defaultValue = "50") Integer limit) {
+                    @RequestParam(value = "limit", required = false, defaultValue = "50")
+                    Integer limit) {
 
         LocationQueryParams params = LocationQueryParams.builder()
-                .lat(lat).lng(lng).radius(radius)
-                .type(type).categories(categories).limit(limit)
+                .lat(lat)
+                .lng(lng)
+                .radius(radius)
+                .type(type)
+                .categories(categories)
+                .limit(limit)
                 .build();
 
         return ApiResponse.<List<LocationResponse>>builder()
@@ -224,28 +247,33 @@ public class LocationController {
      */
     @Operation(
             summary = "Hybrid location autocomplete (DB + Google Places)",
-            description = """
-                    Autocomplete suggestions for a partial text input.
-                    
-                    **Strategy:**
-                    1. Search TripJoy DB first (fast, free, ranked by popularity)
-                    2. If DB results sparse, call Google Places Autocomplete API
-                    3. Merge and deduplicate results (max 10 items)
-                    
-                    **After picking a result:**
-                    - `location_id` present → use directly
-                    - `location_id` null (source=GOOGLE_MAPS) → call `POST /locations/resolve` first
-                    """)
+            description =
+                    """
+					Autocomplete suggestions for a partial text input.
+
+					**Strategy:**
+					1. Search TripJoy DB first (fast, free, ranked by popularity)
+					2. If DB results sparse, call Google Places Autocomplete API
+					3. Merge and deduplicate results (max 10 items)
+
+					**After picking a result:**
+					- `location_id` present → use directly
+					- `location_id` null (source=GOOGLE_MAPS) → call `POST /locations/resolve` first
+					""")
     @GetMapping(Endpoint.Location.AUTOCOMPLETE)
     public ApiResponse<List<LocationAutocompleteItem>> autocomplete(
             @Parameter(description = "Partial text input (min 2 chars)", example = "Highlands", required = true)
-            @RequestParam String q,
+                    @RequestParam
+                    String q,
             @Parameter(description = "City bias for results", example = "Ho Chi Minh City")
-            @RequestParam(required = false) String city,
+                    @RequestParam(required = false)
+                    String city,
             @Parameter(description = "User latitude for proximity ranking", example = "10.762622")
-            @RequestParam(required = false) Double lat,
+                    @RequestParam(required = false)
+                    Double lat,
             @Parameter(description = "User longitude for proximity ranking", example = "106.660172")
-            @RequestParam(required = false) Double lng) {
+                    @RequestParam(required = false)
+                    Double lng) {
 
         if (q == null || q.trim().length() < 2) {
             return ApiResponse.<List<LocationAutocompleteItem>>builder()
@@ -273,20 +301,20 @@ public class LocationController {
      */
     @Operation(
             summary = "Resolve (upsert) a location from map autocomplete",
-            description = """
-                    Called by the frontend when a user picks a place from map autocomplete.
-                    
-                    Backend performs deduplication:
-                    1. If `provider_id` matches an existing record → return it
-                    2. If `admin_code` + `country_code` matches → return it
-                    3. If coordinates are within 50m of an existing record → return it
-                    4. Otherwise → create a new Location record
-                    
-                    Returns the canonical TripJoy location ID to use in trip_item / suggest_location.
-                    """)
+            description =
+                    """
+					Called by the frontend when a user picks a place from map autocomplete.
+
+					Backend performs deduplication:
+					1. If `provider_id` matches an existing record → return it
+					2. If `admin_code` + `country_code` matches → return it
+					3. If coordinates are within 50m of an existing record → return it
+					4. Otherwise → create a new Location record
+
+					Returns the canonical TripJoy location ID to use in trip_item / suggest_location.
+					""")
     @PostMapping(Endpoint.Location.RESOLVE)
-    public ApiResponse<LocationResponse> resolveLocation(
-            @Valid @RequestBody LocationCreateRequest request) {
+    public ApiResponse<LocationResponse> resolveLocation(@Valid @RequestBody LocationCreateRequest request) {
         return ApiResponse.<LocationResponse>builder()
                 .data(locationService.getOrCreateLocation(request))
                 .build();
@@ -310,8 +338,7 @@ public class LocationController {
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(Endpoint.Location.ID)
     public ApiResponse<LocationResponse> updateLocation(
-            @PathVariable("locationId") UUID locationId,
-            @Valid @RequestBody LocationCreateRequest request) {
+            @PathVariable("locationId") UUID locationId, @Valid @RequestBody LocationCreateRequest request) {
         return ApiResponse.<LocationResponse>builder()
                 .data(locationService.updateLocation(locationId, request))
                 .build();
@@ -356,7 +383,10 @@ public class LocationController {
             Pageable pageable) {
 
         LocationQueryParams params = LocationQueryParams.builder()
-                .type(type).country(country).q(q).city(city)
+                .type(type)
+                .country(country)
+                .q(q)
+                .city(city)
                 .build();
 
         Pageable sqlPageable = PageableUtils.toSnakeCase(pageable);

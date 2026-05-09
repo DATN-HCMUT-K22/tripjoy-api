@@ -2,7 +2,6 @@ package com.tripjoy.api.mapper;
 
 import java.util.Collections;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.mapstruct.*;
@@ -14,7 +13,9 @@ import com.tripjoy.api.entity.Hashtag;
 import com.tripjoy.api.entity.Itinerary;
 import com.tripjoy.api.entity.Post;
 
-@Mapper(config = BaseMapperConfig.class, uses = {UserMapper.class})
+@Mapper(
+        config = BaseMapperConfig.class,
+        uses = {UserMapper.class})
 public interface PostMapper {
 
     ItinerarySimpleResponse toItinerarySimpleResponse(Itinerary itinerary);
@@ -27,8 +28,12 @@ public interface PostMapper {
     @Mapping(target = "updatedAt", source = "updatedAt")
     @Mapping(target = "itinerary", source = "itinerary")
     @Mapping(target = "createdByUser", source = "creator")
-    @Mapping(target = "likeCount", expression = "java((long) (post.getLikeUsers() != null ? post.getLikeUsers().size() : 0))")
-    @Mapping(target = "commentCount", expression = "java((long) (post.getComments() != null ? post.getComments().size() : 0))")
+    @Mapping(
+            target = "likeCount",
+            expression = "java((long) (post.getLikeUsers() != null ? post.getLikeUsers().size() : 0))")
+    @Mapping(
+            target = "commentCount",
+            expression = "java((long) (post.getComments() != null ? post.getComments().size() : 0))")
     @Mapping(target = "hashtags", source = "hashtags", qualifiedByName = "mapHashtagsToStrings")
     @Mapping(target = "isLiked", ignore = true) // Set manually in service
     @Mapping(target = "isSaved", ignore = true) // Set manually in service
@@ -36,8 +41,14 @@ public interface PostMapper {
     PostResponse toPostResponse(Post post);
 
     @Mapping(target = "author", source = "creator")
-    @Mapping(target = "contentSnippet", expression = "java(post.getContent() != null ? (post.getContent().length() > 50 ? post.getContent().substring(0, 50) + \"...\" : post.getContent()) : \"\")")
-    @Mapping(target = "thumbnailUrl", expression = "java(post.getMediaUrls() != null && !post.getMediaUrls().isEmpty() ? post.getMediaUrls().get(0) : null)")
+    @Mapping(
+            target = "contentSnippet",
+            expression =
+                    "java(post.getContent() != null ? (post.getContent().length() > 50 ? post.getContent().substring(0, 50) + \"...\" : post.getContent()) : \"\")")
+    @Mapping(
+            target = "thumbnailUrl",
+            expression =
+                    "java(post.getMediaUrls() != null && !post.getMediaUrls().isEmpty() ? post.getMediaUrls().get(0) : null)")
     com.tripjoy.api.dto.response.simple.PostSimpleResponse toPostSimpleResponse(Post post);
 
     @Named("mapHashtagsToStrings")

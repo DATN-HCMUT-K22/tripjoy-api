@@ -43,7 +43,9 @@ public class AddressComponentsDto {
     @JsonProperty("admin_area_level3")
     private String adminArea3;
 
-    @Schema(description = "City/locality name (may differ from adminArea1 for cities within provinces)", example = "Nha Trang")
+    @Schema(
+            description = "City/locality name (may differ from adminArea1 for cities within provinces)",
+            example = "Nha Trang")
     private String city;
 
     @Schema(description = "Sub-locality (ward/phường)", example = "Phường Vĩnh Nguyên")

@@ -14,8 +14,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -77,8 +77,11 @@ public class LocationService implements ILocationService {
     @Override
     @Transactional
     public LocationResponse getOrCreateLocation(LocationCreateRequest request) {
-        log.debug("getOrCreateLocation: provider={}, providerId={}, name={}",
-                request.getProvider(), request.getProviderId(), request.getName());
+        log.debug(
+                "getOrCreateLocation: provider={}, providerId={}, name={}",
+                request.getProvider(),
+                request.getProviderId(),
+                request.getName());
 
         // 1. Dedup by providerId (fastest — uses unique index)
         if (isNotBlank(request.getProviderId())) {
@@ -91,11 +94,13 @@ public class LocationService implements ILocationService {
 
         // 2. Dedup by admin code (for Tier-1 administrative locations)
         if (isNotBlank(request.getAdminCode()) && isNotBlank(request.getCountryCode())) {
-            Optional<Location> byAdminCode = locationRepository
-                    .findByAdminCodeAndCountryCode(request.getAdminCode(), request.getCountryCode());
+            Optional<Location> byAdminCode =
+                    locationRepository.findByAdminCodeAndCountryCode(request.getAdminCode(), request.getCountryCode());
             if (byAdminCode.isPresent()) {
-                log.debug("Found existing location by adminCode={}, country={}",
-                        request.getAdminCode(), request.getCountryCode());
+                log.debug(
+                        "Found existing location by adminCode={}, country={}",
+                        request.getAdminCode(),
+                        request.getCountryCode());
                 return locationMapper.toResponse(byAdminCode.get());
             }
         }
@@ -105,7 +110,8 @@ public class LocationService implements ILocationService {
             Point searchPoint = locationMapper.createPoint(request.getLongitude(), request.getLatitude());
             List<Location> nearby = locationRepository.findWithin50Meters(searchPoint);
             if (!nearby.isEmpty()) {
-                log.debug("Found existing location within 50m: {}", nearby.get(0).getName());
+                log.debug(
+                        "Found existing location within 50m: {}", nearby.get(0).getName());
                 return locationMapper.toResponse(nearby.get(0));
             }
         }
@@ -113,8 +119,12 @@ public class LocationService implements ILocationService {
         // 4. No duplicate → create new
         Location location = locationMapper.toEntity(request);
         Location saved = locationRepository.save(location);
-        log.info("Created new location: {} (type={}, lat={}, lng={})",
-                saved.getName(), saved.getLocationType(), saved.getLatitude(), saved.getLongitude());
+        log.info(
+                "Created new location: {} (type={}, lat={}, lng={})",
+                saved.getName(),
+                saved.getLocationType(),
+                saved.getLatitude(),
+                saved.getLongitude());
 
         return locationMapper.toResponse(saved);
     }
@@ -148,8 +158,10 @@ public class LocationService implements ILocationService {
         Location location = Location.builder()
                 .provider(com.tripjoy.api.enums.MapProvider.GOOGLE_MAPS)
                 .providerId(googleDetails.getId())
-                .name(googleDetails.getDisplayName() != null ? googleDetails.getDisplayName().getText()
-                        : "Unknown Location")
+                .name(
+                        googleDetails.getDisplayName() != null
+                                ? googleDetails.getDisplayName().getText()
+                                : "Unknown Location")
                 .fullAddress(googleDetails.getFormattedAddress())
                 .poiCategories(googleDetails.getTypes())
                 .primaryType(googleDetails.getPrimaryType())
@@ -158,7 +170,8 @@ public class LocationService implements ILocationService {
                 .locationType(LocationType.POI)
                 .build();
 
-        if (googleDetails.getLocation() != null && googleDetails.getLocation().getLatitude() != null
+        if (googleDetails.getLocation() != null
+                && googleDetails.getLocation().getLatitude() != null
                 && googleDetails.getLocation().getLongitude() != null) {
             location.setLatitude(googleDetails.getLocation().getLatitude());
             location.setLongitude(googleDetails.getLocation().getLongitude());
@@ -178,10 +191,11 @@ public class LocationService implements ILocationService {
      */
     @Override
     @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = RedisCacheConfig.CACHE_LOCATION_BY_ID, key = "#locationId"),
-            @CacheEvict(value = RedisCacheConfig.CACHE_LOCATION_BY_PROVIDER, allEntries = true)
-    })
+    @Caching(
+            evict = {
+                @CacheEvict(value = RedisCacheConfig.CACHE_LOCATION_BY_ID, key = "#locationId"),
+                @CacheEvict(value = RedisCacheConfig.CACHE_LOCATION_BY_PROVIDER, allEntries = true)
+            })
     public LocationResponse updateLocation(UUID locationId, LocationCreateRequest request) {
         log.info("Updating location: {}", locationId);
         Location location = findOrThrow(locationId);
@@ -196,10 +210,11 @@ public class LocationService implements ILocationService {
      */
     @Override
     @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = RedisCacheConfig.CACHE_LOCATION_BY_ID, key = "#locationId"),
-            @CacheEvict(value = RedisCacheConfig.CACHE_LOCATION_BY_PROVIDER, allEntries = true)
-    })
+    @Caching(
+            evict = {
+                @CacheEvict(value = RedisCacheConfig.CACHE_LOCATION_BY_ID, key = "#locationId"),
+                @CacheEvict(value = RedisCacheConfig.CACHE_LOCATION_BY_PROVIDER, allEntries = true)
+            })
     public void deleteLocation(UUID locationId) {
         log.info("Deleting location: {}", locationId);
         Location location = findOrThrow(locationId);
@@ -230,8 +245,7 @@ public class LocationService implements ILocationService {
     @Async
     @Transactional
     public void incrementUsageCount(List<UUID> locationIds) {
-        if (locationIds == null || locationIds.isEmpty())
-            return;
+        if (locationIds == null || locationIds.isEmpty()) return;
         log.debug("Incrementing usage_count for {} locations", locationIds.size());
         locationRepository.incrementUsageCount(locationIds);
     }
@@ -258,8 +272,12 @@ public class LocationService implements ILocationService {
     @Override
     @Transactional(readOnly = true)
     public Page<LocationResponse> getLocations(LocationQueryParams params, Pageable pageable) {
-        log.debug("getLocations: type={}, country={}, q={}, city={}",
-                params.getType(), params.getCountry(), params.getQ(), params.getCity());
+        log.debug(
+                "getLocations: type={}, country={}, q={}, city={}",
+                params.getType(),
+                params.getCountry(),
+                params.getQ(),
+                params.getCity());
 
         String locationType = params.getType() != null ? params.getType().name() : null;
 
@@ -283,7 +301,9 @@ public class LocationService implements ILocationService {
      */
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = RedisCacheConfig.CACHE_LOCATION_ADMIN, key = "#type.name() + ':' + (#countryCode != null ? #countryCode.toUpperCase() : 'ALL')")
+    @Cacheable(
+            value = RedisCacheConfig.CACHE_LOCATION_ADMIN,
+            key = "#type.name() + ':' + (#countryCode != null ? #countryCode.toUpperCase() : 'ALL')")
     public List<AdministrativeLocationResponse> getAdministrativeLocations(LocationType type, String countryCode) {
         log.debug("Cache MISS — loading admin locations from DB: type={}, countryCode={}", type, countryCode);
 
@@ -294,7 +314,8 @@ public class LocationService implements ILocationService {
         return locations.stream()
                 .map(locationMapper::toAdministrativeResponse)
                 // Use collect(Collectors.toList()) instead of .toList() to ensure the result is a mutable ArrayList.
-                // Immutable collections from .toList() lack a default constructor, causing Jackson deserialization failures in Redis.
+                // Immutable collections from .toList() lack a default constructor, causing Jackson deserialization
+                // failures in Redis.
                 .collect(Collectors.toList());
     }
 
@@ -306,8 +327,8 @@ public class LocationService implements ILocationService {
     @Override
     @Transactional(readOnly = true)
     public List<LocationResponse> getNearbyLocations(LocationQueryParams params) {
-        log.debug("getNearbyLocations: lat={}, lng={}, radius={}m",
-                params.getLat(), params.getLng(), params.getRadius());
+        log.debug(
+                "getNearbyLocations: lat={}, lng={}, radius={}m", params.getLat(), params.getLng(), params.getRadius());
 
         if (!params.hasCoordinates()) {
             throw new AppException(ErrorCode.INVALID_COORDINATES);
@@ -323,15 +344,11 @@ public class LocationService implements ILocationService {
         int effectiveRadius = (params.getRadius() == null || params.getRadius() <= 0)
                 ? defaultRadius
                 : Math.min(params.getRadius(), maxRadius);
-        int effectiveLimit = (params.getLimit() == null || params.getLimit() <= 0)
-                ? 50
-                : Math.min(params.getLimit(), maxLimit);
+        int effectiveLimit =
+                (params.getLimit() == null || params.getLimit() <= 0) ? 50 : Math.min(params.getLimit(), maxLimit);
 
-        List<Location> nearby = locationRepository.findNearby(
-                searchPoint,
-                effectiveRadius,
-                locationType,
-                effectiveLimit);
+        List<Location> nearby =
+                locationRepository.findNearby(searchPoint, effectiveRadius, locationType, effectiveLimit);
 
         return nearby.stream().map(locationMapper::toResponse).collect(Collectors.toList());
     }
@@ -364,7 +381,10 @@ public class LocationService implements ILocationService {
      */
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = RedisCacheConfig.CACHE_LOCATION_AUTOCOMPLETE, key = "#q.toLowerCase() + ':' + (#city != null ? #city.toLowerCase() : 'all')", condition = "#q != null && #q.length() >= 2")
+    @Cacheable(
+            value = RedisCacheConfig.CACHE_LOCATION_AUTOCOMPLETE,
+            key = "#q.toLowerCase() + ':' + (#city != null ? #city.toLowerCase() : 'all')",
+            condition = "#q != null && #q.length() >= 2")
     public List<LocationAutocompleteItem> autocomplete(String q, String city, Double lat, Double lng) {
         log.debug("autocomplete: q='{}', city='{}', lat={}, lng={}", q, city, lat, lng);
 
@@ -385,9 +405,7 @@ public class LocationService implements ILocationService {
         List<LocationAutocompleteItem> merged = new ArrayList<>(dbItems);
         merged.addAll(googleItems);
 
-        return merged.stream()
-                .limit(AUTOCOMPLETE_MAX_RESULTS)
-                .collect(Collectors.toList());
+        return merged.stream().limit(AUTOCOMPLETE_MAX_RESULTS).collect(Collectors.toList());
     }
 
     // ==================== Private Helpers ====================
@@ -410,9 +428,7 @@ public class LocationService implements ILocationService {
                     lng,
                     PageRequest.of(0, AUTOCOMPLETE_DB_MAX));
 
-            return dbPage.getContent().stream()
-                    .map(this::toAutocompleteItem)
-                    .collect(Collectors.toList());
+            return dbPage.getContent().stream().map(this::toAutocompleteItem).collect(Collectors.toList());
         } catch (Exception e) {
             log.warn("DB autocomplete failed, continuing with Google only: {}", e.getMessage());
             return List.of();
@@ -425,8 +441,7 @@ public class LocationService implements ILocationService {
      * Returns empty list on API failure — graceful degradation.
      */
     private List<LocationAutocompleteItem> fetchFromGoogle(
-            String q, String city, Double lat, Double lng,
-            List<LocationAutocompleteItem> existingDbItems) {
+            String q, String city, Double lat, Double lng, List<LocationAutocompleteItem> existingDbItems) {
         try {
             // Collect already-seen providerIds to deduplicate Google results
             Set<String> seenProviderIds = existingDbItems.stream()
@@ -434,9 +449,8 @@ public class LocationService implements ILocationService {
                     .map(LocationAutocompleteItem::getProviderId)
                     .collect(Collectors.toCollection(LinkedHashSet::new));
 
-            GoogleAutocompleteResponse googleResponse = googlePlacesService
-                    .autocomplete(q, city, lat, lng)
-                    .block(Duration.ofSeconds(3));
+            GoogleAutocompleteResponse googleResponse =
+                    googlePlacesService.autocomplete(q, city, lat, lng).block(Duration.ofSeconds(3));
 
             if (googleResponse == null || googleResponse.getSuggestions() == null) {
                 return List.of();
@@ -482,20 +496,21 @@ public class LocationService implements ILocationService {
             GoogleAutocompleteResponse.PlacePrediction prediction) {
 
         String mainText = prediction.getStructuredFormat() != null
-                && prediction.getStructuredFormat().getMainText() != null
-                        ? prediction.getStructuredFormat().getMainText().getText()
-                        : (prediction.getText() != null ? prediction.getText().getText() : null);
+                        && prediction.getStructuredFormat().getMainText() != null
+                ? prediction.getStructuredFormat().getMainText().getText()
+                : (prediction.getText() != null ? prediction.getText().getText() : null);
 
         String secondaryText = prediction.getStructuredFormat() != null
-                && prediction.getStructuredFormat().getSecondaryText() != null
-                        ? prediction.getStructuredFormat().getSecondaryText().getText()
-                        : null;
+                        && prediction.getStructuredFormat().getSecondaryText() != null
+                ? prediction.getStructuredFormat().getSecondaryText().getText()
+                : null;
 
         // Infer maki icon from Google place types
         String maki = inferMaki(prediction.getTypes());
-        String primaryType = prediction.getTypes() != null && !prediction.getTypes().isEmpty()
-                ? prediction.getTypes().get(0)
-                : null;
+        String primaryType =
+                prediction.getTypes() != null && !prediction.getTypes().isEmpty()
+                        ? prediction.getTypes().get(0)
+                        : null;
 
         return LocationAutocompleteItem.builder()
                 .locationId(null) // NOT in DB yet — frontend must call POST /resolve
@@ -522,12 +537,9 @@ public class LocationService implements ILocationService {
         String country = addr.getCountryName();
 
         List<String> parts = new ArrayList<>();
-        if (isNotBlank(district) && !district.equals(city))
-            parts.add(district);
-        if (isNotBlank(city))
-            parts.add(city);
-        if (isNotBlank(country))
-            parts.add(country);
+        if (isNotBlank(district) && !district.equals(city)) parts.add(district);
+        if (isNotBlank(city)) parts.add(city);
+        if (isNotBlank(country)) parts.add(country);
         return parts.isEmpty() ? null : String.join(", ", parts);
     }
 
@@ -536,8 +548,7 @@ public class LocationService implements ILocationService {
      * Maki icons: https://labs.mapbox.com/maki-icons/
      */
     private String inferMaki(List<String> types) {
-        if (types == null || types.isEmpty())
-            return "marker";
+        if (types == null || types.isEmpty()) return "marker";
         for (String type : types) {
             switch (type) {
                 case "restaurant", "food" -> {
@@ -588,8 +599,7 @@ public class LocationService implements ILocationService {
     }
 
     private Location findOrThrow(UUID id) {
-        return locationRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.LOCATION_NOT_FOUND));
+        return locationRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.LOCATION_NOT_FOUND));
     }
 
     private boolean isNotBlank(String s) {

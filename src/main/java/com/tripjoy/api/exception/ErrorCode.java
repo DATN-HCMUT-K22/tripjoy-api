@@ -93,12 +93,12 @@ public enum ErrorCode {
     LOCATION_IN_USE(7002, "Cannot delete location: It is being used in group suggestions", HttpStatus.CONFLICT),
     INVALID_COORDINATES(7003, "Invalid latitude or longitude values", HttpStatus.BAD_REQUEST),
     MAPBOX_API_ERROR(7004, "Mapbox API request failed", HttpStatus.BAD_GATEWAY),
-    INVALID_LOCATION_INPUT(7005, "Must provide either location_id OR location_data, but not both", HttpStatus.BAD_REQUEST),
+    INVALID_LOCATION_INPUT(
+            7005, "Must provide either location_id OR location_data, but not both", HttpStatus.BAD_REQUEST),
     INVALID_LOCATION_TYPE(7006, "Invalid or unsupported location type", HttpStatus.BAD_REQUEST),
     LOCATION_TYPE_REQUIRED(7007, "Location type is required for this operation", HttpStatus.BAD_REQUEST),
     GOOGLE_MAPS_API_ERROR(7008, "Google Maps API request failed", HttpStatus.BAD_GATEWAY),
     LOCATION_SEEDING_FAILED(7009, "Location seeding process encountered an error", HttpStatus.INTERNAL_SERVER_ERROR),
-
 
     // --- 8. NOTIFICATION DOMAIN (8000 - 8999) ---
     NOTIF_NOT_FOUND(8001, "Notification not found", HttpStatus.NOT_FOUND),

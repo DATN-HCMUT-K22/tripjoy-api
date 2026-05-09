@@ -346,4 +346,3 @@ public class Location extends BaseEntity {
     @Builder.Default
     private SoftDeleteInfo softDeleteInfo = new SoftDeleteInfo();
 }
-

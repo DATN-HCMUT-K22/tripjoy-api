@@ -2,7 +2,6 @@ package com.tripjoy.api.service;
 
 import java.util.List;
 
-import reactor.core.publisher.Mono;
 import com.tripjoy.api.dto.ai.AiChatRequestDto;
 import com.tripjoy.api.dto.ai.AiChatResponseDto;
 import com.tripjoy.api.dto.ai.AiFinalItineraryDto;
@@ -12,6 +11,8 @@ import com.tripjoy.api.dto.ai.AiNotebookResponseDto;
 import com.tripjoy.api.dto.ai.AiSuggestLocationRequestDto;
 import com.tripjoy.api.dto.ai.AiTravelRequestDto;
 import com.tripjoy.api.dto.ai.AiTripItemDto;
+
+import reactor.core.publisher.Mono;
 
 public interface IAiService {
 

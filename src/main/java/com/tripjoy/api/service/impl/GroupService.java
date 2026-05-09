@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tripjoy.api.configuration.redis.RedisCacheConfig;
-
 import com.tripjoy.api.dto.event.GroupCreatedEvent;
 import com.tripjoy.api.dto.event.GroupLeadershipTransferredEvent;
 import com.tripjoy.api.dto.event.GroupRoleChangedEvent;
@@ -80,7 +79,8 @@ public class GroupService implements IGroupService {
                 .filter(group -> !group.getSoftDeleteInfo().isDeleted()) // Also filter deleted groups
                 .map(groupMapper::toGroupResponse)
                 // Use collect(Collectors.toList()) instead of .toList() to ensure the result is a mutable ArrayList.
-                // Immutable collections from .toList() lack a default constructor, causing Jackson deserialization failures in Redis.
+                // Immutable collections from .toList() lack a default constructor, causing Jackson deserialization
+                // failures in Redis.
                 .collect(Collectors.toList());
     }
 
@@ -140,10 +140,11 @@ public class GroupService implements IGroupService {
     }
 
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId"),
-        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
-    })
+    @Caching(
+            evict = {
+                @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId"),
+                @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
+            })
     public GroupMemberResponse addMemberToGroup(UUID groupId, UUID userId, GroupRole role) {
         // --- STEP 1: VALIDATION ---
         Group group = groupRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
@@ -173,10 +174,11 @@ public class GroupService implements IGroupService {
     }
 
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId"),
-        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
-    })
+    @Caching(
+            evict = {
+                @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId"),
+                @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
+            })
     public GroupResponse updateGroup(UUID groupId, GroupRequest request, UUID currentUserId) {
         Group group = groupRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
 
@@ -213,10 +215,11 @@ public class GroupService implements IGroupService {
 
     @Override
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId"),
-        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
-    })
+    @Caching(
+            evict = {
+                @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId"),
+                @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
+            })
     public void removeMemberFromGroup(UUID groupId, UUID memberId, UUID currentUserId) {
         // 1. Validate Group & Permissions (Giữ nguyên code của bạn)
         Group group = groupRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
@@ -249,10 +252,11 @@ public class GroupService implements IGroupService {
 
     @Override
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId"),
-        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
-    })
+    @Caching(
+            evict = {
+                @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId"),
+                @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
+            })
     public void leaveGroup(UUID groupId, UUID currentUserId) {
         // 1. Validate Group exists
         Group group = groupRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
@@ -322,17 +326,19 @@ public class GroupService implements IGroupService {
         memberToUpdate.setRole(request.getRole());
         GroupMember updated = groupMemberRepository.save(memberToUpdate);
 
-        eventPublisher.publishEvent(new GroupRoleChangedEvent(group, currentUser, memberToUpdate.getUser(), oldRole, request.getRole()));
+        eventPublisher.publishEvent(
+                new GroupRoleChangedEvent(group, currentUser, memberToUpdate.getUser(), oldRole, request.getRole()));
 
         return groupMapper.toGroupMemberResponse(updated);
     }
 
     @Override
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId"),
-        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
-    })
+    @Caching(
+            evict = {
+                @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId"),
+                @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
+            })
     public void transferLeadership(UUID groupId, TransferLeadershipRequest request, UUID currentUserId) {
         // 1. Validate Group exists
         Group group = groupRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
@@ -379,10 +385,11 @@ public class GroupService implements IGroupService {
 
     @Override
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId"),
-        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
-    })
+    @Caching(
+            evict = {
+                @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId"),
+                @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
+            })
     public void deleteGroup(UUID groupId, UUID currentUserId) {
         // 1. Validate Group exists
         Group group = groupRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
@@ -421,10 +428,11 @@ public class GroupService implements IGroupService {
 
     @Override
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId"),
-        @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
-    })
+    @Caching(
+            evict = {
+                @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId"),
+                @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
+            })
     public void restoreGroup(UUID groupId, UUID currentUserId) {
         // 1. Validate Group exists (even if deleted)
         Group group = groupRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));

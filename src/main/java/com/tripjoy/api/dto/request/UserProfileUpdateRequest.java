@@ -14,18 +14,10 @@ import lombok.experimental.FieldDefaults;
 @Schema(name = "UserProfileUpdateRequest", description = "Request payload for updating a user's profile")
 public class UserProfileUpdateRequest {
 
-    @Schema(
-            name = "fullName",
-            description = "User's full name",
-            type = "String",
-            example = "John Doe")
+    @Schema(name = "fullName", description = "User's full name", type = "String", example = "John Doe")
     String fullName;
 
-    @Schema(
-            name = "phoneNumber",
-            description = "User's phone number",
-            type = "String",
-            example = "0123456789")
+    @Schema(name = "phoneNumber", description = "User's phone number", type = "String", example = "0123456789")
     String phoneNumber;
 
     @Schema(
