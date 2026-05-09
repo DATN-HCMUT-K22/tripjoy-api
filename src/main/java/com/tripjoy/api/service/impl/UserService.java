@@ -239,13 +239,4 @@ public class UserService implements IUserService {
         return userRepository.searchGlobalUsers(keyword.trim(), pageable)
                 .map(userMapper::toUserSimpleResponse);
     }
-
-    @Override
-    public Page<UserSimpleResponse> searchUsersGlobal(String keyword, Pageable pageable) {
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return Page.empty();
-        }
-        return userRepository.searchGlobalUsers(keyword.trim(), pageable)
-                .map(userMapper::toUserSimpleResponse);
-    }
 }
