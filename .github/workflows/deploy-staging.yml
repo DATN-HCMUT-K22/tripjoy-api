@@ -166,10 +166,9 @@ jobs:
           host: ${{ secrets.EC2_HOST_STAGING }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          # timeout: thời gian tối đa cho toàn bộ SSH session
-          timeout: 300s
+          timeout: 600s # Tăng lên 10 phút
           script: |
-            set -e  # Dừng ngay nếu có lệnh nào fail
+            set -e  
             
             echo "Creating deploy directory..."
             mkdir -p ~/tripjoy-staging
@@ -196,3 +195,29 @@ jobs:
             echo "Restarting services..."
             IMAGE_TAG=staging DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }} \
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            
+            echo "Waiting for Staging API to start (polling every 10s, up to 5 minutes)..."
+            MAX_RETRIES=30
+            RETRY_COUNT=0
+            HEALTH="DOWN"
+            
+            while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+              if curl -sf http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
+                HEALTH="UP"
+                break
+              fi
+              echo "Staging API not ready yet. Retrying in 10s... ($((RETRY_COUNT+1))/$MAX_RETRIES)"
+              sleep 10
+              RETRY_COUNT=$((RETRY_COUNT+1))
+            done
+            
+            if [ "$HEALTH" = "UP" ]; then
+              echo "Staging deployment successful! Health: UP"
+            else
+              echo "Health check timeout! Staging API did not start within 5 minutes."
+              docker logs tripjoy-staging-api --tail 50 || true
+              exit 1
+            fi
+            
+            echo "Cleaning up old images..."
+            docker image prune -f
