@@ -127,7 +127,8 @@ public class GooglePlacesService implements IGooglePlacesService {
 
         return webClient
                 .get()
-                .uri("/places/{placeId}?fields={fields}", placeId, PLACE_DETAILS_FIELDS)
+                .uri("/places/{placeId}", placeId)
+                .header("X-Goog-FieldMask", PLACE_DETAILS_FIELDS)
                 .retrieve()
                 .bodyToMono(GooglePlaceDetailsDto.class)
                 .timeout(TIMEOUT)
