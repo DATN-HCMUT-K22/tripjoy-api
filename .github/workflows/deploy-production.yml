@@ -223,10 +223,16 @@ jobs:
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
             
             echo "Waiting for API to start (polling every 10s, up to 5 minutes)..."
-            # Lấy API_PUBLISHED_PORT từ .env, mặc định 8080 nếu không có
-            PROD_PORT=$(grep "^API_PUBLISHED_PORT=" .env | cut -d'=' -f2 | tr -d '\r' || echo "8080")
+
+            # Debug: In ra các biến quan trọng
+            echo "--- Debug: Current .env content (sanitized) ---"
+            grep -E "PORT|NAME|URL|TAG" .env | grep -v "KEY\|SECRET\|PASSWORD" || true
+            echo "-----------------------------------------------"
+
+            # Lấy API_PUBLISHED_PORT
+            PROD_PORT=$(grep -E "^API_PUBLISHED_PORT\s*=" .env | cut -d'=' -f2 | tr -d '\r ' || echo "8080")
             PROD_PORT=${PROD_PORT:-8080}
-            echo "Checking health on localhost:$PROD_PORT..."
+            echo "Target Health Check: http://localhost:$PROD_PORT/actuator/health"
 
             MAX_RETRIES=30
             RETRY_COUNT=0
@@ -247,8 +253,10 @@ jobs:
               echo "Production deployment successful! Health: UP"
             else
               echo "Health check timeout! API did not start within 5 minutes."
-              echo "Fetching recent logs for debugging:"
-              docker logs tripjoy-prod-api --tail 50
+              echo "Current container status and port mapping:"
+              docker ps --filter "name=tripjoy-prod"
+              echo "Recent container logs:"
+              docker logs tripjoy-prod-api --tail 100 || true
               echo "Consider rollback: docker compose -f docker-compose.prod.yml up -d --scale tripjoy-api=0"
               exit 1
             fi
