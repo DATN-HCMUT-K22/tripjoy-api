@@ -159,7 +159,6 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           timeout: 600s
-          command_timeout: 20m
           script: |
             set -e  
             
