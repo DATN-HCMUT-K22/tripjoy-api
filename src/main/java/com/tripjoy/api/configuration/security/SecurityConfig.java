@@ -33,7 +33,7 @@ public class SecurityConfig {
     };
 
     private static final String[] SWAGGER_WHITELIST = {
-        "/v3/api-docs/**", "/v3/api-docs.yaml", "/swagger-ui/**", "/swagger-ui.html"
+        "/v3/api-docs/**", "/v3/api-docs.yaml", "/swagger-ui/**", "/swagger-ui.html", "/actuator/**"
     };
 
     private static final String[] PUBLIC_GET_ENDPOINTS = {

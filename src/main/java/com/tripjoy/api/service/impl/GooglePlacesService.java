@@ -127,7 +127,8 @@ public class GooglePlacesService implements IGooglePlacesService {
 
         return webClient
                 .get()
-                .uri("/places/{placeId}?fields={fields}", placeId, PLACE_DETAILS_FIELDS)
+                .uri("/places/{placeId}", placeId)
+                .header("X-Goog-FieldMask", PLACE_DETAILS_FIELDS)
                 .retrieve()
                 .bodyToMono(GooglePlaceDetailsDto.class)
                 .timeout(TIMEOUT)
@@ -154,11 +155,20 @@ public class GooglePlacesService implements IGooglePlacesService {
      */
     private Map<String, Object> buildAutocompleteRequest(String input, String cityBias, Double lat, Double lng) {
         Map<String, Object> body = new HashMap<>();
-        body.put("input", input.trim());
+        
+        // Bias the text input with city context if provided
+        String finalInput = input.trim();
+        if (cityBias != null && !cityBias.trim().isEmpty()) {
+            finalInput = finalInput + ", " + cityBias.trim();
+        }
+        body.put("input", finalInput);
+        
         body.put("languageCode", "vi"); // Vietnamese-biased results for TripJoy VN
         body.put("regionCode", "VN"); // Bias to Vietnam results
-        body.put("includedPrimaryTypes", new String[] { // Focus on POI types relevant to travel
-            "restaurant", "cafe", "lodging", "tourist_attraction", "museum", "park", "shopping_mall", "airport", "hotel"
+        
+        // Included top 5 primary types for travel to optimize relevance (Google limit is 5)
+        body.put("includedPrimaryTypes", new String[] {
+            "tourist_attraction", "restaurant", "cafe", "lodging", "museum"
         });
 
         // Location bias: user's current position (if available) or city center
