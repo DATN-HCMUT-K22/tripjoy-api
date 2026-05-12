@@ -223,13 +223,18 @@ jobs:
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
             
             echo "Waiting for API to start (polling every 10s, up to 5 minutes)..."
+            # Lấy API_PUBLISHED_PORT từ .env, mặc định 8080 nếu không có
+            PROD_PORT=$(grep "^API_PUBLISHED_PORT=" .env | cut -d'=' -f2 | tr -d '\r' || echo "8080")
+            PROD_PORT=${PROD_PORT:-8080}
+            echo "Checking health on localhost:$PROD_PORT..."
+
             MAX_RETRIES=30
             RETRY_COUNT=0
             HEALTH="DOWN"
             
             while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
               # Dùng curl + grep để bắt chuỗi "status":"UP"
-              if curl -sf http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
+              if curl -sf http://localhost:$PROD_PORT/actuator/health | grep -q '"status":"UP"'; then
                 HEALTH="UP"
                 break
               fi

@@ -32,8 +32,8 @@ export const options = {
         read: {
             executor: 'ramping-vus',
             stages: [
-                { duration: '1m', target: 200 }, // Fast ramp
-                { duration: '3m', target: 200 },
+                { duration: '1m', target: 800 }, // Fast ramp to massive load
+                { duration: '4m', target: 800 },
                 { duration: '1m', target: 0 },
             ],
             exec: 'readScenario',
@@ -41,8 +41,8 @@ export const options = {
         manage: {
             executor: 'ramping-vus',
             stages: [
-                { duration: '1m', target: 150 },
-                { duration: '3m', target: 150 },
+                { duration: '1m', target: 600 },
+                { duration: '4m', target: 600 },
                 { duration: '1m', target: 0 },
             ],
             exec: 'manageScenario',
@@ -50,8 +50,8 @@ export const options = {
         social: {
             executor: 'ramping-vus',
             stages: [
-                { duration: '1m', target: 100 },
-                { duration: '3m', target: 100 },
+                { duration: '1m', target: 400 },
+                { duration: '4m', target: 400 },
                 { duration: '1m', target: 0 },
             ],
             exec: 'socialScenario',
@@ -59,14 +59,23 @@ export const options = {
         chat: {
             executor: 'ramping-vus',
             stages: [
-                { duration: '1m', target: 50 },
-                { duration: '3m', target: 50 },
+                { duration: '1m', target: 200 },
+                { duration: '4m', target: 200 },
                 { duration: '1m', target: 0 },
             ],
             exec: 'chatScenario',
         },
     },
-    thresholds: stressThresholds,
+    thresholds: {
+        // Tự động dừng bài test nếu tỷ lệ lỗi vượt quá 10%
+        http_req_failed: [{ threshold: 'rate<0.10', abortOnFail: true, delayAbortEval: '10s' }],
+        
+        // Tự động dừng nếu p(95) phản hồi chậm hơn 10 giây (Server đã quá tải)
+        http_req_duration: [{ threshold: 'p(95)<10000', abortOnFail: true, delayAbortEval: '10s' }],
+        
+        // Giữ các kiểm tra thành công khác
+        checks: ['rate>0.90'],
+    },
     tags: { testType: 'extreme-stress', project: 'tripjoy' },
 };
 
@@ -88,7 +97,7 @@ export function readScenario(data) {
             case 4: scenarioSearchGroups(headers); break;
         }
     });
-    sleep(Math.random() * 0.5 + 0.1); // Fast pace
+    sleep(Math.random() * 0.5 + 0.5); // Realistic think time (0.5s - 1s)
 }
 
 export function manageScenario(data) {
@@ -100,7 +109,7 @@ export function manageScenario(data) {
             scenarioCreateItinerary(headers, groupId);
         }
     });
-    sleep(Math.random() * 0.5 + 0.1);
+    sleep(Math.random() * 0.5 + 0.5);
 }
 
 export function socialScenario(data) {
@@ -108,7 +117,6 @@ export function socialScenario(data) {
     group('SOCIAL_INTERACTIONS', function () {
         const feed = scenarioBrowseFeed(headers);
         let itiId = null;
-        // Try to find a valid itinerary from the feed to link to the post
         if (feed && feed.data && feed.data.length > 0) {
             itiId = feed.data[0].itineraryId || feed.data[0].id;
         }
@@ -118,7 +126,7 @@ export function socialScenario(data) {
             if (postId) scenarioSavePost(headers, postId);
         }
     });
-    sleep(Math.random() * 0.5 + 0.1);
+    sleep(Math.random() * 0.5 + 0.5);
 }
 
 export function chatScenario(data) {
@@ -131,7 +139,7 @@ export function chatScenario(data) {
             scenarioSendMessage(headers, convs[0].id);
         }
     });
-    sleep(Math.random() * 0.5 + 0.1);
+    sleep(Math.random() * 0.5 + 0.5);
 }
 
 export function teardown(data) {
