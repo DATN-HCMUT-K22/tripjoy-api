@@ -60,13 +60,13 @@ services:
         condition: service_healthy
     networks:
       - backend
-    # Healthcheck để docker compose biết khi nào app sẵn sàng
+    # Internal healthcheck for Docker Compose
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 60s  # Spring Boot cần thời gian khởi động
+      start_period: 90s  # Increased to give more time for Seeder execution
 
   # ============================================================
   # 2. PostgreSQL + PostGIS
