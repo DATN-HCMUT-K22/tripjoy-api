@@ -1,25 +1,24 @@
 # ================================================================
 # deploy-production.yml — Production Deployment Pipeline
 #
-# TRIGGER: Push/merge vào branch 'main'
+# TRIGGER: Push/merge to branch 'main'
 #
 # FLOW:
-#   main branch ← PR từ staging (manual merge by team lead)
+#   main branch ← PR from staging (manual merge by team lead)
 #        │
 #        ├─ Job 1: test (mvn verify) — final safety net
 #        │
 #        ├─ Job 2: build-and-push
-#        │     Build Docker image với tags:
-#        │       latest (luôn trỏ production mới nhất)
+#        │     Build Docker image with tags:
+#        │       latest (always points to the latest production)
 #        │       v1.0.0-<sha> (immutable version tag)
-#        │     Push lên Docker Hub
+#        │     Push to Docker Hub
 #        │
 #        └─ Job 3: deploy-to-production
-#              REQUIRES manual approval nếu config GitHub Environment
-#              SSH vào EC2 production
+#              SSH into EC2 production
 #              Rolling restart: pull image → up → health check → done
 #
-# RULE: Chỉ team lead mới được merge vào main
+# RULE: Only team lead is allowed to merge into main
 # ================================================================
 
 name: Deploy — Production
@@ -29,8 +28,8 @@ on:
     branches:
       - main
 
-# Chỉ 1 production deployment tại 1 thời điểm — KHÔNG cancel-in-progress
-# Khác với staging: production deployment không bao giờ bị cancel giữa chừng
+# Allow only one production deployment at a time - NO cancel-in-progress
+# Production deployments should never be cancelled mid-way
 concurrency:
   group: deploy-production
   cancel-in-progress: false
@@ -96,9 +95,8 @@ jobs:
         uses: actions/checkout@v4
 
       # ----------------------------------------------------------
-      # Tạo version tag từ date + short SHA
-      # Ví dụ: v20240427-a1b2c3d
-      # Pattern này dễ đọc hơn plain SHA, dễ sort theo thời gian
+      # Generate version tag from date + short SHA
+      # Example: v20240427-a1b2c3d
       # ----------------------------------------------------------
       - name: Generate Version Tag
         id: version
@@ -118,8 +116,8 @@ jobs:
 
       # ----------------------------------------------------------
       # Production tags:
-      #   - latest           → luôn là production version mới nhất
-      #   - v20240427-a1b2c3 → immutable, dùng để rollback
+      #   - latest           → always the latest production version
+      #   - v20240427-a1b2c3 → immutable, used for rollbacks
       # ----------------------------------------------------------
       - name: Docker Metadata
         id: meta
@@ -145,8 +143,7 @@ jobs:
             GIT_BRANCH=main
 
       # ----------------------------------------------------------
-      # Tạo GitHub Release với version tag
-      # Giúp team biết version nào đang chạy ở production
+      # Create GitHub Release with version tag
       # ----------------------------------------------------------
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -162,9 +159,9 @@ jobs:
             - **Deployed by**: `${{ github.actor }}`
             - **Deploy time**: `${{ github.event.head_commit.timestamp }}`
             
-            ### Rollback Command (nếu cần)
+            ### Rollback Command (if needed)
             ```bash
-            # SSH vào EC2 production
+            # SSH into EC2 production
             IMAGE_TAG=<previous-version-tag> docker compose -f docker-compose.prod.yml up -d tripjoy-api
             ```
           generate_release_notes: true
@@ -172,14 +169,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ============================================================
-  # Job 3: Deploy lên EC2 Production
+  # Job 3: Deploy to EC2 Production
   # ============================================================
   deploy-to-production:
     name: Deploy to Production EC2
     runs-on: ubuntu-latest
     needs: build-and-push
-    # environment: production → Có thể config require manual approval trong GitHub Settings
-    # Settings → Environments → production → Required reviewers
     environment: production
 
     steps:
@@ -192,7 +187,7 @@ jobs:
           host: ${{ secrets.EC2_HOST_PROD }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          timeout: 600s # Tăng lên 10 phút để tránh bị timeout SSH
+          timeout: 600s
           script: |
             set -e
             
@@ -200,47 +195,39 @@ jobs:
             mkdir -p ~/tripjoy-prod
             cd ~/tripjoy-prod
             
-            echo "Pulling latest configs from main..."
+            echo "Syncing production configurations..."
             if [ -d ".git" ]; then
               git pull origin main
             else
               git clone -b main https://github.com/${{ github.repository }}.git .
             fi
             
-            echo "Writing production .env..."
+            echo "Generating environment file..."
             echo "${{ secrets.ENV_PROD }}" | base64 -d > .env
             echo "" >> .env 
-            
             echo "IMAGE_TAG=${{ needs.build-and-push.outputs.version-tag }}" >> .env
             echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
             
-            echo "Pulling new Docker image..."
+            echo "Pulling latest production image..."
             IMAGE_TAG=${{ needs.build-and-push.outputs.version-tag }} DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }} \
             docker compose -f docker-compose.prod.yml pull tripjoy-api
             
-            echo "Restarting containers..."
+            echo "Restarting production containers..."
             IMAGE_TAG=${{ needs.build-and-push.outputs.version-tag }} DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }} \
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
             
-            echo "Waiting for API to start (polling every 10s, up to 5 minutes)..."
-
-            # Debug: In ra các biến quan trọng
-            echo "--- Debug: Current .env content (sanitized) ---"
-            grep -E "PORT|NAME|URL|TAG" .env | grep -v "KEY\|SECRET\|PASSWORD" || true
-            echo "-----------------------------------------------"
-
-            # Lấy API_PUBLISHED_PORT
-            PROD_PORT=$(grep -E "^API_PUBLISHED_PORT\s*=" .env | cut -d'=' -f2 | tr -d '\r ' || echo "8080")
-            PROD_PORT=${PROD_PORT:-8080}
-            echo "Target Health Check: http://localhost:$PROD_PORT/actuator/health"
-
+            echo "Starting health check loop (5-minute timeout)..."
+            # Extract port from .env or default to 8080
+            P_PORT=$(grep "API_PUBLISHED_PORT" .env | awk -F'=' '{print $2}' | tr -d '\r ' || echo "8080")
+            P_PORT=${P_PORT:-8080}
+            HEALTH_URL="http://127.0.0.1:$P_PORT/actuator/health"
+            
             MAX_RETRIES=30
             RETRY_COUNT=0
             HEALTH="DOWN"
             
             while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-              # Dùng curl + grep để bắt chuỗi "status":"UP"
-              if curl -sf http://localhost:$PROD_PORT/actuator/health | grep -q '"status":"UP"'; then
+              if curl -sf "$HEALTH_URL" | grep -q '"status":"UP"'; then
                 HEALTH="UP"
                 break
               fi
@@ -252,27 +239,16 @@ jobs:
             if [ "$HEALTH" = "UP" ]; then
               echo "Production deployment successful! Health: UP"
             else
-              echo "Health check timeout! API did not start within 5 minutes."
-              echo "Current container status and port mapping:"
+              echo "Deployment failed! Production API did not start within timeout."
+              echo "Container status:"
               docker ps --filter "name=tripjoy-prod"
-              echo "Recent container logs:"
+              echo "Recent logs:"
               docker logs tripjoy-prod-api --tail 100 || true
-              echo "Consider rollback: docker compose -f docker-compose.prod.yml up -d --scale tripjoy-api=0"
               exit 1
             fi
             
-            echo "Cleaning up old images..."
+            echo "Cleaning up dangling images..."
             docker image prune -f
             
-            echo "Production containers status:"
+            echo "Final service status:"
             docker compose -f docker-compose.prod.yml ps
-
-      # ----------------------------------------------------------
-      # Notify team via Slack (optional - uncomment khi có Slack webhook)
-      # ----------------------------------------------------------
-      # - name: Notify Slack
-      #   if: always()
-      #   uses: rtCamp/action-slack-notify@v2
-      #   env:
-      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-      #     SLACK_MESSAGE: "Production deployment ${{ job.status == 'success' && 'succeeded' || 'failed' }}: ${{ needs.build-and-push.outputs.version-tag }}"
