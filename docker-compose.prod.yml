@@ -183,7 +183,7 @@ services:
 # ============================================================
 networks:
   backend:
-    name: ${COMPOSE_PROJECT_NAME:-tripjoy}-prod-network
+    name: ${COMPOSE_PROJECT_NAME:-tripjoy}-network
     driver: bridge
 
 # ============================================================
