@@ -148,6 +148,8 @@ public class Endpoint {
 
         // AI: Gợi ý địa điểm thay thế cho 1 TripItem cụ thể (không lưu DB)
         public static final String AI_SUGGEST_LOCATION = ID + "/ai-suggest-location";
+
+        public static final String STATUS = ID + "/status";
     }
 
     public static final class TravelNotebook {

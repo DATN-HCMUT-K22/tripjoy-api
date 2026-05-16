@@ -111,6 +111,8 @@ public enum ErrorCode {
 
     // --- 10. POST DOMAIN (10000 - 10999) ---
     POST_NOT_FOUND(10001, "Post not found", HttpStatus.NOT_FOUND),
+    ACTIVE_ITINERARY_EXISTS(11001, "There is already an active itinerary for this group", HttpStatus.BAD_REQUEST),
+    INVALID_ITINERARY_STATUS_TRANSITION(11002, "Invalid itinerary status transition", HttpStatus.BAD_REQUEST),
     ;
 
     private final int code;

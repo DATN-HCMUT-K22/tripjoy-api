@@ -82,10 +82,17 @@ public class GlobalExceptionHandler {
         }
 
         // 3. Map dynamic values ({min}, {max}) vào message
-        String message =
-                Objects.nonNull(attributes) ? mapAttribute(errorCode.getMessage(), attributes) : errorCode.getMessage();
+        String message;
+        if (Objects.nonNull(attributes)) {
+            message = mapAttribute(errorCode.getMessage(), attributes);
+        } else if (errorCode == ErrorCode.INVALID_KEY) {
+            // Nếu không tìm thấy key trong Enum, trả về chính message lỗi từ bean validation
+            message = enumKey;
+        } else {
+            message = errorCode.getMessage();
+        }
 
-        return ResponseEntity.badRequest()
+        return ResponseEntity.status(errorCode.getStatusCode())
                 .body(ApiResponse.<Void>builder()
                         .code(errorCode.getCode())
                         .message(message)

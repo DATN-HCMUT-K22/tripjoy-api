@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tripjoy.api.configuration.redis.RedisCacheConfig;
 import com.tripjoy.api.dto.request.ItineraryRequest;
+import com.tripjoy.api.dto.request.ItineraryStatusRequest;
 import com.tripjoy.api.dto.request.TripItemRequest;
 import com.tripjoy.api.dto.response.ItineraryResponse;
 import com.tripjoy.api.dto.response.TripItemResponse;
@@ -18,6 +19,7 @@ import com.tripjoy.api.entity.Itinerary;
 import com.tripjoy.api.entity.Location;
 import com.tripjoy.api.entity.TripItem;
 import com.tripjoy.api.entity.User;
+import com.tripjoy.api.enums.GroupRole;
 import com.tripjoy.api.enums.ItineraryStatus;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
@@ -77,6 +79,20 @@ public class ItineraryService implements IItineraryService {
                     .findById(UUID.fromString(request.getGroupId()))
                     .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
             itinerary.setGroup(group);
+        }
+
+        // Process TripItems Cascade
+        if (request.getTripItems() != null && !request.getTripItems().isEmpty()) {
+            final Itinerary finalItinerary = itinerary;
+            List<TripItem> tripItems = request.getTripItems().stream()
+                    .map(itemReq -> {
+                        TripItem item = tripItemMapper.toTripItem(itemReq);
+                        item.setItinerary(finalItinerary);
+                        item.setLocation(resolveLocation(itemReq));
+                        return item;
+                    })
+                    .collect(Collectors.toList());
+            itinerary.getTripItems().addAll(tripItems);
         }
 
         itinerary = itineraryRepository.save(itinerary);
@@ -194,21 +210,7 @@ public class ItineraryService implements IItineraryService {
 
         validateOwnership(itinerary);
 
-        Location location;
-        if (request.getLocationId() != null) {
-            location = locationRepository
-                    .findById(request.getLocationId())
-                    .orElseThrow(() -> new AppException(ErrorCode.LOCATION_NOT_FOUND));
-        } else if (request.getPlaceId() != null) {
-            // Auto-enrichment flow for AI Suggestions
-            com.tripjoy.api.dto.response.location.LocationResponse locResponse =
-                    locationService.resolveByPlaceId(request.getPlaceId());
-            location = locationRepository
-                    .findById(locResponse.getId())
-                    .orElseThrow(() -> new AppException(ErrorCode.LOCATION_NOT_FOUND));
-        } else {
-            throw new AppException(ErrorCode.INVALID_REQUEST, "Either location_id or place_id must be provided");
-        }
+        Location location = resolveLocation(request);
 
         TripItem tripItem = tripItemMapper.toTripItem(request);
         tripItem.setItinerary(itinerary);
@@ -288,6 +290,84 @@ public class ItineraryService implements IItineraryService {
         }
 
         tripItemRepository.delete(tripItem);
+    }
+
+    @Override
+    @CacheEvict(value = RedisCacheConfig.CACHE_ITINERARIES_BY_USER, key = "T(com.tripjoy.api.utils.SecurityUtils).getCurrentUserId()")
+    public ItineraryResponse updateStatus(UUID id, ItineraryStatusRequest request) {
+        Itinerary itinerary = itineraryRepository
+                .findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        validateLeader(itinerary);
+
+        ItineraryStatus oldStatus = itinerary.getStatus();
+        ItineraryStatus newStatus = request.getStatus();
+
+        if (oldStatus == newStatus) {
+            return itineraryMapper.toItineraryResponse(itinerary);
+        }
+
+        // Rule: From CONFIRMED, you can only move to COMPLETED
+        if (oldStatus == ItineraryStatus.CONFIRMED && newStatus != ItineraryStatus.COMPLETED) {
+            throw new AppException(
+                    ErrorCode.INVALID_ITINERARY_STATUS_TRANSITION,
+                    "Itinerary is already CONFIRMED. It can only be moved to COMPLETED.");
+        }
+
+        // Rule: Only one CONFIRMED/IN_PROGRESS itinerary per group
+        if (newStatus == ItineraryStatus.CONFIRMED || newStatus == ItineraryStatus.IN_PROGRESS) {
+            if (itinerary.getGroup() != null) {
+                boolean hasActive = itineraryRepository
+                        .findByGroupIdAndNotDeleted(itinerary.getGroup().getId())
+                        .stream()
+                        .anyMatch(i -> !i.getId().equals(id)
+                                && (i.getStatus() == ItineraryStatus.CONFIRMED
+                                        || i.getStatus() == ItineraryStatus.IN_PROGRESS));
+                if (hasActive) {
+                    throw new AppException(ErrorCode.ACTIVE_ITINERARY_EXISTS);
+                }
+            }
+        }
+
+        itinerary.setStatus(newStatus);
+        itinerary = itineraryRepository.save(itinerary);
+        return itineraryMapper.toItineraryResponse(itinerary);
+    }
+
+    private Location resolveLocation(TripItemRequest request) {
+        if (request.getLocationId() != null) {
+            return locationRepository
+                    .findById(request.getLocationId())
+                    .orElseThrow(() -> new AppException(ErrorCode.LOCATION_NOT_FOUND));
+        } else if (request.getPlaceId() != null) {
+            com.tripjoy.api.dto.response.location.LocationResponse locResponse =
+                    locationService.resolveByPlaceId(request.getPlaceId());
+            return locationRepository
+                    .findById(locResponse.getId())
+                    .orElseThrow(() -> new AppException(ErrorCode.LOCATION_NOT_FOUND));
+        } else {
+            throw new AppException(ErrorCode.INVALID_REQUEST, "Either location_id or place_id must be provided");
+        }
+    }
+
+    private void validateLeader(Itinerary itinerary) {
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+
+        // 1. Personal Itinerary
+        if (itinerary.getUser() != null && itinerary.getUser().getId().equals(currentUserId)) {
+            return;
+        }
+
+        // 2. Group Itinerary
+        if (itinerary.getGroup() != null) {
+            boolean isLeader = itinerary.getGroup().getMembers().stream()
+                    .anyMatch(member -> member.getUser().getId().equals(currentUserId)
+                            && member.getRole() == GroupRole.LEADER);
+            if (isLeader) return;
+        }
+
+        throw new AppException(ErrorCode.ONLY_LEADER_ALLOWED);
     }
 
     private void validateOwnership(Itinerary itinerary) {

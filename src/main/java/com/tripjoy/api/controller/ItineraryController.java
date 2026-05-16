@@ -13,6 +13,7 @@ import com.tripjoy.api.dto.request.AiModifyItineraryRequest;
 import com.tripjoy.api.dto.request.AiSuggestLocationRequest;
 import com.tripjoy.api.dto.request.GenerateItineraryRequest;
 import com.tripjoy.api.dto.request.ItineraryRequest;
+import com.tripjoy.api.dto.request.ItineraryStatusRequest;
 import com.tripjoy.api.dto.request.TripItemRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.ItineraryResponse;
@@ -192,5 +193,14 @@ public class ItineraryController {
                 .message("AI suggested " + suggestions.size() + " alternative location(s)")
                 .data(suggestions)
                 .build());
+    }
+
+    @Operation(summary = "Update itinerary status (with business rules)")
+    @PatchMapping(Endpoint.Itinerary.STATUS)
+    public ApiResponse<ItineraryResponse> updateStatus(
+            @PathVariable("itineraryId") UUID itineraryId, @Valid @RequestBody ItineraryStatusRequest request) {
+        return ApiResponse.<ItineraryResponse>builder()
+                .data(itineraryService.updateStatus(itineraryId, request))
+                .build();
     }
 }
