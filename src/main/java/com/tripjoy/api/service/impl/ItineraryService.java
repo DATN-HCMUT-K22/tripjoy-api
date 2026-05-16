@@ -363,7 +363,8 @@ public class ItineraryService implements IItineraryService {
         if (itinerary.getGroup() != null) {
             boolean isLeader = itinerary.getGroup().getMembers().stream()
                     .anyMatch(member -> member.getUser().getId().equals(currentUserId)
-                            && member.getRole() == GroupRole.LEADER);
+                            && member.getRole() == GroupRole.LEADER
+                            && !member.getSoftDeleteInfo().isDeleted());
             if (isLeader) return;
         }
 
@@ -379,7 +380,8 @@ public class ItineraryService implements IItineraryService {
         // 2. Group Itinerary
         if (itinerary.getGroup() != null) {
             boolean isInGroup = itinerary.getGroup().getMembers().stream()
-                    .anyMatch(member -> member.getUser().getId().equals(currentUserId));
+                    .anyMatch(member -> member.getUser().getId().equals(currentUserId)
+                            && !member.getSoftDeleteInfo().isDeleted());
             if (isInGroup) return;
         }
 

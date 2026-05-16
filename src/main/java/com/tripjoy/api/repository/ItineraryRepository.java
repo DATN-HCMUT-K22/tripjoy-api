@@ -20,7 +20,11 @@ public interface ItineraryRepository extends JpaRepository<Itinerary, UUID> {
     List<Itinerary> findByGroupIdAndNotDeleted(@Param("groupId") UUID groupId);
 
     @EntityGraph(attributePaths = {"user", "group", "origin", "destination", "travelNotebook", "themes"})
-    @Query("SELECT i FROM Itinerary i WHERE i.user.id = :userId AND i.softDeleteInfo.isDeleted = false")
+    @Query("SELECT DISTINCT i FROM Itinerary i " +
+           "LEFT JOIN i.group g " +
+           "LEFT JOIN g.members m " +
+           "WHERE (i.user.id = :userId OR (m.user.id = :userId AND m.softDeleteInfo.isDeleted = false)) " +
+           "AND i.softDeleteInfo.isDeleted = false")
     List<Itinerary> findByUserId(@Param("userId") UUID userId);
 
     @EntityGraph(attributePaths = {"user", "group", "origin", "destination", "travelNotebook", "themes"})
