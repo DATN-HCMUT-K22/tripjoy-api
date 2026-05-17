@@ -76,6 +76,10 @@ spring:
       password: ${REDIS_PASSWORD}
       database: 1  # Cache layer uses DB 1, Socket.IO uses DB 0
 
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:8080}
+
 socket-server:
   host: ${SOCKET_HOST}
   port: ${SOCKET_PORT}

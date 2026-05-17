@@ -1,6 +1,9 @@
 package com.tripjoy.api.configuration.security;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -22,6 +25,9 @@ import com.tripjoy.api.constant.Endpoint;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+    @Value("${app.cors.allowed-origins}")
+    private List<String> allowedOrigins;
+
     private static final String[] PUBLIC_ENDPOINTS = {
         Endpoint.Auth.BASE + Endpoint.Auth.REGISTER,
         Endpoint.Auth.BASE + Endpoint.Auth.LOGIN,
@@ -77,9 +83,7 @@ public class SecurityConfig {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.addAllowedOrigin("http://localhost:3000");
-        corsConfiguration.addAllowedOrigin("http://localhost:5173");
-        corsConfiguration.addAllowedOrigin("http://localhost:8080");
+        corsConfiguration.setAllowedOrigins(allowedOrigins);
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.addAllowedMethod("*");
 
