@@ -79,9 +79,17 @@ public class PostService implements IPostService {
     @Override
     @Transactional(readOnly = true)
     public Page<PostResponse> getPosts(PostQueryParams params, Pageable pageable, UUID currentUserId) {
+        // Force sort to createdAt DESC for the fast path to prevent missing new posts
+        // and ignore incoming Pageable.sort which might contain "newest" (invalid property)
+        Pageable fastPathPageable = org.springframework.data.domain.PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt")
+        );
+
         // Fast path: no filter criteria — use simple paginated findAll (no FTS overhead)
         if (params == null || params.isEmpty()) {
-            Page<Post> postPage = postRepository.findBySoftDeleteInfoIsDeletedFalse(pageable);
+            Page<Post> postPage = postRepository.findBySoftDeleteInfoIsDeletedFalse(fastPathPageable);
             List<PostResponse> responses = getPostResponsesWithContext(postPage.getContent(), currentUserId);
             return new PageImpl<>(responses, pageable, postPage.getTotalElements());
         }
@@ -219,7 +227,12 @@ public class PostService implements IPostService {
     @Override
     @Transactional(readOnly = true)
     public Page<PostResponse> getSavedPosts(Pageable pageable, UUID currentUserId) {
-        Page<Post> postPage = postRepository.findBySaveUsersIdAndSoftDeleteInfoIsDeletedFalse(currentUserId, pageable);
+        Pageable sortedPageable = org.springframework.data.domain.PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt")
+        );
+        Page<Post> postPage = postRepository.findBySaveUsersIdAndSoftDeleteInfoIsDeletedFalse(currentUserId, sortedPageable);
         List<PostResponse> responses = getPostResponsesWithContext(postPage.getContent(), currentUserId);
         return new PageImpl<>(responses, pageable, postPage.getTotalElements());
     }

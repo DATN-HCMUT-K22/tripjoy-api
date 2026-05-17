@@ -137,6 +137,54 @@ public class PostQueryParams {
                 && destinationId == null;
     }
 
+    public void setCreator_id(UUID creator_id) {
+        this.creatorId = creator_id;
+    }
+
+    public void setItinerary_id(UUID itinerary_id) {
+        this.itineraryId = itinerary_id;
+    }
+
+    public void setStart_date(LocalDateTime start_date) {
+        this.startDate = start_date;
+    }
+
+    public void setEnd_date(LocalDateTime end_date) {
+        this.endDate = end_date;
+    }
+
+    public void setMin_days(Integer min_days) {
+        this.minDays = min_days;
+    }
+
+    public void setMax_days(Integer max_days) {
+        this.maxDays = max_days;
+    }
+
+    public void setMin_budget(BigDecimal min_budget) {
+        this.minBudget = min_budget;
+    }
+
+    public void setMax_budget(BigDecimal max_budget) {
+        this.maxBudget = max_budget;
+    }
+
+    public void setMin_people(Integer min_people) {
+        this.minPeople = min_people;
+    }
+
+    public void setMax_people(Integer max_people) {
+        this.maxPeople = max_people;
+    }
+
+    public void setOrigin_id(UUID origin_id) {
+        this.originId = origin_id;
+    }
+
+    public void setDestination_id(UUID destination_id) {
+        this.destinationId = destination_id;
+    }
+
     /** Normalized keyword — trims and returns null if blank. */
     public String normalizedKeyword() {
         return (q != null && !q.trim().isBlank()) ? q.trim() : null;
