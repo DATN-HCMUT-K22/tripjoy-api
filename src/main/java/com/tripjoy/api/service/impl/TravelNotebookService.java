@@ -56,55 +56,53 @@ public class TravelNotebookService implements ITravelNotebookService {
         // 2. Build AiGenerateNotebookRequestDto — khớp FinalItinerary Python model
         List<AiTripItemDto> aiTripItems = tripItemRepository.findByItineraryId(itineraryId).stream()
                 .map(item -> AiTripItemDto.builder()
-                        .startTime(
-                                item.getStartTime() != null
-                                        ? item.getStartTime().toString()
-                                        : null)
-                        .duration(item.getDuration())
-                        .note(item.getNote())
-                        .locationName(
-                                item.getLocation() != null ? item.getLocation().getName() : null)
+                        .startTime(item.getStartTime() != null ? item.getStartTime().toString() : null)
+                        .duration(item.getDuration() != null ? item.getDuration() : 60)
+                        .note(item.getNote() != null ? item.getNote() : "")
+                        .locationName(item.getLocation() != null ? item.getLocation().getName() : "Unknown Location")
                         .placeId(item.getLocation() != null ? item.getLocation().getProviderId() : null)
                         .build())
                 .collect(Collectors.toList());
 
         // Robust destination extraction
-        String destinationName =
-                itinerary.getDestination() != null ? itinerary.getDestination().getName() : itinerary.getName();
+        String destinationName = "Unknown Destination";
+        if (itinerary.getDestination() != null) {
+            destinationName = itinerary.getDestination().getName();
+        } else if (itinerary.getName() != null) {
+            destinationName = itinerary.getName().replaceFirst("(?i)^Trip to\\s+", "").trim();
+        }
 
-        // Clean up: remove "Trip to ", " Adventure X", etc. to get a clean city name for AI lookup
+        // Clean up: remove " Adventure X", etc.
         destinationName = destinationName
-                .replaceFirst("(?i)^Trip to\\s+", "")
                 .replaceFirst("(?i)\\s+Adventure\\s+\\d+$", "")
                 .replaceFirst("(?i)\\s+Adventure$", "")
                 .trim();
 
         AiGenerateNotebookRequestDto aiRequest = AiGenerateNotebookRequestDto.builder()
-                .name(itinerary.getName())
-                .startDate(
-                        itinerary.getStartDate() != null
-                                ? itinerary.getStartDate().toLocalDate().toString()
-                                : null)
-                .endDate(
-                        itinerary.getEndDate() != null
-                                ? itinerary.getEndDate().toLocalDate().toString()
-                                : null)
-                .peopleQuantity(itinerary.getPeopleQuantity())
-                .budgetEstimate(
-                        itinerary.getBudgetEstimate() != null
-                                ? itinerary.getBudgetEstimate().longValue()
-                                : null)
-                .themes(itinerary.getThemes().stream().map(t -> t.getName()).collect(Collectors.toList()))
+                .name(itinerary.getName() != null ? itinerary.getName() : "Untitled Trip")
+                .startDate(itinerary.getStartDate() != null ? itinerary.getStartDate().toLocalDate().toString() : null)
+                .endDate(itinerary.getEndDate() != null ? itinerary.getEndDate().toLocalDate().toString() : null)
+                .peopleQuantity(itinerary.getPeopleQuantity() != null ? itinerary.getPeopleQuantity() : 1)
+                .budgetEstimate(itinerary.getBudgetEstimate() != null ? itinerary.getBudgetEstimate().longValue() : 0L)
+                .themes(itinerary.getThemes() != null 
+                    ? itinerary.getThemes().stream().map(t -> t.getName()).collect(Collectors.toList()) 
+                    : List.of())
                 .destination(destinationName)
                 .tripItems(aiTripItems)
                 .build();
 
         // 3. Gọi AI Service — blocking vì đây là synchronous request từ client
-        AiNotebookResponseDto aiResponse = aiService.generateNotebook(aiRequest).block();
+        AiNotebookResponseDto aiResponse;
+        try {
+            aiResponse = aiService.generateNotebook(aiRequest).block();
+        } catch (Exception e) {
+            log.error("AI Service notebook generation failed: {}", e.getMessage());
+            throw new AppException(ErrorCode.AI_SERVICE_UNAVAILABLE, "AI Service failed to generate notebook: " + e.getMessage());
+        }
 
         if (aiResponse == null) {
             log.error("AI Service returned null response for notebook generation, itinerary ID: {}", itineraryId);
-            throw new AppException(ErrorCode.AI_SERVICE_UNAVAILABLE);
+            throw new AppException(ErrorCode.AI_SERVICE_UNAVAILABLE, "AI Service returned no content for the notebook");
         }
 
         // 4. Upsert: nếu notebook đã tồn tại thì update, nếu chưa thì tạo mới

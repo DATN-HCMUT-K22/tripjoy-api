@@ -36,4 +36,6 @@ public interface IItineraryService {
     TripItemResponse updateTripItem(UUID itineraryId, UUID tripItemId, TripItemRequest request);
 
     void removeTripItem(UUID itineraryId, UUID tripItemId);
+
+    ItineraryResponse updateStatus(UUID id, com.tripjoy.api.dto.request.ItineraryStatusRequest request);
 }
