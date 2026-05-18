@@ -32,3 +32,7 @@ jwt:
   signer-key: "day-la-mot-chuoi-bi-mat-gia-dung-de-chay-test-chong-loi-123"
   expiration: 86400000          # 1 ngày
   refresh-expiration: 604800000 # 7 ngày
+
+app:
+  cors:
+    allowed-origins: http://localhost:3000,http://localhost:5173,http://localhost:8080
