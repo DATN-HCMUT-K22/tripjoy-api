@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.tripjoy.api.configuration.AiServiceProperties;
 import com.tripjoy.api.dto.ai.AiChatRequestDto;
@@ -59,7 +60,7 @@ public class AiService implements IAiService {
                 .bodyToMono(AiFinalItineraryDto.class)
                 .timeout(Duration.ofSeconds(configService.getIntValue("AI_TIMEOUT_SECONDS", 120)))
                 .doOnSuccess(response -> log.info("Successfully received itinerary from AI Service"))
-                .doOnError(e -> log.error("Error communicating with AI Service: {}", e.getMessage()));
+                .doOnError(e -> logWebClientError("generate-itinerary", e));
     }
 
     public Mono<AiFinalItineraryDto> generateItineraryFallback(AiTravelRequestDto request, Throwable t) {
@@ -90,7 +91,7 @@ public class AiService implements IAiService {
                 .bodyToMono(AiFinalItineraryDto.class)
                 .timeout(Duration.ofSeconds(configService.getIntValue("AI_TIMEOUT_SECONDS", 120)))
                 .doOnSuccess(response -> log.info("Successfully received modified itinerary from AI Service"))
-                .doOnError(e -> log.error("Error communicating with AI Service (modify): {}", e.getMessage()));
+                .doOnError(e -> logWebClientError("modify-itinerary", e));
     }
 
     public Mono<AiFinalItineraryDto> modifyItineraryFallback(AiModifyItineraryRequestDto request, Throwable t) {
@@ -120,7 +121,7 @@ public class AiService implements IAiService {
                 .bodyToMono(AiNotebookResponseDto.class)
                 .timeout(Duration.ofSeconds(configService.getIntValue("AI_TIMEOUT_SECONDS", 120)))
                 .doOnSuccess(response -> log.info("Successfully received travel notebook from AI Service"))
-                .doOnError(e -> log.error("Error communicating with AI Service (notebook): {}", e.getMessage()));
+                .doOnError(e -> logWebClientError("generate-notebook", e));
     }
 
     public Mono<AiNotebookResponseDto> generateNotebookFallback(AiGenerateNotebookRequestDto request, Throwable t) {
@@ -150,7 +151,7 @@ public class AiService implements IAiService {
                 .timeout(Duration.ofSeconds(configService.getIntValue("AI_TIMEOUT_SECONDS", 120)))
                 .map(raw -> AiChatResponseDto.builder().message(raw).build())
                 .doOnSuccess(response -> log.info("Successfully received chat response from AI Service"))
-                .doOnError(e -> log.error("Error communicating with AI Service (chat): {}", e.getMessage()));
+                .doOnError(e -> logWebClientError("chat", e));
     }
 
     public Mono<AiChatResponseDto> chatFallback(AiChatRequestDto request, Throwable t) {
@@ -183,12 +184,21 @@ public class AiService implements IAiService {
                 .doOnSuccess(response -> log.info(
                         "Successfully received {} suggested locations from AI Service",
                         response != null ? response.size() : 0))
-                .doOnError(
-                        e -> log.error("Error communicating with AI Service (suggest-locations): {}", e.getMessage()));
+                .doOnError(e -> logWebClientError("suggest-locations", e));
     }
 
     public Mono<List<AiTripItemDto>> suggestLocationFallback(AiSuggestLocationRequestDto request, Throwable t) {
         log.error("AI Service fallback triggered for suggest-locations request. Reason: {}", t.getMessage());
         return Mono.error(new AppException(ErrorCode.AI_SERVICE_UNAVAILABLE));
+    }
+
+    private void logWebClientError(String context, Throwable e) {
+        if (e instanceof WebClientResponseException) {
+            WebClientResponseException wcre = (WebClientResponseException) e;
+            log.error("Error communicating with AI Service ({}): {} - Response: {}", 
+                    context, e.getMessage(), wcre.getResponseBodyAsString());
+        } else {
+            log.error("Error communicating with AI Service ({}): {}", context, e.getMessage());
+        }
     }
 }
