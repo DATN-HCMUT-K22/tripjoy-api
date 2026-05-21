@@ -125,6 +125,8 @@ public class ChatMessageService implements IChatMessageService {
         message.setConversation(conversation);
         message.setSender(sender);
         message.setCreatedAt(LocalDateTime.now());
+        message.setIsBot(false);
+        message.setStatus("SENT");
 
         if ("SHARE_POST".equals(request.getMessageType()) && request.getSharedPostId() != null) {
             try {
@@ -189,6 +191,8 @@ public class ChatMessageService implements IChatMessageService {
         ChatMessage message = ChatMessage.builder()
                 .messageContent(content)
                 .messageType("TEXT")
+                .isBot(true)
+                .status("SENT")
                 .build();
 
         message.setConversation(conversation);
