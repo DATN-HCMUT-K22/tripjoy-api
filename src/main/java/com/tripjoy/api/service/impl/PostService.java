@@ -84,8 +84,8 @@ public class PostService implements IPostService {
         Pageable fastPathPageable = org.springframework.data.domain.PageRequest.of(
                 pageable.getPageNumber(),
                 pageable.getPageSize(),
-                org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt")
-        );
+                org.springframework.data.domain.Sort.by(
+                        org.springframework.data.domain.Sort.Direction.DESC, "createdAt"));
 
         // Fast path: no filter criteria — use simple paginated findAll (no FTS overhead)
         if (params == null || params.isEmpty()) {
@@ -230,9 +230,10 @@ public class PostService implements IPostService {
         Pageable sortedPageable = org.springframework.data.domain.PageRequest.of(
                 pageable.getPageNumber(),
                 pageable.getPageSize(),
-                org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt")
-        );
-        Page<Post> postPage = postRepository.findBySaveUsersIdAndSoftDeleteInfoIsDeletedFalse(currentUserId, sortedPageable);
+                org.springframework.data.domain.Sort.by(
+                        org.springframework.data.domain.Sort.Direction.DESC, "createdAt"));
+        Page<Post> postPage =
+                postRepository.findBySaveUsersIdAndSoftDeleteInfoIsDeletedFalse(currentUserId, sortedPageable);
         List<PostResponse> responses = getPostResponsesWithContext(postPage.getContent(), currentUserId);
         return new PageImpl<>(responses, pageable, postPage.getTotalElements());
     }

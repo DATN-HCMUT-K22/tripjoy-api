@@ -56,10 +56,14 @@ public class TravelNotebookService implements ITravelNotebookService {
         // 2. Build AiGenerateNotebookRequestDto — khớp FinalItinerary Python model
         List<AiTripItemDto> aiTripItems = tripItemRepository.findByItineraryId(itineraryId).stream()
                 .map(item -> AiTripItemDto.builder()
-                        .startTime(item.getStartTime() != null ? item.getStartTime().toString() : null)
+                        .startTime(
+                                item.getStartTime() != null
+                                        ? item.getStartTime().toString()
+                                        : null)
                         .duration(item.getDuration() != null ? item.getDuration() : 60)
                         .note(item.getNote() != null ? item.getNote() : "")
-                        .locationName(item.getLocation() != null ? item.getLocation().getName() : "Unknown Location")
+                        .locationName(
+                                item.getLocation() != null ? item.getLocation().getName() : "Unknown Location")
                         .placeId(item.getLocation() != null ? item.getLocation().getProviderId() : null)
                         .build())
                 .collect(Collectors.toList());
@@ -69,7 +73,8 @@ public class TravelNotebookService implements ITravelNotebookService {
         if (itinerary.getDestination() != null) {
             destinationName = itinerary.getDestination().getName();
         } else if (itinerary.getName() != null) {
-            destinationName = itinerary.getName().replaceFirst("(?i)^Trip to\\s+", "").trim();
+            destinationName =
+                    itinerary.getName().replaceFirst("(?i)^Trip to\\s+", "").trim();
         }
 
         // Clean up: remove " Adventure X", etc.
@@ -80,13 +85,25 @@ public class TravelNotebookService implements ITravelNotebookService {
 
         AiGenerateNotebookRequestDto aiRequest = AiGenerateNotebookRequestDto.builder()
                 .name(itinerary.getName() != null ? itinerary.getName() : "Untitled Trip")
-                .startDate(itinerary.getStartDate() != null ? itinerary.getStartDate().toLocalDate().toString() : null)
-                .endDate(itinerary.getEndDate() != null ? itinerary.getEndDate().toLocalDate().toString() : null)
+                .startDate(
+                        itinerary.getStartDate() != null
+                                ? itinerary.getStartDate().toLocalDate().toString()
+                                : null)
+                .endDate(
+                        itinerary.getEndDate() != null
+                                ? itinerary.getEndDate().toLocalDate().toString()
+                                : null)
                 .peopleQuantity(itinerary.getPeopleQuantity() != null ? itinerary.getPeopleQuantity() : 1)
-                .budgetEstimate(itinerary.getBudgetEstimate() != null ? itinerary.getBudgetEstimate().longValue() : 0L)
-                .themes(itinerary.getThemes() != null 
-                    ? itinerary.getThemes().stream().map(t -> t.getName()).collect(Collectors.toList()) 
-                    : List.of())
+                .budgetEstimate(
+                        itinerary.getBudgetEstimate() != null
+                                ? itinerary.getBudgetEstimate().longValue()
+                                : 0L)
+                .themes(
+                        itinerary.getThemes() != null
+                                ? itinerary.getThemes().stream()
+                                        .map(t -> t.getName())
+                                        .collect(Collectors.toList())
+                                : List.of())
                 .destination(destinationName)
                 .tripItems(aiTripItems)
                 .build();
@@ -97,7 +114,8 @@ public class TravelNotebookService implements ITravelNotebookService {
             aiResponse = aiService.generateNotebook(aiRequest).block();
         } catch (Exception e) {
             log.error("AI Service notebook generation failed: {}", e.getMessage());
-            throw new AppException(ErrorCode.AI_SERVICE_UNAVAILABLE, "AI Service failed to generate notebook: " + e.getMessage());
+            throw new AppException(
+                    ErrorCode.AI_SERVICE_UNAVAILABLE, "AI Service failed to generate notebook: " + e.getMessage());
         }
 
         if (aiResponse == null) {

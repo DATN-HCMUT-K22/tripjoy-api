@@ -54,7 +54,7 @@ spring:
         default_batch_fetch_size: 100
         enable_lazy_load_no_trans: true
         format_sql: true
-    show-sql: true
+    show-sql: false
 
   servlet:
     multipart:

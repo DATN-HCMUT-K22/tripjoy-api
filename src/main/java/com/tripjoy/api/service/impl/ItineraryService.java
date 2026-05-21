@@ -293,11 +293,12 @@ public class ItineraryService implements IItineraryService {
     }
 
     @Override
-    @CacheEvict(value = RedisCacheConfig.CACHE_ITINERARIES_BY_USER, key = "T(com.tripjoy.api.utils.SecurityUtils).getCurrentUserId()")
+    @CacheEvict(
+            value = RedisCacheConfig.CACHE_ITINERARIES_BY_USER,
+            key = "T(com.tripjoy.api.utils.SecurityUtils).getCurrentUserId()")
     public ItineraryResponse updateStatus(UUID id, ItineraryStatusRequest request) {
-        Itinerary itinerary = itineraryRepository
-                .findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        Itinerary itinerary =
+                itineraryRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
         validateLeader(itinerary);
 
@@ -318,12 +319,13 @@ public class ItineraryService implements IItineraryService {
         // Rule: Only one CONFIRMED/IN_PROGRESS itinerary per group
         if (newStatus == ItineraryStatus.CONFIRMED || newStatus == ItineraryStatus.IN_PROGRESS) {
             if (itinerary.getGroup() != null) {
-                boolean hasActive = itineraryRepository
-                        .findByGroupIdAndNotDeleted(itinerary.getGroup().getId())
-                        .stream()
-                        .anyMatch(i -> !i.getId().equals(id)
-                                && (i.getStatus() == ItineraryStatus.CONFIRMED
-                                        || i.getStatus() == ItineraryStatus.IN_PROGRESS));
+                boolean hasActive =
+                        itineraryRepository
+                                .findByGroupIdAndNotDeleted(itinerary.getGroup().getId())
+                                .stream()
+                                .anyMatch(i -> !i.getId().equals(id)
+                                        && (i.getStatus() == ItineraryStatus.CONFIRMED
+                                                || i.getStatus() == ItineraryStatus.IN_PROGRESS));
                 if (hasActive) {
                     throw new AppException(ErrorCode.ACTIVE_ITINERARY_EXISTS);
                 }

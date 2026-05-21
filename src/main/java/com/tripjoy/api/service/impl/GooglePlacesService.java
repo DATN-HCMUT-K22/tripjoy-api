@@ -155,21 +155,20 @@ public class GooglePlacesService implements IGooglePlacesService {
      */
     private Map<String, Object> buildAutocompleteRequest(String input, String cityBias, Double lat, Double lng) {
         Map<String, Object> body = new HashMap<>();
-        
+
         // Bias the text input with city context if provided
         String finalInput = input.trim();
         if (cityBias != null && !cityBias.trim().isEmpty()) {
             finalInput = finalInput + ", " + cityBias.trim();
         }
         body.put("input", finalInput);
-        
+
         body.put("languageCode", "vi"); // Vietnamese-biased results for TripJoy VN
         body.put("regionCode", "VN"); // Bias to Vietnam results
-        
+
         // Included top 5 primary types for travel to optimize relevance (Google limit is 5)
-        body.put("includedPrimaryTypes", new String[] {
-            "tourist_attraction", "restaurant", "cafe", "lodging", "museum"
-        });
+        body.put(
+                "includedPrimaryTypes", new String[] {"tourist_attraction", "restaurant", "cafe", "lodging", "museum"});
 
         // Location bias: user's current position (if available) or city center
         if (lat != null && lng != null) {
