@@ -20,6 +20,7 @@ import com.tripjoy.api.enums.MapProvider;
 import com.tripjoy.api.enums.OperationalStatus;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 /**
  * Location entity — unified store for all geographical locations in TripJoy.
@@ -42,7 +43,7 @@ import lombok.*;
 @Getter
 @Setter
 @Entity
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(

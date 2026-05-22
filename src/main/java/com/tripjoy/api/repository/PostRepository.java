@@ -139,4 +139,16 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
 
     @Query("SELECT p.id FROM Post p JOIN p.saveUsers u WHERE p.id IN :postIds AND u.id = :userId")
     List<UUID> findSavedPostIdsByUser(@Param("postIds") List<UUID> postIds, @Param("userId") UUID userId);
+
+    /**
+     * Count posts created after a specific date
+     */
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.createdAt >= :date")
+    long countCreatedAfter(@Param("date") LocalDateTime date);
+
+    /**
+     * Count posts by deleted status
+     */
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.softDeleteInfo.isDeleted = :isDeleted")
+    long countByIsDeleted(@Param("isDeleted") boolean isDeleted);
 }

@@ -69,7 +69,7 @@ public class SocketIOConfig {
             return AuthorizationResult.SUCCESSFUL_AUTHORIZATION;
 
         } catch (Exception e) {
-            log.error("Socket.IO authorization failed: {}", e.getMessage());
+            log.warn("Socket.IO authorization failed: {}", e.getMessage());
             return AuthorizationResult.FAILED_AUTHORIZATION;
         }
     }

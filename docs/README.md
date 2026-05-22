@@ -20,6 +20,10 @@
 - **[Cursor-Based Pagination](./CURSOR_BASED_PAGINATION.md)** - Hướng dẫn phân trang hiệu năng cao
 - **[Database Indexing](./DATABASE_INDEXING.md)** - Tối ưu database performance với indexes
 
+### 👑 Admin & Moderation
+- **[Report & Moderation API Guide (Vietnamese)](./report_api_integration_guide.md)** - Hướng dẫn tích hợp API báo cáo và kiểm duyệt nội dung
+- **[Admin Business Dashboard API](./modules/ADMIN_BUSINESS_DASHBOARD_API.md)** - Admin dashboard với analytics và moderation system
+
 ---
 
 ## 🚀 Quick Start
@@ -210,7 +214,7 @@ Interactive API testing: `http://localhost:8080/swagger-ui/index.html`
 
 **Project:** TripJoy API  
 **Version:** 1.0.0  
-**Last Updated:** January 2026
+**Last Updated:** May 2026
 
 **Team:**
 - Backend Team

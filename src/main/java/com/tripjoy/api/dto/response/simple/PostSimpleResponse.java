@@ -1,5 +1,6 @@
 package com.tripjoy.api.dto.response.simple;
 
+import java.util.Set;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -25,6 +26,13 @@ public class PostSimpleResponse {
     @Schema(description = "First media URL of the post to act as a thumbnail")
     @JsonProperty("thumbnail_url")
     String thumbnailUrl;
+
+    @Schema(description = "Location name associated with the post/itinerary")
+    @JsonProperty("location_name")
+    String locationName;
+
+    @Schema(description = "List of hashtags")
+    Set<String> hashtags;
 
     @Schema(description = "Visibility of the post")
     PostVisibility visibility;

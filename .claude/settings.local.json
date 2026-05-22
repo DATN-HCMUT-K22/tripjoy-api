@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__tilth__tilth_search",
+      "mcp__tilth__tilth_files",
+      "mcp__tilth__tilth_read",
+      "Bash(node *)",
+      "Bash(timeout 30 ./mvnw compile)",
+      "Bash(java -version)",
+      "Bash(./mvnw clean *)",
+      "Bash(mvn -version)"
+    ]
+  }
+}

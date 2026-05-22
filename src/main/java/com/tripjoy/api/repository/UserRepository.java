@@ -72,4 +72,22 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 			""",
             nativeQuery = true)
     List<User> searchByUsernameOrEmail(@Param("keyword") String keyword);
+
+    /**
+     * Count users by locked and deleted status
+     */
+    @Query("SELECT COUNT(u) FROM User u WHERE u.isLocked = :isLocked AND u.softDeleteInfo.isDeleted = :isDeleted")
+    long countByIsLockedAndIsDeleted(
+            @Param("isLocked") boolean isLocked, @Param("isDeleted") boolean isDeleted);
+
+    /**
+     * Count users by locked status
+     */
+    long countByIsLocked(boolean isLocked);
+
+    /**
+     * Count users by deleted status
+     */
+    @Query("SELECT COUNT(u) FROM User u WHERE u.softDeleteInfo.isDeleted = :isDeleted")
+    long countByIsDeleted(@Param("isDeleted") boolean isDeleted);
 }

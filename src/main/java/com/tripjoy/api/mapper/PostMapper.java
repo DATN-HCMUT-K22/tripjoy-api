@@ -49,6 +49,11 @@ public interface PostMapper {
             target = "thumbnailUrl",
             expression =
                     "java(post.getMediaUrls() != null && !post.getMediaUrls().isEmpty() ? post.getMediaUrls().get(0) : null)")
+    @Mapping(target = "hashtags", source = "hashtags", qualifiedByName = "mapHashtagsToStrings")
+    @Mapping(
+            target = "locationName",
+            expression =
+                    "java(post.getItinerary() != null && post.getItinerary().getDestination() != null ? post.getItinerary().getDestination().getName() : (post.getItinerary() != null ? post.getItinerary().getName() : null))")
     com.tripjoy.api.dto.response.simple.PostSimpleResponse toPostSimpleResponse(Post post);
 
     @Named("mapHashtagsToStrings")

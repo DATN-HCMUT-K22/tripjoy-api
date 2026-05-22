@@ -1,11 +1,13 @@
 package com.tripjoy.api.controller;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +18,7 @@ import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.report.HandleReportResponse;
 import com.tripjoy.api.dto.response.report.ReportResponse;
 import com.tripjoy.api.service.IReportService;
+import com.tripjoy.api.utils.SecurityUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,19 +38,24 @@ public class ReportController {
     @Operation(summary = "User submits a new report")
     @PostMapping
     public ApiResponse<ReportResponse> submitReport(@Valid @RequestBody ReportRequest request) {
-        // Service will handle complex logic (create Report_content, then create
-        // Report_to)
+        UUID reporterId = SecurityUtils.getCurrentUserId();
         return ApiResponse.<ReportResponse>builder()
-                // .data(reportService.submitReport(request))
+                .data(reportService.submitReport(request, reporterId))
                 .build();
     }
 
     @Operation(summary = "Get all reports (Admin, paginated)")
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ApiResponse<Page<ReportResponse>> getAllReports(Pageable pageable) {
+    public ApiResponse<Page<ReportResponse>> getAllReports(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String contentType,
+            @RequestParam(required = false) String reportType,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            Pageable pageable) {
         return ApiResponse.<Page<ReportResponse>>builder()
-                // .data(reportService.getAllReports(pageable))
+                .data(reportService.getAllReports(status, contentType, reportType, startDate, endDate, pageable))
                 .build();
     }
 
@@ -55,9 +63,8 @@ public class ReportController {
     @GetMapping("/{reportId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<ReportResponse> getReportById(@PathVariable("reportId") UUID reportId) {
-        // reportId here refers to the ID in the "Report_to" table
         return ApiResponse.<ReportResponse>builder()
-                // .data(reportService.getReportById(reportId))
+                .data(reportService.getReportById(reportId))
                 .build();
     }
 
@@ -67,12 +74,11 @@ public class ReportController {
     @PostMapping(Endpoint.Report.ID + "/handle")
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<HandleReportResponse> handleReport(
-            @PathVariable("reportId") UUID reportId, // ID from Report_to
+            @PathVariable("reportId") UUID reportId,
             @Valid @RequestBody HandleReportRequest request) {
-
-        // return ApiResponse.<HandleReportResponse>builder()
-        // .data(reportService.handleReport(reportId, request))
-        // .build();
-        return null; // Placeholder
+        UUID adminId = SecurityUtils.getCurrentUserId();
+        return ApiResponse.<HandleReportResponse>builder()
+                .data(reportService.handleReport(reportId, request, adminId))
+                .build();
     }
 }

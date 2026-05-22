@@ -3,11 +3,12 @@ package com.tripjoy.api.entity;
 import jakarta.persistence.Entity;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @Entity
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReportContent extends BaseEntity {

@@ -1,5 +1,6 @@
 package com.tripjoy.api.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,4 +27,15 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
 
     @Query("SELECT DISTINCT c.user FROM Comment c WHERE c.parentComment.id = :parentCommentId")
     List<User> findDistinctRepliersByParentCommentId(@Param("parentCommentId") UUID parentCommentId);
+
+    /**
+     * Count comments created after a specific date
+     */
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.createdAt >= :date")
+    long countCreatedAfter(@Param("date") LocalDateTime date);
+
+    /**
+     * Count comments by deleted status
+     */
+    long countByIsDeleted(boolean isDeleted);
 }

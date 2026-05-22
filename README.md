@@ -12,7 +12,7 @@ A RESTful API backend for the TripJoy travel planning application, built with Sp
 - **Location Services**: PostGIS-powered location search and geospatial queries
 - **Real-time Chat**: Socket.IO-based messaging with conversation management and pinned messages
 - **Social Features**: Posts, comments, feedback, and travel notebooks
-- **Admin Dashboard**: Administrative tools for user and content management
+- **Admin Dashboard**: Comprehensive admin system with report management, moderation actions, and analytics
 - **Notification System**: Real-time notifications with activity logging
 
 ### Technical Highlights
@@ -450,6 +450,7 @@ For detailed documentation on specific features:
 - **System Architecture** (Vietnamese): See `docs/ARCHITECTURE_VI.md`
 - **Socket.IO Implementation**: See `docs/SOCKET_IO_README_VI.md`
 - **Location API Guide**: See `docs/LOCATION_MAP_API_GUIDE.md`
+- **Admin & Moderation API**: See `docs/report_api_integration_guide.md` and `docs/modules/ADMIN_BUSINESS_DASHBOARD_API.md`
 - **Technical Report**: See `docs/TECHNICAL_REPORT_SOCKET_IO.md`
 
 ## 🏆 Acknowledgments

@@ -3,6 +3,7 @@ package com.tripjoy.api.entity;
 import jakarta.persistence.*;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 /**
  * Travel Notebook entity — lưu nội dung do AI sinh ra về điểm đến.
@@ -12,7 +13,7 @@ import lombok.*;
 @Getter
 @Setter
 @Entity
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 public class TravelNotebook extends BaseEntity {
