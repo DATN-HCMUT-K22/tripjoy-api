@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,7 @@ import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
 import com.tripjoy.api.mapper.ItineraryMapper;
 import com.tripjoy.api.mapper.TripItemMapper;
+import com.tripjoy.api.repository.GroupMemberRepository;
 import com.tripjoy.api.repository.GroupRepository;
 import com.tripjoy.api.repository.ItineraryRepository;
 import com.tripjoy.api.repository.LocationRepository;
@@ -54,11 +56,10 @@ public class ItineraryService implements IItineraryService {
     TripItemMapper tripItemMapper;
     IThemeService themeService;
     ILocationService locationService;
+    GroupMemberRepository groupMemberRepository;
+    CacheManager cacheManager;
 
     @Override
-    @CacheEvict(
-            value = RedisCacheConfig.CACHE_ITINERARIES_BY_USER,
-            key = "T(com.tripjoy.api.utils.SecurityUtils).getCurrentUserId()")
     public ItineraryResponse createItinerary(ItineraryRequest request) {
         UUID userId = SecurityUtils.getCurrentUserId();
         User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
@@ -96,6 +97,7 @@ public class ItineraryService implements IItineraryService {
         }
 
         itinerary = itineraryRepository.save(itinerary);
+        evictItinerariesAndGroupsCache(itinerary);
         return itineraryMapper.toItineraryResponse(itinerary);
     }
 
@@ -112,9 +114,6 @@ public class ItineraryService implements IItineraryService {
     }
 
     @Override
-    @org.springframework.cache.annotation.CacheEvict(
-            value = RedisCacheConfig.CACHE_ITINERARIES_BY_USER,
-            key = "T(com.tripjoy.api.utils.SecurityUtils).getCurrentUserId()")
     public ItineraryResponse updateItinerary(UUID id, ItineraryRequest request) {
         Itinerary itinerary =
                 itineraryRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -135,13 +134,11 @@ public class ItineraryService implements IItineraryService {
         }
 
         itinerary = itineraryRepository.save(itinerary);
+        evictItinerariesAndGroupsCache(itinerary);
         return itineraryMapper.toItineraryResponse(itinerary);
     }
 
     @Override
-    @org.springframework.cache.annotation.CacheEvict(
-            value = RedisCacheConfig.CACHE_ITINERARIES_BY_USER,
-            key = "T(com.tripjoy.api.utils.SecurityUtils).getCurrentUserId()")
     public void deleteItinerary(UUID id) {
         Itinerary itinerary =
                 itineraryRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -153,6 +150,7 @@ public class ItineraryService implements IItineraryService {
                 .markAsDeleted(SecurityUtils.getCurrentUserId().toString());
 
         itineraryRepository.save(itinerary);
+        evictItinerariesAndGroupsCache(itinerary);
     }
 
     @Override
@@ -293,9 +291,6 @@ public class ItineraryService implements IItineraryService {
     }
 
     @Override
-    @CacheEvict(
-            value = RedisCacheConfig.CACHE_ITINERARIES_BY_USER,
-            key = "T(com.tripjoy.api.utils.SecurityUtils).getCurrentUserId()")
     public ItineraryResponse updateStatus(UUID id, ItineraryStatusRequest request) {
         Itinerary itinerary =
                 itineraryRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -334,6 +329,7 @@ public class ItineraryService implements IItineraryService {
 
         itinerary.setStatus(newStatus);
         itinerary = itineraryRepository.save(itinerary);
+        evictItinerariesAndGroupsCache(itinerary);
         return itineraryMapper.toItineraryResponse(itinerary);
     }
 
@@ -388,5 +384,39 @@ public class ItineraryService implements IItineraryService {
         }
 
         throw new AppException(ErrorCode.UNAUTHORIZED);
+    }
+
+    private void evictItinerariesAndGroupsCache(Itinerary itinerary) {
+        if (itinerary == null) return;
+
+        // 1. Evict current user's cache
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+        evictUserItineraryCache(currentUserId);
+
+        // 2. If it is a group itinerary, evict itineraries and group lists cache for all active members
+        if (itinerary.getGroup() != null) {
+            UUID groupId = itinerary.getGroup().getId();
+            List<UUID> memberUserIds = groupMemberRepository.findActiveUserIdsByGroupId(groupId);
+            if (memberUserIds != null) {
+                org.springframework.cache.Cache itineraryCache = cacheManager.getCache(RedisCacheConfig.CACHE_ITINERARIES_BY_USER);
+                org.springframework.cache.Cache groupCache = cacheManager.getCache(RedisCacheConfig.CACHE_GROUPS_BY_USER);
+                for (UUID userId : memberUserIds) {
+                    if (itineraryCache != null) {
+                        itineraryCache.evict(userId);
+                    }
+                    if (groupCache != null) {
+                        groupCache.evict(userId);
+                    }
+                }
+            }
+        }
+    }
+
+    private void evictUserItineraryCache(UUID userId) {
+        if (userId == null) return;
+        org.springframework.cache.Cache cache = cacheManager.getCache(RedisCacheConfig.CACHE_ITINERARIES_BY_USER);
+        if (cache != null) {
+            cache.evict(userId);
+        }
     }
 }
