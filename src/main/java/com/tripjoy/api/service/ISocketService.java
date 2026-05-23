@@ -39,5 +39,9 @@ public interface ISocketService {
      */
     void notifyNewDirectConversation(UUID userId, ConversationResponse conversation);
 
+    void notifyNewConversation(UUID userId, ConversationResponse conversation);
+
+    void kickUserFromConversation(UUID userId, UUID conversationId);
+
     void sendRecallUpdate(UUID conversationId, UUID messageId);
 }

@@ -179,6 +179,35 @@ public class SocketService implements ISocketService {
     }
 
     @Override
+    public void notifyNewConversation(UUID userId, ConversationResponse conversation) {
+        try {
+            String roomName = "user_" + userId;
+            server.getRoomOperations(roomName).sendEvent("new_conversation", conversation);
+            log.info("Notified user {} of new conversation: {}", userId, conversation.getId());
+        } catch (Exception e) {
+            log.error("Failed to notify user {} of new conversation: {}", userId, e.getMessage());
+        }
+    }
+
+    @Override
+    public void kickUserFromConversation(UUID userId, UUID conversationId) {
+        try {
+            // 1. Notify client to remove channel from UI
+            String userRoom = "user_" + userId;
+            server.getRoomOperations(userRoom).sendEvent("left_conversation", conversationId);
+
+            // 2. Force all active socket connections belonging to this user to leave the conversation room
+            String convRoom = "conversation_" + conversationId;
+            server.getRoomOperations(userRoom).getClients().forEach(client -> {
+                client.leaveRoom(convRoom);
+            });
+            log.info("Kicked user {} from socket room {}", userId, conversationId);
+        } catch (Exception e) {
+            log.error("Error kicking user {} from room {}: {}", userId, conversationId, e.getMessage());
+        }
+    }
+
+    @Override
     public void sendRecallUpdate(UUID conversationId, UUID messageId) {
         try {
             String roomName = "conversation_" + conversationId;
