@@ -8,6 +8,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import com.tripjoy.api.enums.MessageStatus;
+
 @Getter
 @Setter
 @Entity
@@ -28,7 +30,9 @@ public class ChatMessage extends BaseEntity {
     private Post sharedPost;
 
     private Boolean isBot;
-    private String status;
+
+    @Enumerated(EnumType.STRING)
+    private MessageStatus status;
 
     @Column(nullable = false)
     @Builder.Default

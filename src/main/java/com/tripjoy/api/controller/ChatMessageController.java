@@ -96,4 +96,15 @@ public class ChatMessageController {
                 .message("Message unpinned successfully")
                 .build();
     }
+
+    @Operation(summary = "Recall/revoke a message")
+    @DeleteMapping(Endpoint.Message.ID)
+    public ApiResponse<Void> recallMessage(@PathVariable("messageId") UUID messageId) {
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+        messageService.recallMessage(messageId, currentUserId);
+
+        return ApiResponse.<Void>builder()
+                .message("Message recalled successfully")
+                .build();
+    }
 }

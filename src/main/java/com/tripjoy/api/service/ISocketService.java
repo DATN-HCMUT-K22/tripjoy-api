@@ -38,4 +38,6 @@ public interface ISocketService {
      * @param conversation the new conversation payload (with name/avatar set from partner's perspective)
      */
     void notifyNewDirectConversation(UUID userId, ConversationResponse conversation);
+
+    void sendRecallUpdate(UUID conversationId, UUID messageId);
 }

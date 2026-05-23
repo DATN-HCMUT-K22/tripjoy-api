@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
@@ -18,11 +20,13 @@ import com.tripjoy.api.configuration.redis.RedisCacheConfig;
 import com.tripjoy.api.dto.event.AiChatRequestedEvent;
 import com.tripjoy.api.dto.event.MessageLikedEvent;
 import com.tripjoy.api.dto.event.MessagePinnedEvent;
+import com.tripjoy.api.dto.event.MessageRecalledEvent;
 import com.tripjoy.api.dto.event.MessageSentEvent;
 import com.tripjoy.api.dto.event.MessageUnlikedEvent;
 import com.tripjoy.api.dto.event.MessageUnpinnedEvent;
 import com.tripjoy.api.dto.request.chat.ChatMessageRequest;
 import com.tripjoy.api.dto.response.ChatMessageResponse;
+import com.tripjoy.api.enums.MessageStatus;
 import com.tripjoy.api.dto.response.MessageCursorResponse;
 import com.tripjoy.api.dto.response.MessageSearchResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
@@ -62,6 +66,7 @@ public class ChatMessageService implements IChatMessageService {
     UserMapper userMapper;
     ApplicationEventPublisher eventPublisher;
     ISystemConfigService configService;
+    CacheManager cacheManager;
 
     @Transactional
     public void likeMessage(UUID messageId, UUID userId) {
@@ -126,7 +131,7 @@ public class ChatMessageService implements IChatMessageService {
         message.setSender(sender);
         message.setCreatedAt(LocalDateTime.now());
         message.setIsBot(false);
-        message.setStatus("SENT");
+        message.setStatus(MessageStatus.SENT);
 
         if ("SHARE_POST".equals(request.getMessageType()) && request.getSharedPostId() != null) {
             try {
@@ -192,7 +197,7 @@ public class ChatMessageService implements IChatMessageService {
                 .messageContent(content)
                 .messageType("TEXT")
                 .isBot(true)
-                .status("SENT")
+                .status(MessageStatus.SENT)
                 .build();
 
         message.setConversation(conversation);
@@ -498,5 +503,47 @@ public class ChatMessageService implements IChatMessageService {
                         .createdAt(msg.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void recallMessage(UUID messageId, UUID userId) {
+        ChatMessage message = chatMessageRepository
+                .findById(messageId)
+                .orElseThrow(() -> new AppException(ErrorCode.MESSAGE_NOT_FOUND));
+
+        if (message.getStatus() == MessageStatus.UNSENT) {
+            throw new AppException(ErrorCode.MESSAGE_ALREADY_RECALLED);
+        }
+
+        if (!message.getSender().getId().equals(userId)) {
+            throw new AppException(ErrorCode.CANNOT_RECALL_OTHERS_MESSAGE);
+        }
+
+        if (message.getIsPinned()) {
+            message.setIsPinned(false);
+            try {
+                Cache cache = cacheManager.getCache(RedisCacheConfig.CACHE_CHAT_PINNED);
+                if (cache != null) {
+                    cache.evict(message.getConversation().getId());
+                }
+            } catch (Exception e) {
+                log.error("Failed to evict pinned messages cache for conversation {}: {}", 
+                        message.getConversation().getId(), e.getMessage());
+            }
+        }
+
+        message.setStatus(MessageStatus.UNSENT);
+        message.setMessageContent("Tin nhắn đã bị thu hồi");
+        message.setMediaUrl(null);
+        message.setSharedPost(null);
+
+        chatMessageRepository.save(message);
+
+        MessageRecalledEvent event = MessageRecalledEvent.builder()
+                .conversationId(message.getConversation().getId())
+                .messageId(messageId)
+                .build();
+        eventPublisher.publishEvent(event);
     }
 }
