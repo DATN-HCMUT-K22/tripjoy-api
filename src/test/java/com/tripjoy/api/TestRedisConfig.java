@@ -2,6 +2,8 @@ package com.tripjoy.api;
 
 import org.mockito.Mockito;
 import org.redisson.api.RedissonClient;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -15,6 +17,12 @@ import com.corundumstudio.socketio.SocketIOServer;
 @Configuration
 @Profile("test")
 public class TestRedisConfig {
+
+    @Bean
+    @Primary
+    public CacheManager cacheManager() {
+        return new ConcurrentMapCacheManager();
+    }
 
     @Bean
     @Primary
