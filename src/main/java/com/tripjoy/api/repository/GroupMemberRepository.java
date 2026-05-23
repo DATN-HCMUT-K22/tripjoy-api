@@ -36,6 +36,9 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, UUID> 
     @Query("SELECT gm FROM GroupMember gm WHERE gm.group.id = :groupId AND gm.user.id = :userId")
     Optional<GroupMember> findByGroupIdAndUserId(@Param("groupId") UUID groupId, @Param("userId") UUID userId);
 
+    @Query("SELECT gm.user.id FROM GroupMember gm WHERE gm.group.id = :groupId AND gm.softDeleteInfo.isDeleted = false")
+    List<UUID> findActiveUserIdsByGroupId(@Param("groupId") UUID groupId);
+
     // === FILTER DELETED RECORDS ===
 
     @Query(
