@@ -20,6 +20,9 @@ import com.tripjoy.api.enums.ConversationType;
 import com.tripjoy.api.repository.ConversationMemberRepository;
 import com.tripjoy.api.repository.ConversationRepository;
 import com.tripjoy.api.repository.UserRepository;
+import com.tripjoy.api.dto.response.ConversationResponse;
+import com.tripjoy.api.service.IConversationService;
+import com.tripjoy.api.service.impl.SocketService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +35,8 @@ public class GroupEventListener {
     private final ConversationRepository conversationRepository;
     private final ConversationMemberRepository conversationMemberRepository;
     private final UserRepository userRepository;
+    private final IConversationService conversationService;
+    private final SocketService socketService;
 
     /**
      * CASE 1: Khi tạo Group mới -> Tự động tạo đoạn chat "General"
@@ -85,6 +90,24 @@ public class GroupEventListener {
             }
 
             log.info("Created 'General Chat' for Group {}", event.getGroup().getName());
+
+            // 4. Broadcast new conversation event in real-time
+            try {
+                // For creator
+                ConversationResponse creatorResp = conversationService.getConversationDetail(defaultConv.getId(), event.getCreator().getId());
+                socketService.notifyNewConversation(event.getCreator().getId(), creatorResp);
+
+                // For initial members
+                if (initialMembers != null && !initialMembers.isEmpty()) {
+                    for (User member : initialMembers) {
+                        if (member.getId().equals(event.getCreator().getId())) continue;
+                        ConversationResponse memberResp = conversationService.getConversationDetail(defaultConv.getId(), member.getId());
+                        socketService.notifyNewConversation(member.getId(), memberResp);
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Error sending socket notifications for handleGroupCreated: ", e);
+            }
         } catch (Exception e) {
             log.error("ERROR handling GroupCreatedEvent: ", e);
         }
@@ -130,6 +153,14 @@ public class GroupEventListener {
 
                     conversationMemberRepository.save(newMember);
                     count++;
+
+                    // Broadcast real-time notification to the joined user
+                    try {
+                        ConversationResponse resp = conversationService.getConversationDetail(conversation.getId(), user.getId());
+                        socketService.notifyNewConversation(user.getId(), resp);
+                    } catch (Exception e) {
+                        log.error("Failed to notify user {} of new group chat: ", user.getId(), e);
+                    }
                 }
             }
             log.info("-> Successfully added User {} to {} conversations", user.getId(), count);
@@ -161,12 +192,19 @@ public class GroupEventListener {
                 return;
             }
 
-            // 3. Remove User khỏi từng Conversation
+            // 3. Remove User khỏi từng Conversation & Kick từ socket room
             int count = 0;
             for (Conversation conversation : conversations) {
                 // Delete ConversationMember record
                 conversationMemberRepository.deleteByConversationIdAndUserId(conversation.getId(), removedUser.getId());
                 count++;
+
+                // Real-time socket eviction
+                try {
+                    socketService.kickUserFromConversation(removedUser.getId(), conversation.getId());
+                } catch (Exception e) {
+                    log.error("Failed to kick user {} from socket conversation room {}: ", removedUser.getId(), conversation.getId(), e);
+                }
             }
 
             log.info("-> Successfully kicked User {} from {} conversations", removedUser.getId(), count);
