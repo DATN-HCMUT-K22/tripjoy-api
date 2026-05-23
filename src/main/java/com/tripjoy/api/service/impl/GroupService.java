@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -52,6 +53,7 @@ public class GroupService implements IGroupService {
     ConversationMemberRepository conversationMemberRepository;
     UserRepository userRepository;
     ApplicationEventPublisher eventPublisher;
+    CacheManager cacheManager;
 
     @PersistenceContext
     EntityManager entityManager;
@@ -135,6 +137,12 @@ public class GroupService implements IGroupService {
         // --- STEP 4: FIRE EVENT ---
         eventPublisher.publishEvent(new GroupCreatedEvent(group, owner, initialMembers));
 
+        // Evict creator and initial members groups list cache
+        evictUserGroupsCache(ownerId);
+        if (request.getMemberIds() != null) {
+            request.getMemberIds().forEach(this::evictUserGroupsCache);
+        }
+
         // --- STEP 5: MAP ENTITY -> RESPONSE ---
         return groupMapper.toGroupResponse(group);
     }
@@ -169,6 +177,9 @@ public class GroupService implements IGroupService {
         // --- STEP 3: FIRE EVENT ---
         eventPublisher.publishEvent(new MemberJoinedGroupEvent(group, user));
 
+        // Evict groups list cache for all group members (including new member)
+        evictUserGroupsCacheForGroupMembers(groupId);
+
         // --- STEP 4: MAP ENTITY -> RESPONSE ---
         return groupMapper.toGroupMemberResponse(savedMember);
     }
@@ -195,6 +206,9 @@ public class GroupService implements IGroupService {
         Group updated = groupRepository.save(group);
 
         eventPublisher.publishEvent(new GroupUpdatedEvent(updated, currentUser));
+
+        // Evict groups list cache for all group members to show updated group info
+        evictUserGroupsCacheForGroupMembers(groupId);
 
         return groupMapper.toGroupResponse(updated);
     }
@@ -244,7 +258,12 @@ public class GroupService implements IGroupService {
             throw new AppException(ErrorCode.CANNOT_REMOVE_LEADER);
         }
 
+        UUID removedUserId = memberToRemove.getUser().getId();
         groupMemberRepository.delete(memberToRemove);
+
+        // Evict groups list cache for all remaining members + the removed member
+        evictUserGroupsCacheForGroupMembers(groupId);
+        evictUserGroupsCache(removedUserId);
 
         // 4. Publish event (Giữ nguyên)
         eventPublisher.publishEvent(new MemberRemovedFromGroupEvent(group, memberToRemove.getUser(), currentUser));
@@ -278,6 +297,10 @@ public class GroupService implements IGroupService {
         // 5. Delete membership
         groupMemberRepository.delete(memberToLeave);
 
+        // Evict groups list cache for remaining members and the leaving member
+        evictUserGroupsCacheForGroupMembers(groupId);
+        evictUserGroupsCache(currentUserId);
+
         // 6. Publish event for chat synchronization (same as remove)
         eventPublisher.publishEvent(new MemberRemovedFromGroupEvent(
                 group, currentUser, currentUser // Self-initiated leave
@@ -286,7 +309,11 @@ public class GroupService implements IGroupService {
 
     @Override
     @Transactional
-    @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
+    @Caching(
+            evict = {
+                @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_BY_ID, key = "#groupId"),
+                @CacheEvict(value = RedisCacheConfig.CACHE_GROUP_MEMBERS, key = "#groupId")
+            })
     public GroupMemberResponse updateMemberRole(
             UUID groupId, UUID memberId, UpdateMemberRoleRequest request, UUID currentUserId) {
         // 1. Validate Group exists
@@ -328,6 +355,9 @@ public class GroupService implements IGroupService {
 
         eventPublisher.publishEvent(
                 new GroupRoleChangedEvent(group, currentUser, memberToUpdate.getUser(), oldRole, request.getRole()));
+
+        // Evict groups list cache for all group members to update their role displays
+        evictUserGroupsCacheForGroupMembers(groupId);
 
         return groupMapper.toGroupMemberResponse(updated);
     }
@@ -379,6 +409,9 @@ public class GroupService implements IGroupService {
         groupMemberRepository.save(newLeader);
 
         eventPublisher.publishEvent(new GroupLeadershipTransferredEvent(group, currentUser, newLeaderUser));
+
+        // Evict groups list cache for all group members to update their role displays
+        evictUserGroupsCacheForGroupMembers(groupId);
     }
 
     // === CASCADE SOFT DELETE METHODS ===
@@ -405,6 +438,9 @@ public class GroupService implements IGroupService {
         if (currentLeader.getRole() != GroupRole.LEADER) {
             throw new AppException(ErrorCode.ONLY_LEADER_ALLOWED);
         }
+
+        // Evict groups list cache for all group members before they are soft-deleted
+        evictUserGroupsCacheForGroupMembers(groupId);
 
         LocalDateTime now = LocalDateTime.now();
         String deletedBy = currentUserId.toString();
@@ -463,8 +499,29 @@ public class GroupService implements IGroupService {
         groupMemberRepository.restoreByGroupId(groupId);
         itineraryRepository.restoreByGroupId(groupId);
 
+        // Evict groups list cache for all group members after they are restored
+        evictUserGroupsCacheForGroupMembers(groupId);
+
         // Note: Conversations were HARD DELETED - cannot restore
-        // Group restoration will NOT bring back old chats
+    }
+
+    private void evictUserGroupsCache(UUID userId) {
+        if (userId == null) return;
+        org.springframework.cache.Cache cache = cacheManager.getCache(RedisCacheConfig.CACHE_GROUPS_BY_USER);
+        if (cache != null) {
+            cache.evict(userId);
+        }
+    }
+
+    private void evictUserGroupsCacheForGroupMembers(UUID groupId) {
+        if (groupId == null) return;
+        List<UUID> memberUserIds = groupMemberRepository.findActiveUserIdsByGroupId(groupId);
+        org.springframework.cache.Cache cache = cacheManager.getCache(RedisCacheConfig.CACHE_GROUPS_BY_USER);
+        if (cache != null && memberUserIds != null) {
+            for (UUID userId : memberUserIds) {
+                cache.evict(userId);
+            }
+        }
     }
 
     @Override
