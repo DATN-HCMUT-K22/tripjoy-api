@@ -69,6 +69,9 @@ public enum ErrorCode {
     PIN_LIMIT_EXCEEDED(4011, "Cannot pin more than 50 messages in a conversation", HttpStatus.BAD_REQUEST),
     MESSAGE_NOT_IN_CONVERSATION(4012, "Message does not belong to this conversation", HttpStatus.BAD_REQUEST),
     CANNOT_SELF_DIRECT_MESSAGE(4013, "Cannot create a direct conversation with yourself", HttpStatus.BAD_REQUEST),
+    CANNOT_RECALL_OTHERS_MESSAGE(4014, "You can only recall your own messages", HttpStatus.FORBIDDEN),
+    MESSAGE_ALREADY_RECALLED(4015, "Message has already been recalled", HttpStatus.BAD_REQUEST),
+
 
     // --- 5. FILE & MEDIA (5000 - 5999) ---
     FILE_TOO_LARGE(5001, "File size exceeds the limit", HttpStatus.BAD_REQUEST),

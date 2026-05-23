@@ -177,4 +177,15 @@ public class SocketService implements ISocketService {
             log.error("Failed to notify user {} of new DM conversation: {}", userId, e.getMessage());
         }
     }
+
+    @Override
+    public void sendRecallUpdate(UUID conversationId, UUID messageId) {
+        try {
+            String roomName = "conversation_" + conversationId;
+            server.getRoomOperations(roomName).sendEvent("recall_message", messageId);
+            log.info("Message recall broadcasted: messageId={}, conversationId={}", messageId, conversationId);
+        } catch (Exception e) {
+            log.error("Failed to broadcast recall update: {}", e.getMessage());
+        }
+    }
 }
