@@ -11,7 +11,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tripjoy.api.dto.event.PostCreatedEvent;
+import com.tripjoy.api.dto.event.PostDeletedEvent;
 import com.tripjoy.api.dto.event.PostLikedEvent;
+import com.tripjoy.api.dto.event.PostSavedEvent;
+import com.tripjoy.api.dto.event.PostUnlikedEvent;
+import com.tripjoy.api.dto.event.PostUnsavedEvent;
 import com.tripjoy.api.dto.request.PostQueryParams;
 import com.tripjoy.api.dto.request.PostRequest;
 import com.tripjoy.api.dto.response.PostResponse;
@@ -73,6 +78,9 @@ public class PostService implements IPostService {
         }
 
         post = postRepository.save(post);
+
+        eventPublisher.publishEvent(new PostCreatedEvent(post, user));
+
         return getPostResponseWithContext(post, userId);
     }
 
@@ -192,8 +200,15 @@ public class PostService implements IPostService {
 
         validateOwnership(post);
 
-        post.getSoftDeleteInfo().markAsDeleted(SecurityUtils.getCurrentUserId().toString());
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+        User actor = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        UUID deletedPostId = post.getId();
+        post.getSoftDeleteInfo().markAsDeleted(currentUserId.toString());
         postRepository.save(post);
+
+        eventPublisher.publishEvent(new PostDeletedEvent(deletedPostId, actor));
     }
 
     @Override
@@ -222,6 +237,8 @@ public class PostService implements IPostService {
 
         post.getLikeUsers().remove(user);
         postRepository.save(post);
+
+        eventPublisher.publishEvent(new PostUnlikedEvent(post, user));
     }
 
     @Override
@@ -249,6 +266,8 @@ public class PostService implements IPostService {
 
         post.getSaveUsers().add(user);
         postRepository.save(post);
+
+        eventPublisher.publishEvent(new PostSavedEvent(post, user));
     }
 
     @Override
@@ -262,6 +281,8 @@ public class PostService implements IPostService {
 
         post.getSaveUsers().remove(user);
         postRepository.save(post);
+
+        eventPublisher.publishEvent(new PostUnsavedEvent(post, user));
     }
 
     private PostResponse getPostResponseWithContext(Post post, UUID currentUserId) {
