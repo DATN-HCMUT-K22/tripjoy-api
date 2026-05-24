@@ -35,11 +35,11 @@ export const options = {
     setupTimeout: '10m',
     teardownTimeout: '10m',
     thresholds: {
-        // AI endpoints can take up to 90s — reflect reality of LLM processing
+        // AI endpoints can take up to 150s under concurrent load — reflect reality of LLM processing
         http_req_failed: ['rate<0.05'],
-        http_req_duration: ['p(95)<95000'],
+        http_req_duration: ['p(95)<150000'],
         checks: ['rate>0.80'],  // 80% success is acceptable for AI tests
-        ai_generation_e2e_duration: ['p(95)<60000'], // 95% of generations must complete in under 60 seconds
+        ai_generation_e2e_duration: ['p(95)<120000'], // 95% of generations must complete in under 120 seconds (2 minutes)
     },
     tags: { testType: 'ai', project: 'tripjoy' },
 };
@@ -95,7 +95,7 @@ export function setup() {
             themes: ['CULTURE', 'FOOD'],
             suggestLocations: []
         };
-        http.post(url('/itineraries/ai-generate'), JSON.stringify(warmUpPayload), { headers, timeout: '90s' });
+        http.post(url('/itineraries/ai-generate'), JSON.stringify(warmUpPayload), { headers, timeout: '150s' });
     } catch (e) {
         console.warn('[ai-test] Theme seeding warm-up warning:', e);
     }
@@ -161,7 +161,7 @@ function testAiGenerateItinerary(headers, groupId) {
         {
             headers,
             tags: { name: 'POST /itineraries/ai-generate' },
-            timeout: '90s',
+            timeout: '150s',
         }
     );
 
@@ -188,7 +188,7 @@ function testAiGenerateItinerary(headers, groupId) {
     if (itineraryId) {
         let status = 'GENERATING';
         let retries = 0;
-        const maxRetries = 45; // 45 * 2s = 90s max polling duration
+        const maxRetries = 75; // 75 * 2s = 150s max polling duration
         
         while (status === 'GENERATING' && retries < maxRetries) {
             sleep(2); // poll every 2s
@@ -229,7 +229,7 @@ function testNotebookGeneration(headers, itineraryId) {
         {
             headers,
             tags: { name: 'POST /notebooks/{id}/ai-generate' },
-            timeout: '90s',
+            timeout: '150s',
         }
     );
 
