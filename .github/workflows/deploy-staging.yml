@@ -168,6 +168,8 @@ jobs:
             
             echo "Syncing docker configurations..."
             if [ -d ".git" ]; then
+              # Discard any local modifications to tracked files (e.g., k6 HTML reports) to prevent pull conflicts
+              git checkout -- .
               git pull origin staging
             else
               git clone -b staging https://github.com/${{ github.repository }}.git .

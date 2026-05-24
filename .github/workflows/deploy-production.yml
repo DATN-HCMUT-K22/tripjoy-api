@@ -197,6 +197,8 @@ jobs:
             
             echo "Syncing production configurations..."
             if [ -d ".git" ]; then
+              # Discard any local modifications to tracked files to prevent pull conflicts
+              git checkout -- .
               git pull origin main
             else
               git clone -b main https://github.com/${{ github.repository }}.git .
