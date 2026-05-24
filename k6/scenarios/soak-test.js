@@ -9,6 +9,7 @@ import { sleep, group } from 'k6';
 import { soakThresholds } from '../config/thresholds.js';
 import { env, url } from '../config/environments.js';
 import { login, authHeaders } from '../lib/auth.js';
+import { get, extractData } from '../lib/http.js';
 import {
     scenarioGetMyProfile,
     scenarioSearchUsers,
@@ -89,12 +90,25 @@ export function socialScenario(data) {
     const headers = authHeaders(data.access_token1);
     group('SOCIAL_INTERACTIONS', function () {
         scenarioBrowseFeed(headers);
-        // Interaction
-        const itisRes = scenarioGetMyGroups(headers); // or itineraries
-        const itId = (itisRes && itisRes.length > 0) ? itisRes[0].id : null;
+        
+        // Correctly fetch itineraries instead of groups
+        const itisRes = get(url('/itineraries/me'), headers, 'GET /itineraries/me');
+        const itis = extractData(itisRes);
+        let itId = (itis && itis.length > 0) ? itis[0].id : null;
+
+        // Fallback: If no itinerary exists, create a group and an itinerary for the test
+        if (!itId) {
+            const groupId = scenarioCreateGroup(headers);
+            if (groupId) {
+                itId = scenarioCreateItinerary(headers, groupId);
+            }
+        }
+
         if (itId) {
             const postId = scenarioCreatePost(headers, itId);
-            if (postId) scenarioSavePost(headers, postId);
+            if (postId) {
+                scenarioSavePost(headers, postId);
+            }
         }
     });
     sleep(Math.random() * 2 + 1);

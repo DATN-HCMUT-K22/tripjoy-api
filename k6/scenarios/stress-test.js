@@ -9,6 +9,7 @@ import { sleep, group } from 'k6';
 import { stressThresholds } from '../config/thresholds.js';
 import { env, url } from '../config/environments.js';
 import { login, authHeaders } from '../lib/auth.js';
+import { get, extractData } from '../lib/http.js';
 import {
     scenarioSearchUsers,
     scenarioCreateGroup,
@@ -119,15 +120,26 @@ export function manageScenario(data) {
 export function socialScenario(data) {
     const headers = authHeaders(data.access_token1);
     group('SOCIAL_INTERACTIONS', function () {
-        const feed = scenarioBrowseFeed(headers);
-        let itiId = null;
-        if (feed && feed.data && feed.data.length > 0) {
-            itiId = feed.data[0].itineraryId || feed.data[0].id;
-        }
+        scenarioBrowseFeed(headers);
         
-        if (itiId) {
-            const postId = scenarioCreatePost(headers, itiId);
-            if (postId) scenarioSavePost(headers, postId);
+        // Correctly fetch itineraries instead of groups or bad feed properties
+        const itisRes = get(url('/itineraries/me'), headers, 'GET /itineraries/me');
+        const itis = extractData(itisRes);
+        let itId = (itis && itis.length > 0) ? itis[0].id : null;
+
+        // Fallback: If no itinerary exists, create a group and an itinerary for the test
+        if (!itId) {
+            const groupId = scenarioCreateGroup(headers);
+            if (groupId) {
+                itId = scenarioCreateItinerary(headers, groupId);
+            }
+        }
+
+        if (itId) {
+            const postId = scenarioCreatePost(headers, itId);
+            if (postId) {
+                scenarioSavePost(headers, postId);
+            }
         }
     });
     sleep(Math.random() * 2 + 1.5); // Balanced think time
