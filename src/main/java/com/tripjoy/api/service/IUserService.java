@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import com.tripjoy.api.dto.request.AdminUserCreationRequest;
 import com.tripjoy.api.dto.request.ChangePasswordRequest;
 import com.tripjoy.api.dto.request.UserCreationRequest;
 import com.tripjoy.api.dto.request.UserProfileUpdateRequest;
@@ -40,6 +41,8 @@ public interface IUserService {
     UserResponse getMyInfo();
 
     UserResponse createUser(UserCreationRequest request);
+
+    UserResponse createUserWithRoles(AdminUserCreationRequest request);
 
     UserResponse updateMyProfile(UserProfileUpdateRequest request);
 

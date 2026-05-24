@@ -2,6 +2,7 @@ package com.tripjoy.api.service.impl;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -14,8 +15,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tripjoy.api.configuration.redis.RedisCacheConfig;
+import com.tripjoy.api.dto.request.AdminUserCreationRequest;
 import com.tripjoy.api.dto.request.ChangePasswordRequest;
 import com.tripjoy.api.dto.request.UserCreationRequest;
 import com.tripjoy.api.dto.request.UserProfileUpdateRequest;
@@ -146,6 +149,26 @@ public class UserService implements IUserService {
         if (userRepository.existsByUsername(request.getUsername())) throw new AppException(ErrorCode.USER_EXISTED);
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        return userMapper.toUserResponse(userRepository.save(user));
+    }
+
+    @Override
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
+    @Transactional
+    public UserResponse createUserWithRoles(AdminUserCreationRequest request) {
+        if (userRepository.existsByUsername(request.getUsername())) throw new AppException(ErrorCode.USER_EXISTED);
+        if (userRepository.existsByEmail(request.getEmail())) throw new AppException(ErrorCode.EMAIL_EXISTED);
+
+        List<Role> roles = roleRepository.findAllById(request.getRoles());
+        Set<String> foundRoleNames = roles.stream().map(Role::getName).collect(Collectors.toSet());
+        if (foundRoleNames.size() != request.getRoles().size() || !foundRoleNames.containsAll(request.getRoles())) {
+            throw new AppException(ErrorCode.ROLE_NOT_FOUND);
+        }
+
+        User user = userMapper.toUser(request);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRoles(new HashSet<>(roles));
+
         return userMapper.toUserResponse(userRepository.save(user));
     }
 

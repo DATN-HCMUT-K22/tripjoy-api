@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import com.tripjoy.api.constant.Endpoint;
+import com.tripjoy.api.dto.request.AdminUserCreationRequest;
 import com.tripjoy.api.dto.request.ChangePasswordRequest;
 import com.tripjoy.api.dto.request.UserCreationRequest;
 import com.tripjoy.api.dto.request.UserProfileUpdateRequest;
@@ -106,6 +107,16 @@ public class UserController {
     public ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
         return ApiResponse.<UserResponse>builder()
                 .data(userService.createUser(request))
+                .build();
+    }
+
+    @Operation(
+            summary = "System Admin: Create a new user with roles",
+            description = "Creates a new user account and assigns the requested roles in one operation.")
+    @PostMapping(Endpoint.User.WITH_ROLES)
+    public ApiResponse<UserResponse> createUserWithRoles(@RequestBody @Valid AdminUserCreationRequest request) {
+        return ApiResponse.<UserResponse>builder()
+                .data(userService.createUserWithRoles(request))
                 .build();
     }
 
