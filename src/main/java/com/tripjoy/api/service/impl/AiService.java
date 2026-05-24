@@ -195,8 +195,11 @@ public class AiService implements IAiService {
     private void logWebClientError(String context, Throwable e) {
         if (e instanceof WebClientResponseException) {
             WebClientResponseException wcre = (WebClientResponseException) e;
-            log.error("Error communicating with AI Service ({}): {} - Response: {}", 
-                    context, e.getMessage(), wcre.getResponseBodyAsString());
+            log.error(
+                    "Error communicating with AI Service ({}): {} - Response: {}",
+                    context,
+                    e.getMessage(),
+                    wcre.getResponseBodyAsString());
         } else {
             log.error("Error communicating with AI Service ({}): {}", context, e.getMessage());
         }

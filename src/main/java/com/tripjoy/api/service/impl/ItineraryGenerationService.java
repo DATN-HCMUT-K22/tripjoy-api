@@ -281,7 +281,8 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
         List<TripItem> unwantedItems = currentItems.stream()
                 .filter(item -> {
                     // Check Google Place ID
-                    if (item.getLocation() != null && unwantedIds.contains(item.getLocation().getProviderId())) {
+                    if (item.getLocation() != null
+                            && unwantedIds.contains(item.getLocation().getProviderId())) {
                         return true;
                     }
                     // Check Internal UUID
@@ -299,10 +300,14 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
         // 4. Build AiFinalItineraryDto từ itinerary hiện tại (để gửi sang AI)
         List<AiTripItemDto> aiAllItems = currentItems.stream()
                 .map(item -> AiTripItemDto.builder()
-                        .startTime(item.getStartTime() != null ? item.getStartTime().toString() : null)
+                        .startTime(
+                                item.getStartTime() != null
+                                        ? item.getStartTime().toString()
+                                        : null)
                         .duration(item.getDuration() != null ? item.getDuration() : 60)
                         .note(item.getNote() != null ? item.getNote() : "")
-                        .locationName(item.getLocation() != null ? item.getLocation().getName() : "Unknown Location")
+                        .locationName(
+                                item.getLocation() != null ? item.getLocation().getName() : "Unknown Location")
                         .placeId(item.getLocation() != null ? item.getLocation().getProviderId() : null)
                         .build())
                 .collect(Collectors.toList());
@@ -311,18 +316,31 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
         if (itinerary.getDestination() != null) {
             destinationName = itinerary.getDestination().getName();
         } else if (itinerary.getName() != null) {
-            destinationName = itinerary.getName().replaceFirst("(?i)^trip to ", "").trim();
+            destinationName =
+                    itinerary.getName().replaceFirst("(?i)^trip to ", "").trim();
         }
 
         AiFinalItineraryDto aiItineraryDto = AiFinalItineraryDto.builder()
                 .name(itinerary.getName() != null ? itinerary.getName() : "Untitled Trip")
-                .startDate(itinerary.getStartDate() != null ? itinerary.getStartDate().toLocalDate().toString() : null)
-                .endDate(itinerary.getEndDate() != null ? itinerary.getEndDate().toLocalDate().toString() : null)
+                .startDate(
+                        itinerary.getStartDate() != null
+                                ? itinerary.getStartDate().toLocalDate().toString()
+                                : null)
+                .endDate(
+                        itinerary.getEndDate() != null
+                                ? itinerary.getEndDate().toLocalDate().toString()
+                                : null)
                 .peopleQuantity(itinerary.getPeopleQuantity() != null ? itinerary.getPeopleQuantity() : 1)
-                .budgetEstimate(itinerary.getBudgetEstimate() != null ? itinerary.getBudgetEstimate().longValue() : 0L)
-                .themes(itinerary.getThemes() != null 
-                    ? itinerary.getThemes().stream().map(Theme::getName).collect(Collectors.toList()) 
-                    : List.of())
+                .budgetEstimate(
+                        itinerary.getBudgetEstimate() != null
+                                ? itinerary.getBudgetEstimate().longValue()
+                                : 0L)
+                .themes(
+                        itinerary.getThemes() != null
+                                ? itinerary.getThemes().stream()
+                                        .map(Theme::getName)
+                                        .collect(Collectors.toList())
+                                : List.of())
                 .destination(destinationName)
                 .tripItems(aiAllItems)
                 .build();
@@ -330,10 +348,14 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
         // 5. Build unwanted locations as AiTripItemDto (full objects)
         List<AiTripItemDto> aiUnwantedItems = unwantedItems.stream()
                 .map(item -> AiTripItemDto.builder()
-                        .startTime(item.getStartTime() != null ? item.getStartTime().toString() : null)
+                        .startTime(
+                                item.getStartTime() != null
+                                        ? item.getStartTime().toString()
+                                        : null)
                         .duration(item.getDuration() != null ? item.getDuration() : 60)
                         .note(item.getNote() != null ? item.getNote() : "")
-                        .locationName(item.getLocation() != null ? item.getLocation().getName() : "Unknown Location")
+                        .locationName(
+                                item.getLocation() != null ? item.getLocation().getName() : "Unknown Location")
                         .placeId(item.getLocation() != null ? item.getLocation().getProviderId() : null)
                         .build())
                 .collect(Collectors.toList());
@@ -341,22 +363,27 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
         // 6. Resolve coordinate từ TripItem hiện có
         Double lat = 0.0;
         Double lng = 0.0;
-        
+
         TripItem referenceItem = currentItems.stream()
                 .filter(item -> item.getLocation() != null && item.getLocation().getLatitude() != null)
                 .findFirst()
                 .orElse(!unwantedItems.isEmpty() ? unwantedItems.get(0) : null);
 
         if (referenceItem != null && referenceItem.getLocation() != null) {
-            lat = referenceItem.getLocation().getLatitude() != null ? referenceItem.getLocation().getLatitude() : 0.0;
-            lng = referenceItem.getLocation().getLongitude() != null ? referenceItem.getLocation().getLongitude() : 0.0;
+            lat = referenceItem.getLocation().getLatitude() != null
+                    ? referenceItem.getLocation().getLatitude()
+                    : 0.0;
+            lng = referenceItem.getLocation().getLongitude() != null
+                    ? referenceItem.getLocation().getLongitude()
+                    : 0.0;
         }
 
         // 7. Gọi AI Service — coordinate required by Python modify_itinerary()
         AiModifyItineraryRequestDto aiRequest = AiModifyItineraryRequestDto.builder()
                 .itineraryData(aiItineraryDto)
                 .unwantedLocations(aiUnwantedItems)
-                .coordinate(AiCoordinateDto.builder().latitude(lat).longitude(lng).build())
+                .coordinate(
+                        AiCoordinateDto.builder().latitude(lat).longitude(lng).build())
                 .build();
 
         AiFinalItineraryDto aiResponse;
@@ -364,7 +391,8 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
             aiResponse = aiService.modifyItinerary(aiRequest).block();
         } catch (Exception e) {
             log.error("AI Service modify-itinerary failed: {}", e.getMessage());
-            throw new AppException(ErrorCode.AI_SERVICE_UNAVAILABLE, "AI Service failed to modify itinerary: " + e.getMessage());
+            throw new AppException(
+                    ErrorCode.AI_SERVICE_UNAVAILABLE, "AI Service failed to modify itinerary: " + e.getMessage());
         }
 
         if (aiResponse == null || aiResponse.getTripItems() == null) {
@@ -445,7 +473,9 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
         // 2. Find the unwanted TripItem (support both Google Place ID and internal UUID)
         TripItem unwantedItem = currentItems.stream()
                 .filter(item -> {
-                    if (item.getLocation() != null && request.getUnwantedPlaceId().equals(item.getLocation().getProviderId())) {
+                    if (item.getLocation() != null
+                            && request.getUnwantedPlaceId()
+                                    .equals(item.getLocation().getProviderId())) {
                         return true;
                     }
                     return request.getUnwantedPlaceId().equals(item.getId().toString());
@@ -473,10 +503,14 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
         // 3. Build full itinerary DTO
         List<AiTripItemDto> aiAllItems = currentItems.stream()
                 .map(item -> AiTripItemDto.builder()
-                        .startTime(item.getStartTime() != null ? item.getStartTime().toString() : null)
+                        .startTime(
+                                item.getStartTime() != null
+                                        ? item.getStartTime().toString()
+                                        : null)
                         .duration(item.getDuration() != null ? item.getDuration() : 60)
                         .note(item.getNote() != null ? item.getNote() : "")
-                        .locationName(item.getLocation() != null ? item.getLocation().getName() : "Unknown Location")
+                        .locationName(
+                                item.getLocation() != null ? item.getLocation().getName() : "Unknown Location")
                         .placeId(item.getLocation() != null ? item.getLocation().getProviderId() : null)
                         .build())
                 .collect(Collectors.toList());
@@ -485,18 +519,31 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
         if (itinerary.getDestination() != null) {
             destinationName = itinerary.getDestination().getName();
         } else if (itinerary.getName() != null) {
-            destinationName = itinerary.getName().replaceFirst("(?i)^trip to ", "").trim();
+            destinationName =
+                    itinerary.getName().replaceFirst("(?i)^trip to ", "").trim();
         }
 
         AiFinalItineraryDto aiItineraryDto = AiFinalItineraryDto.builder()
                 .name(itinerary.getName() != null ? itinerary.getName() : "Untitled Trip")
-                .startDate(itinerary.getStartDate() != null ? itinerary.getStartDate().toLocalDate().toString() : null)
-                .endDate(itinerary.getEndDate() != null ? itinerary.getEndDate().toLocalDate().toString() : null)
+                .startDate(
+                        itinerary.getStartDate() != null
+                                ? itinerary.getStartDate().toLocalDate().toString()
+                                : null)
+                .endDate(
+                        itinerary.getEndDate() != null
+                                ? itinerary.getEndDate().toLocalDate().toString()
+                                : null)
                 .peopleQuantity(itinerary.getPeopleQuantity() != null ? itinerary.getPeopleQuantity() : 1)
-                .budgetEstimate(itinerary.getBudgetEstimate() != null ? itinerary.getBudgetEstimate().longValue() : 0L)
-                .themes(itinerary.getThemes() != null 
-                    ? itinerary.getThemes().stream().map(Theme::getName).collect(Collectors.toList()) 
-                    : List.of())
+                .budgetEstimate(
+                        itinerary.getBudgetEstimate() != null
+                                ? itinerary.getBudgetEstimate().longValue()
+                                : 0L)
+                .themes(
+                        itinerary.getThemes() != null
+                                ? itinerary.getThemes().stream()
+                                        .map(Theme::getName)
+                                        .collect(Collectors.toList())
+                                : List.of())
                 .destination(destinationName)
                 .tripItems(aiAllItems)
                 .build();
@@ -506,12 +553,17 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
         Double lng = request.getLongitude();
         if (lat == null || lng == null) {
             TripItem ref = currentItems.stream()
-                    .filter(item -> item.getLocation() != null && item.getLocation().getLatitude() != null)
+                    .filter(item ->
+                            item.getLocation() != null && item.getLocation().getLatitude() != null)
                     .findFirst()
                     .orElse(null);
             if (ref != null && ref.getLocation() != null) {
-                lat = ref.getLocation().getLatitude() != null ? ref.getLocation().getLatitude() : 0.0;
-                lng = ref.getLocation().getLongitude() != null ? ref.getLocation().getLongitude() : 0.0;
+                lat = ref.getLocation().getLatitude() != null
+                        ? ref.getLocation().getLatitude()
+                        : 0.0;
+                lng = ref.getLocation().getLongitude() != null
+                        ? ref.getLocation().getLongitude()
+                        : 0.0;
             } else {
                 lat = 0.0;
                 lng = 0.0;
@@ -533,7 +585,8 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
             aiSuggestions = aiService.suggestLocation(aiRequest).block();
         } catch (Exception e) {
             log.error("AI Service suggest-location failed: {}", e.getMessage());
-            throw new AppException(ErrorCode.AI_SERVICE_UNAVAILABLE, "AI Service failed to provide suggestions: " + e.getMessage());
+            throw new AppException(
+                    ErrorCode.AI_SERVICE_UNAVAILABLE, "AI Service failed to provide suggestions: " + e.getMessage());
         }
 
         if (aiSuggestions == null || aiSuggestions.isEmpty()) {

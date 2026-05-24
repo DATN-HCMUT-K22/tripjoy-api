@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import com.tripjoy.api.dto.event.MessageRecalledEvent;
 import com.tripjoy.api.dto.event.MessageSentEvent;
 import com.tripjoy.api.service.impl.SocketService;
 
@@ -65,6 +66,16 @@ public class MessageEventListener {
             socketService.sendPinUpdate(event.getConversationId(), event.getMessageId(), event.getUserId(), false);
         } catch (Exception e) {
             log.error("Failed to broadcast message unpin via Socket.IO: {}", e.getMessage());
+        }
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleMessageRecalled(MessageRecalledEvent event) {
+        try {
+            socketService.sendRecallUpdate(event.getConversationId(), event.getMessageId());
+        } catch (Exception e) {
+            log.error("Failed to broadcast message recall via Socket.IO: {}", e.getMessage());
         }
     }
 }

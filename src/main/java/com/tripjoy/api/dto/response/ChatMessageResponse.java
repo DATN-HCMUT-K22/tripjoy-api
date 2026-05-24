@@ -7,6 +7,8 @@ import com.tripjoy.api.dto.response.simple.ChatMessageSimpleResponse;
 import com.tripjoy.api.dto.response.simple.PostSimpleResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 
+import com.tripjoy.api.enums.MessageStatus;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -37,7 +39,7 @@ public class ChatMessageResponse extends BaseResponse {
     @JsonProperty("is_bot")
     Boolean isBot;
 
-    String status;
+    MessageStatus status;
 
     // createdAt đã có từ BaseResponse - REMOVED
 

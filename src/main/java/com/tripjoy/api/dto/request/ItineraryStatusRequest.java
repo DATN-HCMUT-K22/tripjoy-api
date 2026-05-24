@@ -18,9 +18,6 @@ import lombok.experimental.FieldDefaults;
 public class ItineraryStatusRequest {
 
     @NotNull(message = "INVALID_REQUEST")
-    @Schema(
-            name = "status",
-            description = "New status for the itinerary",
-            example = "CONFIRMED")
+    @Schema(name = "status", description = "New status for the itinerary", example = "CONFIRMED")
     ItineraryStatus status;
 }

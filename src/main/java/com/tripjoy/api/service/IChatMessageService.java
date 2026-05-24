@@ -33,4 +33,6 @@ public interface IChatMessageService {
             UUID conversationId, UUID currentUserId, String keyword, int page, int size);
 
     List<MessageSearchResponse> searchMessagesGlobal(UUID currentUserId, String keyword, int page, int size);
+
+    void recallMessage(UUID messageId, UUID userId);
 }
