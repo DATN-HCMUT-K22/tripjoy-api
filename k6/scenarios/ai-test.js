@@ -63,8 +63,7 @@ export function setup() {
     if (itineraryId) {
         // Dynamically find a valid location ID from search to avoid 404 in setup
         const searchRes = get(url('/locations/search?q=cafe&size=1'), headers, 'GET /locations/search (setup)');
-        const searchPage = extractData(searchRes);
-        const locations = (searchPage && searchPage.content) ? searchPage.content : [];
+        const locations = extractData(searchRes) || [];
         const locationId = (locations.length > 0) ? locations[0].id : "1509dfcc-aaca-4c4d-8499-6ccd92a2b2de"; // fallback
         
         const itemPayload = {
