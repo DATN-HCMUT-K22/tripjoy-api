@@ -3,6 +3,7 @@ package com.tripjoy.api.service.impl;
 import java.text.ParseException;
 import java.util.*;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,6 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.nimbusds.jose.*;
 import com.tripjoy.api.configuration.security.JwtUtils;
 import com.tripjoy.api.constant.PredefinedRole;
+import com.tripjoy.api.dto.event.UserLoggedInEvent;
+import com.tripjoy.api.dto.event.UserLoggedOutEvent;
+import com.tripjoy.api.dto.event.UserRegisteredEvent;
 import com.tripjoy.api.dto.request.UserCreationRequest;
 import com.tripjoy.api.dto.request.auth.AuthenticationRequest;
 import com.tripjoy.api.dto.request.auth.IntrospectRequest;
@@ -45,6 +49,7 @@ public class AuthenticationService implements IAuthenticationService {
     JwtUtils jwtUtils;
     UserMapper userMapper;
     RoleRepository roleRepository;
+    ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public UserResponse register(UserCreationRequest request) {
@@ -80,7 +85,12 @@ public class AuthenticationService implements IAuthenticationService {
         user.setCredits(0L);
 
         // 5. Lưu xuống DB
-        return userMapper.toUserResponse(userRepository.save(user));
+        User savedUser = userRepository.save(user);
+
+        // 6. Publish event for activity logging (fire-and-forget)
+        eventPublisher.publishEvent(new UserRegisteredEvent(savedUser));
+
+        return userMapper.toUserResponse(savedUser);
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
@@ -94,6 +104,9 @@ public class AuthenticationService implements IAuthenticationService {
 
         var accessToken = jwtUtils.generateToken(user);
         var refreshToken = jwtUtils.generateRefreshToken(user);
+
+        // Publish event for activity logging (fire-and-forget, no transaction context needed)
+        eventPublisher.publishEvent(new UserLoggedInEvent(user));
 
         return AuthenticationResponse.builder()
                 .accessToken(accessToken)
@@ -123,6 +136,7 @@ public class AuthenticationService implements IAuthenticationService {
             String jti = signedToken.getJWTClaimsSet().getJWTID();
             UUID jtiUuid = UUID.fromString(jti);
             Date expiresAt = signedToken.getJWTClaimsSet().getExpirationTime();
+            String subject = signedToken.getJWTClaimsSet().getSubject();
 
             InvalidatedToken invalidatedToken =
                     InvalidatedToken.builder().id(jtiUuid).expiresAt(expiresAt).build();
@@ -132,6 +146,11 @@ public class AuthenticationService implements IAuthenticationService {
             // Eagerly populate Redis blacklist cache so the next request for
             // this token hits Redis, not DB
             jwtUtils.addToBlacklist(jti);
+
+            // Publish event for activity logging (fire-and-forget)
+            if (subject != null) {
+                eventPublisher.publishEvent(new UserLoggedOutEvent(UUID.fromString(subject)));
+            }
 
         } catch (AppException e) {
             log.info("Token already invalidated");

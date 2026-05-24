@@ -221,4 +221,17 @@ public class Endpoint {
         public static final String SIGN = "/sign";
         public static final String DELETE = "/delete";
     }
+
+    public static final class ActivityLog {
+        public static final String BASE = API_PREFIX + "/activity-logs";
+
+        /** GET /activity-logs/me — paginated logs for the currently authenticated user */
+        public static final String ME = "/me";
+
+        /** GET /activity-logs/users/{userId} — paginated logs for a specific user (admin) */
+        public static final String USER = "/users/{userId}";
+
+        /** GET /activity-logs/entities/{entityType}/{entityId} — full audit trail for one entity (admin) */
+        public static final String ENTITY = "/entities/{entityType}/{entityId}";
+    }
 }

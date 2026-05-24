@@ -6,10 +6,13 @@ import java.util.stream.Collectors;
 
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tripjoy.api.configuration.redis.RedisCacheConfig;
+import com.tripjoy.api.dto.event.ItineraryCreatedEvent;
+import com.tripjoy.api.dto.event.ItineraryDeletedEvent;
 import com.tripjoy.api.dto.request.ItineraryRequest;
 import com.tripjoy.api.dto.request.ItineraryStatusRequest;
 import com.tripjoy.api.dto.request.TripItemRequest;
@@ -58,6 +61,7 @@ public class ItineraryService implements IItineraryService {
     ILocationService locationService;
     GroupMemberRepository groupMemberRepository;
     CacheManager cacheManager;
+    ApplicationEventPublisher eventPublisher;
 
     @Override
     public ItineraryResponse createItinerary(ItineraryRequest request) {
@@ -98,6 +102,9 @@ public class ItineraryService implements IItineraryService {
 
         itinerary = itineraryRepository.save(itinerary);
         evictItinerariesAndGroupsCache(itinerary);
+
+        eventPublisher.publishEvent(new ItineraryCreatedEvent(itinerary, user));
+
         return itineraryMapper.toItineraryResponse(itinerary);
     }
 
@@ -145,12 +152,19 @@ public class ItineraryService implements IItineraryService {
 
         validateOwnership(itinerary);
 
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+        User actor = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        UUID deletedItineraryId = itinerary.getId();
+
         itinerary
                 .getSoftDeleteInfo()
-                .markAsDeleted(SecurityUtils.getCurrentUserId().toString());
+                .markAsDeleted(currentUserId.toString());
 
         itineraryRepository.save(itinerary);
         evictItinerariesAndGroupsCache(itinerary);
+
+        eventPublisher.publishEvent(new ItineraryDeletedEvent(deletedItineraryId, actor));
     }
 
     @Override

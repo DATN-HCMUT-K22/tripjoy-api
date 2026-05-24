@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tripjoy.api.dto.event.CommentCreatedEvent;
+import com.tripjoy.api.dto.event.CommentDeletedEvent;
 import com.tripjoy.api.dto.event.CommentLikedEvent;
 import com.tripjoy.api.dto.request.CommentRequest;
 import com.tripjoy.api.dto.response.CommentResponse;
@@ -121,8 +122,12 @@ public class CommentService implements ICommentService {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
+        User actor = comment.getUser();
+
         comment.setIsDeleted(true);
         commentRepository.save(comment);
+
+        eventPublisher.publishEvent(new CommentDeletedEvent(commentId, actor));
     }
 
     @Override
