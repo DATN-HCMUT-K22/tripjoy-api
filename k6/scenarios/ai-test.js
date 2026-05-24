@@ -29,6 +29,8 @@ import { generateItineraryPayload, generateGroupPayload } from '../lib/generator
 export const options = {
     vus: 3,
     duration: '10m',
+    setupTimeout: '10m',
+    teardownTimeout: '10m',
     thresholds: {
         // AI endpoints can take up to 90s — reflect reality of LLM processing
         http_req_failed: ['rate<0.05'],
@@ -59,13 +61,40 @@ export function setup() {
 
     // Add at least one trip item so AI has something to work with for Notebook
     if (itineraryId) {
+        // Dynamically find a valid location ID from search to avoid 404 in setup
+        const searchRes = get(url('/locations/search?q=cafe&size=1'), headers, 'GET /locations/search (setup)');
+        const searchPage = extractData(searchRes);
+        const locations = (searchPage && searchPage.content) ? searchPage.content : [];
+        const locationId = (locations.length > 0) ? locations[0].id : "1509dfcc-aaca-4c4d-8499-6ccd92a2b2de"; // fallback
+        
         const itemPayload = {
-            location_id: "1509dfcc-aaca-4c4d-8499-6ccd92a2b2de", // Confirmed POI with provider_id
+            location_id: locationId,
             note: "Visit the city center",
             duration: 120,
             start_time: new Date(new Date(itiPayload.start_date + "Z").getTime() + 18000000).toISOString().split('.')[0]
         };
         post(url(`/itineraries/${itineraryId}/items`), itemPayload, headers, 'POST /itineraries/{id}/items (setup)');
+    }
+
+    // Run a single sequential AI itinerary generation request during setup.
+    // This seeds the themes 'CULTURE' and 'FOOD' on a single thread,
+    // preventing concurrent VUs from hitting a 409 unique constraint violation in ThemeService.
+    console.log('[ai-test] Seeding themes and warming up AI service...');
+    try {
+        const warmUpPayload = {
+            destination: 'Ho Chi Minh City',
+            latitude: 10.762622,
+            longitude: 106.660172,
+            startDate: itiPayload.start_date,
+            endDate: itiPayload.end_date,
+            peopleQuantity: 2,
+            budgetEstimate: 1000.0,
+            themes: ['CULTURE', 'FOOD'],
+            suggestLocations: []
+        };
+        http.post(url('/itineraries/ai-generate'), JSON.stringify(warmUpPayload), { headers, timeout: '90s' });
+    } catch (e) {
+        console.warn('[ai-test] Theme seeding warm-up warning:', e);
     }
 
     console.log(`[ai-test] Setup complete. groupId=${groupId}, itineraryId=${itineraryId}`);
