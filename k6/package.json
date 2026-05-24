@@ -14,8 +14,13 @@
     "test:stress:staging": "k6 run -e ENV=staging scenarios/stress-test.js",
 
     "test:soak":    "k6 run scenarios/soak-test.js",
+    "test:soak:staging":   "k6 run -e ENV=staging scenarios/soak-test.js",
+
     "test:spike":   "k6 run scenarios/spike-test.js",
+    "test:spike:staging":  "k6 run -e ENV=staging scenarios/spike-test.js",
+
     "test:ai":      "k6 run scenarios/ai-test.js",
+    "test:ai:staging":     "k6 run -e ENV=staging scenarios/ai-test.js",
 
     "test:smoke:report":   "k6 run --out json=reports/smoke-results.json scenarios/smoke-test.js",
     "test:load:report":    "k6 run --out json=reports/load-results.json scenarios/load-test.js",

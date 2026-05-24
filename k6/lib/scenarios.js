@@ -126,12 +126,19 @@ export function scenarioGetGroupSuggestions(headers, groupId) {
  */
 export function scenarioCreateSuggestion(headers, groupId) {
     if (!groupId) return null;
+    
+    // Randomize coordinates and provider_id to prevent spatial index deadlock under extreme concurrent writes
+    const randomLat = 10.75 + (Math.random() * 0.05); // Random lat in HCM City area
+    const randomLng = 106.65 + (Math.random() * 0.05); // Random lng in HCM City area
+    const randomProviderId = 'place_' + Math.random().toString(36).substring(2, 15);
+
     const payload = {
         location_data: {
             provider: 'GOOGLE_MAPS',
-            name: 'Suggested Cafe ' + Math.floor(Math.random() * 1000),
-            latitude: 10.773,
-            longitude: 106.660,
+            provider_id: randomProviderId,
+            name: 'Suggested Cafe ' + Math.floor(Math.random() * 10000),
+            latitude: randomLat,
+            longitude: randomLng,
             location_type: 'POI'
         },
         notes: 'This place looks great for our group!'
