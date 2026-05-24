@@ -20,7 +20,7 @@ const ENVIRONMENTS = {
         timeouts: { default: 30000, auth: 10000 },
     },
     staging: {
-        baseURL: __ENV.STAGING_URL || 'https://staging-api.tripjoy.com',
+        baseURL: __ENV.STAGING_URL || '13.229.28.101:8082',
         apiPrefix: '/api/v1',
         users: {
             regular: { username: __ENV.TEST_USER1 || 'stg_user1', password: __ENV.TEST_PASS1 || 'Test123!', email: 'stguser1@tripjoy.com' },
@@ -30,7 +30,7 @@ const ENVIRONMENTS = {
         timeouts: { default: 30000, auth: 10000 },
     },
     production: {
-        baseURL: __ENV.PROD_URL || 'https://api.tripjoy.com',
+        baseURL: __ENV.PROD_URL || '13.229.28.101:8080',
         apiPrefix: '/api/v1',
         users: {
             regular: { username: __ENV.PROD_USER1 || '', password: __ENV.PROD_PASS1 || '', email: '' },
