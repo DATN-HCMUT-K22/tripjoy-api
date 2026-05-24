@@ -16,8 +16,16 @@ import lombok.experimental.SuperBuilder;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FeedbackResponse extends BaseResponse {
     UUID id;
+    String title;
     String content;
     Integer rating;
     String type;
+    String status;
     UUID userId;
+
+    UUID receiverId;
+
+    UUID parentFeedbackId;
+
+    UUID reportContentId;
 }

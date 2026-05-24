@@ -1,7 +1,11 @@
 package com.tripjoy.api.dto.request.report;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
@@ -17,12 +21,13 @@ import lombok.experimental.FieldDefaults;
 public class ModerationActionRequest {
 
     @NotNull(message = "User ID is required")
+    @JsonProperty("user_id")
     @Schema(
             name = "userId",
             description = "The unique ID of the users receiving the action",
             type = "String",
             requiredMode = Schema.RequiredMode.REQUIRED)
-    String userId;
+    UUID userId;
 
     @NotBlank
     @Schema(

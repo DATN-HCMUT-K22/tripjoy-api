@@ -35,44 +35,36 @@ public class ReportController {
     @Operation(summary = "User submits a new report")
     @PostMapping
     public ApiResponse<ReportResponse> submitReport(@Valid @RequestBody ReportRequest request) {
-        // Service will handle complex logic (create Report_content, then create
-        // Report_to)
         return ApiResponse.<ReportResponse>builder()
-                // .data(reportService.submitReport(request))
+                .data(reportService.submitReport(request))
                 .build();
     }
 
-    @Operation(summary = "Get all reports (Admin, paginated)")
+    @Operation(summary = "Get all reports (Admin/Business Admin, paginated)")
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','BUSINESS_ADMIN')")
     public ApiResponse<Page<ReportResponse>> getAllReports(Pageable pageable) {
         return ApiResponse.<Page<ReportResponse>>builder()
-                // .data(reportService.getAllReports(pageable))
+                .data(reportService.getAllReports(pageable))
                 .build();
     }
 
-    @Operation(summary = "Get report details by id (Admin)")
-    @GetMapping("/{reportId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get report details by id (Admin/Business Admin)")
+    @GetMapping(Endpoint.Report.ID)
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','BUSINESS_ADMIN')")
     public ApiResponse<ReportResponse> getReportById(@PathVariable("reportId") UUID reportId) {
-        // reportId here refers to the ID in the "Report_to" table
         return ApiResponse.<ReportResponse>builder()
-                // .data(reportService.getReportById(reportId))
+                .data(reportService.getReportById(reportId))
                 .build();
     }
 
-    // --- BỔ SUNG: Admin Handling ---
-
-    @Operation(summary = "Admin handles a report (e.g., approve, reject)")
+    @Operation(summary = "Admin/Business Admin handles a report")
     @PostMapping(Endpoint.Report.ID + "/handle")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','BUSINESS_ADMIN')")
     public ApiResponse<HandleReportResponse> handleReport(
-            @PathVariable("reportId") UUID reportId, // ID from Report_to
-            @Valid @RequestBody HandleReportRequest request) {
-
-        // return ApiResponse.<HandleReportResponse>builder()
-        // .data(reportService.handleReport(reportId, request))
-        // .build();
-        return null; // Placeholder
+            @PathVariable("reportId") UUID reportId, @Valid @RequestBody HandleReportRequest request) {
+        return ApiResponse.<HandleReportResponse>builder()
+                .data(reportService.handleReport(reportId, request))
+                .build();
     }
 }

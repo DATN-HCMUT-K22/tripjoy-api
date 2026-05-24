@@ -47,7 +47,7 @@ public class RoleService implements IRoleService {
 
     /**
      * Returns all roles, cached for 24 hours.
-     * Roles (USER, ADMIN, MODERATOR) are config data that rarely change.
+     * Roles (USER, SYSTEM_ADMIN, BUSINESS_ADMIN) are config data that rarely change.
      * The scope/authority check at auth time calls this indirectly through the JWT
      * scope builder — caching here significantly reduces DB roundtrips.
      */

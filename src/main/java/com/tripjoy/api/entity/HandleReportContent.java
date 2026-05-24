@@ -1,9 +1,6 @@
 package com.tripjoy.api.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 
 import lombok.*;
 
@@ -15,7 +12,13 @@ import lombok.*;
 @AllArgsConstructor
 public class HandleReportContent extends BaseEntity {
 
-    private String report_type;
+    @Column(name = "report_type", length = 80)
+    private String reportType;
+
+    @Column(length = 30)
+    private String status;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -25,4 +28,8 @@ public class HandleReportContent extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ba_id", nullable = false)
     private User ba;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "moderation_action_id")
+    private ModerationAction moderationAction;
 }

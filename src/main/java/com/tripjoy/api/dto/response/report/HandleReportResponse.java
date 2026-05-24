@@ -22,11 +22,14 @@ public class HandleReportResponse {
     String reportContentId;
 
     @JsonProperty("handled_by")
-    UserSimpleResponse handledBy; // Admin/BA who handled it
+    UserSimpleResponse handledBy; // System admin or business admin who handled it
 
     @JsonProperty("handled_at")
     LocalDateTime handledAt;
 
     String status;
     String description;
+
+    @JsonProperty("moderation_action")
+    ModerationActionResponse moderationAction;
 }

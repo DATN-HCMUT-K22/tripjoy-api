@@ -22,7 +22,7 @@ public class ModerationActionResponse {
     UserSimpleResponse moderatedUser;
 
     @JsonProperty("admin")
-    UserSimpleResponse admin; // BA who performed the action
+    UserSimpleResponse admin; // Admin who performed the action
 
     @JsonProperty("action_type")
     String actionType;

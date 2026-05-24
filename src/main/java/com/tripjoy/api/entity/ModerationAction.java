@@ -1,9 +1,6 @@
 package com.tripjoy.api.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 
 import lombok.*;
 
@@ -15,7 +12,10 @@ import lombok.*;
 @AllArgsConstructor
 public class ModerationAction extends BaseEntity {
 
+    @Column(length = 80)
     private String actionType;
+
+    @Column(columnDefinition = "TEXT")
     private String note;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -25,4 +25,8 @@ public class ModerationAction extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ba_id", nullable = false)
     private User ba;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "report_content_id")
+    private ReportContent reportContent;
 }

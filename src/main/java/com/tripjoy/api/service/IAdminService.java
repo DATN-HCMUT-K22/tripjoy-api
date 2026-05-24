@@ -1,3 +1,8 @@
 package com.tripjoy.api.service;
 
-public interface IAdminService {}
+import com.tripjoy.api.dto.request.report.ModerationActionRequest;
+import com.tripjoy.api.dto.response.report.ModerationActionResponse;
+
+public interface IAdminService {
+    ModerationActionResponse moderateUser(ModerationActionRequest request);
+}

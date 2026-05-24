@@ -77,7 +77,7 @@ public class ActivityLogController {
     }
 
     // =========================================================================
-    // ADMIN — system-wide queries
+    // SYSTEM_ADMIN — system-wide queries
     // =========================================================================
 
     /**
@@ -94,10 +94,10 @@ public class ActivityLogController {
             description = """
                     Returns a paginated list of all activity logs in the system.
                     Optionally filter by action type.
-                    **Requires ADMIN authority.**
+                    **Requires SYSTEM_ADMIN role.**
                     """)
     @GetMapping
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public ApiResponse<Page<ActivityLogResponse>> getAllLogs(
             @Parameter(description = "Filter by action type (optional)")
             @RequestParam(required = false) ActivityAction action,
@@ -121,10 +121,10 @@ public class ActivityLogController {
             description = """
                     Returns the paginated activity history for a given user.
                     Optionally filter by action type.
-                    **Requires ADMIN authority.**
+                    **Requires SYSTEM_ADMIN role.**
                     """)
     @GetMapping(Endpoint.ActivityLog.USER)
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public ApiResponse<Page<ActivityLogResponse>> getUserLogs(
             @PathVariable UUID userId,
             @Parameter(description = "Filter by action type (optional)")
@@ -152,10 +152,10 @@ public class ActivityLogController {
             description = """
                     Returns the complete chronological log of all actions performed on
                     a specific entity (e.g., a particular Post or Group).
-                    **Requires ADMIN authority.**
+                    **Requires SYSTEM_ADMIN role.**
                     """)
     @GetMapping(Endpoint.ActivityLog.ENTITY)
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public ApiResponse<List<ActivityLogResponse>> getEntityAuditTrail(
             @Parameter(description = "Entity type, e.g. POST, GROUP, COMMENT, ITINERARY")
             @PathVariable String entityType,

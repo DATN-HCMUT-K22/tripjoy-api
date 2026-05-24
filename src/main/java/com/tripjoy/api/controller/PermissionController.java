@@ -22,7 +22,7 @@ import lombok.experimental.FieldDefaults;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Tag(name = "Permission", description = "Endpoints for viewing permissions (Admin only)")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('SYSTEM_ADMIN')")
 public class PermissionController {
     IPermissionService permissionService;
 
