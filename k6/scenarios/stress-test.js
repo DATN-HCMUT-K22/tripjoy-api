@@ -10,6 +10,7 @@ import { stressThresholds } from '../config/thresholds.js';
 import { env, url } from '../config/environments.js';
 import { login, authHeaders } from '../lib/auth.js';
 import { get, extractData } from '../lib/http.js';
+import { cleanupTestData } from '../lib/cleanup.js';
 import {
     scenarioSearchUsers,
     scenarioCreateGroup,
@@ -71,6 +72,8 @@ export const options = {
             exec: 'chatScenario',
         },
     },
+    setupTimeout: '10m',
+    teardownTimeout: '10m',
     thresholds: {
         // Tự động dừng bài test nếu tỷ lệ lỗi vượt quá 10%
         http_req_failed: [{ threshold: 'rate<0.10', abortOnFail: true, delayAbortEval: '10s' }],
@@ -87,6 +90,8 @@ export const options = {
 export function setup() {
     const r1 = login(env.users.regular.username, env.users.regular.password);
     if (!r1) throw new Error('[stress] Cannot login');
+    // Clean accumulated old database test data before test run starts
+    cleanupTestData(r1.access_token);
     return { access_token1: r1.access_token };
 }
 
@@ -160,6 +165,10 @@ export function chatScenario(data) {
 
 export function teardown(data) {
     console.log('[stress] Extreme stress test completed.');
+    // Clean all new database test data generated during this test run
+    if (data?.access_token1) {
+        cleanupTestData(data.access_token1);
+    }
 }
 
 export { handleSummary } from '../lib/summary.js';

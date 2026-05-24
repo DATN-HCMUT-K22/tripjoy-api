@@ -10,6 +10,7 @@ import { loadThresholds } from '../config/thresholds.js';
 import { env, url } from '../config/environments.js';
 import { login, authHeaders } from '../lib/auth.js';
 import { get, post, expectSuccess, extractData } from '../lib/http.js';
+import { cleanupTestData } from '../lib/cleanup.js';
 import {
     scenarioGetMyProfile,
     scenarioSearchUsers,
@@ -84,6 +85,8 @@ export const options = {
             exec: 'chatScenario',
         },
     },
+    setupTimeout: '10m',
+    teardownTimeout: '10m',
     thresholds: loadThresholds,
     tags: { testType: 'load', project: 'tripjoy' },
 };
@@ -95,6 +98,13 @@ export function setup() {
     const r1 = login(env.users.regular.username, env.users.regular.password);
     const r2 = login(env.users.regular2.username, env.users.regular2.password);
     if (!r1) throw new Error('[load] Cannot login user1');
+    
+    // Clean old database test data before load test starts
+    cleanupTestData(r1.access_token);
+    if (r2) {
+        cleanupTestData(r2.access_token);
+    }
+
     return {
         access_token1: r1.access_token,
         access_token2: r2 ? r2.access_token : null,
@@ -256,6 +266,13 @@ function chatNotifJourney(headers, data) {
 // ──────────────────────────────────────────────────────────────
 export function teardown(data) {
     console.log('[load] Load test completed.');
+    // Clean database test data generated during this load test
+    if (data?.access_token1) {
+        cleanupTestData(data.access_token1);
+    }
+    if (data?.access_token2) {
+        cleanupTestData(data.access_token2);
+    }
 }
 
 export { handleSummary } from '../lib/summary.js';

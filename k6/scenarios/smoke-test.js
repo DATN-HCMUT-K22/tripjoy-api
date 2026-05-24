@@ -9,6 +9,7 @@ import { sleep, group } from 'k6';
 import { smokeThresholds } from '../config/thresholds.js';
 import { env, url } from '../config/environments.js';
 import { login, authHeaders } from '../lib/auth.js';
+import { cleanupTestData } from '../lib/cleanup.js';
 import {
     scenarioGetMyProfile,
     scenarioSearchUsers,
@@ -44,6 +45,8 @@ export const options = {
         social: { executor: 'constant-vus', vus: 1, duration: '2m', exec: 'socialScenario' },
         chat: { executor: 'constant-vus', vus: 1, duration: '2m', exec: 'chatScenario' },
     },
+    setupTimeout: '10m',
+    teardownTimeout: '10m',
     thresholds: smokeThresholds,
     tags: { testType: 'smoke', project: 'tripjoy' },
 };
@@ -51,6 +54,8 @@ export const options = {
 export function setup() {
     const r1 = login(env.users.regular.username, env.users.regular.password);
     if (!r1) throw new Error('[smoke] Cannot login');
+    // Clean old database test data before smoke test starts
+    cleanupTestData(r1.access_token);
     return { access_token1: r1.access_token };
 }
 
@@ -92,6 +97,10 @@ export function chatScenario(data) {
 
 export function teardown(data) {
     console.log('[smoke] Smoke test completed.');
+    // Clean database test data generated during this smoke test
+    if (data?.access_token1) {
+        cleanupTestData(data.access_token1);
+    }
 }
 
 export { handleSummary } from '../lib/summary.js';

@@ -10,6 +10,7 @@ import { soakThresholds } from '../config/thresholds.js';
 import { env, url } from '../config/environments.js';
 import { login, authHeaders } from '../lib/auth.js';
 import { get, extractData } from '../lib/http.js';
+import { cleanupTestData } from '../lib/cleanup.js';
 import {
     scenarioGetMyProfile,
     scenarioSearchUsers,
@@ -45,6 +46,8 @@ export const options = {
         social: { executor: 'constant-vus', vus: 10, duration: '30m', exec: 'socialScenario' },
         chat: { executor: 'constant-vus', vus: 5, duration: '30m', exec: 'chatScenario' },
     },
+    setupTimeout: '10m',
+    teardownTimeout: '10m',
     thresholds: soakThresholds,
     tags: { testType: 'soak', project: 'tripjoy' },
 };
@@ -52,6 +55,8 @@ export const options = {
 export function setup() {
     const r1 = login(env.users.regular.username, env.users.regular.password);
     if (!r1) throw new Error('[soak] Cannot login');
+    // Clean old database test data before soak test starts
+    cleanupTestData(r1.access_token);
     return { access_token1: r1.access_token };
 }
 
@@ -129,6 +134,10 @@ export function chatScenario(data) {
 
 export function teardown(data) {
     console.log('[soak] Soak test completed.');
+    // Clean database test data generated during this soak test
+    if (data?.access_token1) {
+        cleanupTestData(data.access_token1);
+    }
 }
 
 export { handleSummary } from '../lib/summary.js';
