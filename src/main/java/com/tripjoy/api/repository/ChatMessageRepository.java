@@ -22,6 +22,8 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> 
 
     // Get all pinned messages in a conversation (ordered by createdAt DESC)
     @Query("SELECT cm FROM ChatMessage cm " + "LEFT JOIN FETCH cm.sharedPost sp " + "LEFT JOIN FETCH sp.creator "
+            + "LEFT JOIN FETCH cm.parentMessage pm "
+            + "LEFT JOIN FETCH pm.sender "
             + "WHERE cm.conversation.id = :conversationId "
             + "AND cm.isPinned = true "
             + "ORDER BY cm.createdAt DESC")
@@ -30,6 +32,8 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> 
     // Cursor-based pagination: Initial load - Get latest N messages
     @Query("SELECT DISTINCT cm FROM ChatMessage cm " + "LEFT JOIN FETCH cm.likeUsers "
             + "LEFT JOIN FETCH cm.sharedPost sp " + "LEFT JOIN FETCH sp.creator "
+            + "LEFT JOIN FETCH cm.parentMessage pm "
+            + "LEFT JOIN FETCH pm.sender "
             + "WHERE cm.conversation.id = :conversationId "
             + "ORDER BY cm.createdAt DESC")
     List<ChatMessage> findLatestMessages(@Param("conversationId") UUID conversationId, Pageable pageable);
@@ -37,6 +41,8 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> 
     // Cursor-based pagination: Load older messages (scroll up) - before cursor
     @Query("SELECT DISTINCT cm FROM ChatMessage cm " + "LEFT JOIN FETCH cm.likeUsers "
             + "LEFT JOIN FETCH cm.sharedPost sp " + "LEFT JOIN FETCH sp.creator "
+            + "LEFT JOIN FETCH cm.parentMessage pm "
+            + "LEFT JOIN FETCH pm.sender "
             + "WHERE cm.conversation.id = :conversationId "
             + "AND cm.createdAt < :before "
             + "ORDER BY cm.createdAt DESC")
@@ -46,6 +52,8 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> 
     // Cursor-based pagination: Load newer messages - after cursor
     @Query("SELECT DISTINCT cm FROM ChatMessage cm " + "LEFT JOIN FETCH cm.likeUsers "
             + "LEFT JOIN FETCH cm.sharedPost sp " + "LEFT JOIN FETCH sp.creator "
+            + "LEFT JOIN FETCH cm.parentMessage pm "
+            + "LEFT JOIN FETCH pm.sender "
             + "WHERE cm.conversation.id = :conversationId "
             + "AND cm.createdAt > :after "
             + "ORDER BY cm.createdAt ASC") // ASC for newer messages

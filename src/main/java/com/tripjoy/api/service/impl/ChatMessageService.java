@@ -144,6 +144,24 @@ public class ChatMessageService implements IChatMessageService {
             }
         }
 
+        if (request.getParentMessageId() != null && !request.getParentMessageId().isBlank()) {
+            ChatMessage parentMessage;
+            try {
+                UUID parentMessageId = UUID.fromString(request.getParentMessageId());
+                parentMessage = chatMessageRepository
+                        .findById(parentMessageId)
+                        .orElseThrow(() -> new AppException(ErrorCode.MESSAGE_NOT_FOUND));
+            } catch (IllegalArgumentException e) {
+                throw new AppException(ErrorCode.INVALID_REQUEST, "Invalid parent_message_id");
+            }
+
+            if (!parentMessage.getConversation().getId().equals(conversationId)) {
+                throw new AppException(ErrorCode.MESSAGE_NOT_IN_CONVERSATION);
+            }
+
+            message.setParentMessage(parentMessage);
+        }
+
         // SoftDeleteInfo is already initialized by default
 
         ChatMessage savedMessage = chatMessageRepository.save(message);
