@@ -42,7 +42,7 @@ function testLogin(userData) {
         'status is 200': (r) => r.status === 200,
         'has token': (r) => {
             try {
-                return r.json('data.token') !== undefined;
+                return r.json('data.access_token') !== undefined;
             } catch (e) {
                 return false;
             }
@@ -51,7 +51,7 @@ function testLogin(userData) {
 
     if (success) {
         console.log(`✓ Login successful for ${userData.username}`);
-        console.log(`  Token: ${res.json('data.token').substring(0, 20)}...`);
+        console.log(`  Token: ${res.json('data.access_token').substring(0, 20)}...`);
     } else {
         console.log(`✗ Login failed for ${userData.username}`);
         console.log(`  Status: ${res.status}`);

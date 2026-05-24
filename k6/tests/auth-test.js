@@ -50,7 +50,7 @@ export default function () {
 
     const loginSuccess = check(loginRes, {
         'login: status 200': (r) => r.status === 200,
-        'login: has token': (r) => r.json('data.token') !== undefined,
+        'login: has token': (r) => r.json('data.access_token') !== undefined,
         'login: authenticated': (r) => r.json('data.authenticated') === true
     });
 
@@ -59,7 +59,7 @@ export default function () {
         return;
     }
 
-    const accessToken = loginRes.json('data.token');
+    const accessToken = loginRes.json('data.access_token');
 
     sleep(0.5);
 

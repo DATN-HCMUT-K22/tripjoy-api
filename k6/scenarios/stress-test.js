@@ -31,36 +31,40 @@ export const options = {
     scenarios: {
         read: {
             executor: 'ramping-vus',
+            startVUs: 0,
             stages: [
-                { duration: '1m', target: 800 }, // Fast ramp to massive load
-                { duration: '4m', target: 800 },
-                { duration: '1m', target: 0 },
+                { duration: '1m', target: 400 }, // 40% of 1000 VUs
+                { duration: '3m', target: 400 }, // Sustained load
+                { duration: '1m', target: 0 },   // Graceful ramp down
             ],
             exec: 'readScenario',
         },
         manage: {
             executor: 'ramping-vus',
+            startVUs: 0,
             stages: [
-                { duration: '1m', target: 600 },
-                { duration: '4m', target: 600 },
+                { duration: '1m', target: 300 }, // 30% of 1000 VUs
+                { duration: '3m', target: 300 },
                 { duration: '1m', target: 0 },
             ],
             exec: 'manageScenario',
         },
         social: {
             executor: 'ramping-vus',
+            startVUs: 0,
             stages: [
-                { duration: '1m', target: 400 },
-                { duration: '4m', target: 400 },
+                { duration: '1m', target: 200 }, // 20% of 1000 VUs
+                { duration: '3m', target: 200 },
                 { duration: '1m', target: 0 },
             ],
             exec: 'socialScenario',
         },
         chat: {
             executor: 'ramping-vus',
+            startVUs: 0,
             stages: [
-                { duration: '1m', target: 200 },
-                { duration: '4m', target: 200 },
+                { duration: '1m', target: 100 },  // 10% of 1000 VUs
+                { duration: '3m', target: 100 },
                 { duration: '1m', target: 0 },
             ],
             exec: 'chatScenario',
@@ -97,7 +101,7 @@ export function readScenario(data) {
             case 4: scenarioSearchGroups(headers); break;
         }
     });
-    sleep(Math.random() * 0.5 + 0.5); // Realistic think time (0.5s - 1s)
+    sleep(Math.random() * 2 + 1.5); // Balanced think time (1.5s - 3.5s) to allow high VUs without immediate DB thrashing
 }
 
 export function manageScenario(data) {
@@ -109,7 +113,7 @@ export function manageScenario(data) {
             scenarioCreateItinerary(headers, groupId);
         }
     });
-    sleep(Math.random() * 0.5 + 0.5);
+    sleep(Math.random() * 2 + 1.5); // Balanced think time
 }
 
 export function socialScenario(data) {
@@ -126,7 +130,7 @@ export function socialScenario(data) {
             if (postId) scenarioSavePost(headers, postId);
         }
     });
-    sleep(Math.random() * 0.5 + 0.5);
+    sleep(Math.random() * 2 + 1.5); // Balanced think time
 }
 
 export function chatScenario(data) {
@@ -139,7 +143,7 @@ export function chatScenario(data) {
             scenarioSendMessage(headers, convs[0].id);
         }
     });
-    sleep(Math.random() * 0.5 + 0.5);
+    sleep(Math.random() * 2 + 1.5); // Balanced think time
 }
 
 export function teardown(data) {

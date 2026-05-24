@@ -11,6 +11,11 @@ import { url } from '../config/environments.js';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' };
 
+function bodyPreview(body, limit = 200) {
+    if (body === undefined || body === null) return '';
+    return String(body).substring(0, limit);
+}
+
 // ──────────────────────────────────────────────────────────────
 // Core Auth API calls
 // ──────────────────────────────────────────────────────────────
@@ -33,7 +38,7 @@ export function login(username, password) {
     });
 
     if (!ok) {
-        console.error(`[auth] login failed for ${username}: HTTP ${res.status} — ${res.body?.substring(0, 200)}`);
+        console.error(`[auth] login failed for ${username}: HTTP ${res.status} - ${bodyPreview(res.body)}`);
         return null;
     }
 
@@ -74,7 +79,7 @@ export function register(userData) {
     });
 
     if (!ok) {
-        console.warn(`[auth] register failed for ${userData.username}: HTTP ${res.status} — ${res.body?.substring(0, 200)}. Trying login...`);
+        console.warn(`[auth] register failed for ${userData.username}: HTTP ${res.status} - ${bodyPreview(res.body)}. Trying login...`);
         // If registration fails, try to login (maybe user already exists)
         return login(userData.username, userData.password);
     }

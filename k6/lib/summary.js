@@ -1,8 +1,9 @@
-import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.2/index.js';
+import { htmlReport } from "https://raw.githubusercontent.com/benc-uk/k6-reporter/main/dist/bundle.js";
 
 /**
  * TripJoy k6 — Professional Summary Reporter
  * Fix: Handling cases where duration metrics might be missing for some scenarios (like auth).
+ * Feature: Automatic generation of a premium interactive HTML visualization dashboard.
  */
 export function handleSummary(data) {
     const scenarioMetrics = [
@@ -87,6 +88,8 @@ export function handleSummary(data) {
     customOutput += '\n';
 
     return {
-        'stdout': textSummary(data, { indent: ' ', enableColors: true }) + customOutput,
+        'stdout': customOutput,
+        'summary.html': htmlReport(data, { title: 'TripJoy API Performance Evaluation Report' }),
+        'reports/summary.html': htmlReport(data, { title: 'TripJoy API Performance Evaluation Report' }),
     };
 }
