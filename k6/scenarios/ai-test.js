@@ -261,3 +261,6 @@ function testGetNotebook(headers, itineraryId) {
 export function teardown(data) {
     console.log('[ai-test] AI endpoint test completed.');
 }
+
+export { handleSummary } from '../lib/summary.js';
+
