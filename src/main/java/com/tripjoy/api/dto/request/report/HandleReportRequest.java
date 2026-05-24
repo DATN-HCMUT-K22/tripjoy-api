@@ -1,5 +1,7 @@
 package com.tripjoy.api.dto.request.report;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.NotBlank;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -24,6 +26,14 @@ public class HandleReportRequest {
             example = "PROCESSED" // e.g., PROCESSED, DISMISSED
             )
     String status;
+
+    @JsonProperty("moderation_action")
+    @Schema(description = "Optional moderation action for the owner of violating content")
+    ModerationActionRequest moderationAction;
+
+    @JsonProperty("feedback_content")
+    @Schema(description = "Optional feedback message sent to the reporting user")
+    String feedbackContent;
 
     @Schema(
             name = "description",

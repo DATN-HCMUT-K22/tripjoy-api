@@ -36,7 +36,7 @@ public class UserController {
     IUserService userService;
 
     @Operation(
-            summary = "Get users (Admin only)",
+            summary = "Get users (System Admin only)",
             description =
                     """
 						Returns a paginated list of all users. Supports optional keyword filter on
@@ -45,7 +45,7 @@ public class UserController {
 						**No `q` param** → returns all users (paginated).
 						**With `?q=keyword`** → filters by username OR email.
 
-						Requires `ADMIN` role.
+						Requires `SYSTEM_ADMIN` role.
 						""")
     @GetMapping
     public ApiResponse<Page<UserResponse>> getUsers(
@@ -92,9 +92,9 @@ public class UserController {
 
     @GetMapping(Endpoint.User.ID + "/admin-view")
     @Operation(
-            summary = "Admin: Get full user details",
+            summary = "System Admin: Get full user details",
             description =
-                    "Returns complete user data including sensitive fields. Requires ADMIN role. Cached 12h (admin namespace).")
+                    "Returns complete user data including sensitive fields. Requires SYSTEM_ADMIN role. Cached 12h (admin namespace).")
     public ApiResponse<UserResponse> getUserDetailsForAdmin(@PathVariable("userId") UUID userId) {
         return ApiResponse.<UserResponse>builder()
                 .data(userService.getUserDetailsForAdmin(userId))
@@ -127,7 +127,7 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Assign roles to user (Admin only)",
+            summary = "Assign roles to user (System Admin only)",
             description = "Assigns a set of roles to a specific user.")
     @PutMapping(Endpoint.User.ID_ROLES)
     ApiResponse<UserResponse> assignRoles(
@@ -137,7 +137,7 @@ public class UserController {
                 .build();
     }
 
-    @Operation(summary = "Update user locked status (Admin only)", description = "Locks or unlocks a user account.")
+    @Operation(summary = "Update user locked status (System Admin only)", description = "Locks or unlocks a user account.")
     @PatchMapping(Endpoint.User.ID_STATUS)
     ApiResponse<UserResponse> updateUserStatus(
             @PathVariable("userId") UUID userId, @RequestBody @Valid UserStatusUpdateRequest request) {

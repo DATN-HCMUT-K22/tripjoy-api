@@ -27,7 +27,7 @@ public class SystemConfigController {
 
     @Operation(summary = "Get all system configs (Admin only)")
     @GetMapping(Endpoint.SystemConfig.BASE)
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public ApiResponse<List<SystemConfigResponse>> getAll() {
         return ApiResponse.<List<SystemConfigResponse>>builder()
                 .data(systemConfigService.getAllConfigs())
@@ -36,7 +36,7 @@ public class SystemConfigController {
 
     @Operation(summary = "Update a system config (Admin only)")
     @PatchMapping(Endpoint.SystemConfig.BASE + Endpoint.SystemConfig.KEY)
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public ApiResponse<SystemConfigResponse> update(
             @PathVariable("key") String key, @RequestBody SystemConfigUpdateRequest request) {
         return ApiResponse.<SystemConfigResponse>builder()

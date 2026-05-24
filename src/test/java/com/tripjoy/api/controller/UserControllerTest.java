@@ -25,7 +25,7 @@ import com.tripjoy.api.service.impl.UserService;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@WithMockUser(roles = "ADMIN")
+@WithMockUser(roles = "SYSTEM_ADMIN")
 public class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;

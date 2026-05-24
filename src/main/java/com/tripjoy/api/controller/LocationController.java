@@ -326,7 +326,7 @@ public class LocationController {
             summary = "[ADMIN] Create a location manually",
             description = "Admin-only. For pre-populating hot/trending locations or batch import. "
                     + "Automatically deduplicates by providerId or coordinates.")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @PostMapping
     public ApiResponse<LocationResponse> createLocation(@Valid @RequestBody LocationCreateRequest request) {
         return ApiResponse.<LocationResponse>builder()
@@ -335,7 +335,7 @@ public class LocationController {
     }
 
     @Operation(summary = "[ADMIN] Update location metadata")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @PutMapping(Endpoint.Location.ID)
     public ApiResponse<LocationResponse> updateLocation(
             @PathVariable("locationId") UUID locationId, @Valid @RequestBody LocationCreateRequest request) {
@@ -348,7 +348,7 @@ public class LocationController {
             summary = "[ADMIN] Soft-delete a location",
             description = "Marks location as deleted. Existing trips retain data; "
                     + "location will not appear in new searches.")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @DeleteMapping(Endpoint.Location.ID)
     public ApiResponse<Void> deleteLocation(@PathVariable("locationId") UUID locationId) {
         locationService.deleteLocation(locationId);
@@ -373,7 +373,7 @@ public class LocationController {
     @Operation(
             summary = "[ADMIN] Paginated location list with filters",
             description = "For admin dashboards. Use /administrative, /search, or /nearby for user-facing flows.")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @GetMapping
     public ApiResponse<Page<LocationResponse>> getLocations(
             @RequestParam(value = "type", required = false) LocationType type,

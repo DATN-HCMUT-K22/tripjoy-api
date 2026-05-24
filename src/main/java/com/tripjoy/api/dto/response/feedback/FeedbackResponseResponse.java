@@ -22,7 +22,7 @@ public class FeedbackResponseResponse {
     String feedbackId;
 
     @JsonProperty("responded_by")
-    UserSimpleResponse respondedBy; // Admin/BA
+    UserSimpleResponse respondedBy; // System admin or business admin
 
     @JsonProperty("response_for")
     UserSimpleResponse responseFor; // Users who sent feedback

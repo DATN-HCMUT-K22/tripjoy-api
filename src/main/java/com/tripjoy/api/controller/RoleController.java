@@ -22,7 +22,7 @@ import lombok.experimental.FieldDefaults;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Tag(name = "Role", description = "Endpoints for managing roles (Admin only)")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('SYSTEM_ADMIN')")
 public class RoleController {
     IRoleService roleService;
 

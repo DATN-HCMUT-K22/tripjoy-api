@@ -36,39 +36,35 @@ public class FeedbackController {
     @PostMapping
     public ApiResponse<FeedbackResponse> submitFeedback(@Valid @RequestBody FeedbackRequest request) {
         return ApiResponse.<FeedbackResponse>builder()
-                // .data(feedbackService.submitFeedback(request))
+                .data(feedbackService.submitFeedback(request))
                 .build();
     }
 
-    @Operation(summary = "Get all feedback (Admin, paginated)")
+    @Operation(summary = "Get all feedback (Admin/Business Admin, paginated)")
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','BUSINESS_ADMIN')")
     public ApiResponse<Page<FeedbackResponse>> getAllFeedback(Pageable pageable) {
         return ApiResponse.<Page<FeedbackResponse>>builder()
-                // .data(feedbackService.getAllFeedback(pageable))
+                .data(feedbackService.getAllFeedback(pageable))
                 .build();
     }
 
-    @Operation(summary = "Get feedback details by id (Admin)")
+    @Operation(summary = "Get feedback details by id (Admin/Business Admin)")
     @GetMapping(Endpoint.Feedback.ID)
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','BUSINESS_ADMIN')")
     public ApiResponse<FeedbackResponse> getFeedbackById(@PathVariable("feedbackId") UUID feedbackId) {
         return ApiResponse.<FeedbackResponse>builder()
-                // .data(feedbackService.getFeedbackById(feedbackId))
+                .data(feedbackService.getFeedbackById(feedbackId))
                 .build();
     }
 
-    // --- Admin Response ---
-
-    @Operation(summary = "Admin responds to a user's feedback")
+    @Operation(summary = "Admin/Business Admin responds to a user's feedback")
     @PostMapping(Endpoint.Feedback.ID + "/respond")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','BUSINESS_ADMIN')")
     public ApiResponse<FeedbackResponseResponse> respondToFeedback(
             @PathVariable("feedbackId") UUID feedbackId, @Valid @RequestBody FeedbackResponseRequest request) {
-
-        // return ApiResponse.<FeedbackResponseResponse>builder()
-        // .data(feedbackService.respondToFeedback(feedbackId, request))
-        // .build();
-        return null; // Placeholder
+        return ApiResponse.<FeedbackResponseResponse>builder()
+                .data(feedbackService.respondToFeedback(feedbackId, request))
+                .build();
     }
 }

@@ -25,7 +25,7 @@ import lombok.experimental.FieldDefaults;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Tag(name = "Admin", description = "Endpoints for high-level administrative actions")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('SYSTEM_ADMIN','BUSINESS_ADMIN')")
 public class AdminController {
 
     IAdminService adminService;
@@ -33,10 +33,8 @@ public class AdminController {
     @Operation(summary = "Perform a moderation action on a user (e.g., BAN, WARN)")
     @PostMapping("/moderate-user")
     public ApiResponse<ModerationActionResponse> moderateUser(@Valid @RequestBody ModerationActionRequest request) {
-
-        // return ApiResponse.<ModerationActionResponse>builder()
-        // .data(adminService.moderateUser(request))
-        // .build();
-        return null; // Placeholder
+        return ApiResponse.<ModerationActionResponse>builder()
+                .data(adminService.moderateUser(request))
+                .build();
     }
 }

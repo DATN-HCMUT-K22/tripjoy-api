@@ -54,9 +54,9 @@ import lombok.extern.slf4j.Slf4j;
  *   <li>Cache: {@code user:public} — 12h TTL, safe to share across callers</li>
  * </ul>
  *
- * <h3>Flow 3 — Admin View ({@link #getUserDetailsForAdmin})</h3>
+ * <h3>Flow 3 — System Admin View ({@link #getUserDetailsForAdmin})</h3>
  * <ul>
- *   <li>Caller: ADMIN role only — enforced by {@code @PreAuthorize} <i>before</i> execution</li>
+ *   <li>Caller: SYSTEM_ADMIN role only — enforced by {@code @PreAuthorize} <i>before</i> execution</li>
  *   <li>Data: full UserResponse</li>
  *   <li>Cache: {@code user:admin} — 12h TTL, separate namespace from public cache</li>
  * </ul>
@@ -112,16 +112,16 @@ public class UserService implements IUserService {
         return userMapper.toPublicResponse(user);
     }
 
-    // ==================== Flow 3: Admin View ====================
+    // ==================== Flow 3: System Admin View ====================
 
     /**
-     * Get full user details — ADMIN only.
+     * Get full user details — SYSTEM_ADMIN only.
      * {@code @PreAuthorize} blocks non-admins BEFORE execution (and before cache is read),
      * so admins and non-admins never share the same cache entry.
      * Cached in {@code user:admin} for 12 hours under a separate namespace from public profiles.
      */
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @Cacheable(value = RedisCacheConfig.CACHE_USER_ADMIN_VIEW, key = "#id")
     public UserResponse getUserDetailsForAdmin(UUID id) {
         log.debug("Cache MISS — loading full user details for admin: {}", id);
@@ -132,7 +132,7 @@ public class UserService implements IUserService {
     // ==================== Admin Mutations ====================
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public Page<UserResponse> getUsers(Pageable pageable, String q) {
         if (q != null && !q.trim().isBlank()) {
             return userRepository
@@ -190,7 +190,7 @@ public class UserService implements IUserService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @Caching(
             evict = {
                 @CacheEvict(value = RedisCacheConfig.CACHE_USER_PUBLIC, key = "#userId"),
@@ -204,7 +204,7 @@ public class UserService implements IUserService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @Caching(
             evict = {
                 @CacheEvict(value = RedisCacheConfig.CACHE_USER_PUBLIC, key = "#userId"),
@@ -216,7 +216,7 @@ public class UserService implements IUserService {
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @Caching(
             evict = {
                 @CacheEvict(value = RedisCacheConfig.CACHE_USER_PUBLIC, key = "#userId"),

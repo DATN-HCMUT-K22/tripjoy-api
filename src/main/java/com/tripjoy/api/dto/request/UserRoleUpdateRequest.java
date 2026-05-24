@@ -22,6 +22,6 @@ public class UserRoleUpdateRequest {
             description = "Set of role names",
             type = "array",
             requiredMode = Schema.RequiredMode.REQUIRED,
-            example = "[\"USER\", \"ADMIN\"]")
+            example = "[\"USER\", \"SYSTEM_ADMIN\"]")
     Set<String> roles;
 }

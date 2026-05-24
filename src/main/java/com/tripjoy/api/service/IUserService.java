@@ -17,7 +17,7 @@ import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 public interface IUserService {
 
     /**
-     * Admin-only paginated user list with optional keyword filter.
+     * System-admin-only paginated user list with optional keyword filter.
      * Replaces the old unpaginated {@code getUsers()} to prevent OOM on large datasets.
      *
      * @param pageable pagination and sort (Spring standard)
@@ -32,7 +32,7 @@ public interface IUserService {
     UserPublicResponse getPublicProfile(UUID id);
 
     /**
-     * Luồng 3: Admin full view — requires ADMIN role.
+     * Luồng 3: System admin full view — requires SYSTEM_ADMIN role.
      * Returns full UserResponse including sensitive fields.
      */
     UserResponse getUserDetailsForAdmin(UUID id);
