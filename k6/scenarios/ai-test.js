@@ -17,6 +17,7 @@
  */
 
 import { sleep, check } from 'k6';
+import { Trend } from 'k6/metrics';
 import http from 'k6/http';
 import { env, url } from '../config/environments.js';
 import { login, authHeaders } from '../lib/auth.js';
@@ -26,6 +27,8 @@ import { generateItineraryPayload, generateGroupPayload } from '../lib/generator
 // ──────────────────────────────────────────────────────────────
 // Options — small VU count, permissive thresholds for AI
 // ──────────────────────────────────────────────────────────────
+const aiGenE2eTrend = new Trend('ai_generation_e2e_duration', true);
+
 export const options = {
     vus: 3,
     duration: '10m',
@@ -36,6 +39,7 @@ export const options = {
         http_req_failed: ['rate<0.05'],
         http_req_duration: ['p(95)<95000'],
         checks: ['rate>0.80'],  // 80% success is acceptable for AI tests
+        ai_generation_e2e_duration: ['p(95)<60000'], // 95% of generations must complete in under 60 seconds
     },
     tags: { testType: 'ai', project: 'tripjoy' },
 };
@@ -150,6 +154,7 @@ function testAiGenerateItinerary(headers, groupId) {
         suggestLocations: []
     };
 
+    const start = Date.now();
     const res = http.post(
         url('/itineraries/ai-generate'),
         JSON.stringify(payload),
@@ -169,6 +174,49 @@ function testAiGenerateItinerary(headers, groupId) {
 
     if (res.status !== 200 && res.status !== 202) {
         console.warn(`[ai-test] ai-generate returned ${res.status}: ${res.body?.substring(0, 300)}`);
+        return;
+    }
+
+    // Extract itinerary ID to perform polling and measure true E2E duration
+    let itineraryId = null;
+    try {
+        itineraryId = JSON.parse(res.body).data?.id;
+    } catch (e) {
+        return;
+    }
+
+    if (itineraryId) {
+        let status = 'GENERATING';
+        let retries = 0;
+        const maxRetries = 45; // 45 * 2s = 90s max polling duration
+        
+        while (status === 'GENERATING' && retries < maxRetries) {
+            sleep(2); // poll every 2s
+            const pollRes = http.get(url(`/itineraries/${itineraryId}`), { 
+                headers, 
+                tags: { name: 'GET /itineraries/{id} (polling)' } 
+            });
+            try {
+                const pollBody = JSON.parse(pollRes.body);
+                status = pollBody.data?.status || 'FAILED';
+            } catch (e) {
+                status = 'FAILED';
+            }
+            retries++;
+        }
+        
+        const durationMs = Date.now() - start;
+        
+        // Record the E2E duration to our custom Trend metric
+        aiGenE2eTrend.add(durationMs);
+        
+        check(status, {
+            'ai-generate: e2e success (DRAFT)': (s) => s === 'DRAFT',
+        });
+        
+        if (status !== 'DRAFT') {
+            console.warn(`[ai-test] Itinerary generation failed or timed out. Final status: ${status}`);
+        }
     }
 }
 
