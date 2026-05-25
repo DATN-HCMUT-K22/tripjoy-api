@@ -18,6 +18,7 @@ import com.tripjoy.api.dto.request.UserStatusUpdateRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.UserPublicResponse;
 import com.tripjoy.api.dto.response.UserResponse;
+import com.tripjoy.api.dto.response.report.ModerationActionResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 import com.tripjoy.api.service.IUserService;
 
@@ -66,6 +67,16 @@ public class UserController {
                     "Retrieves the profile information of the currently authenticated user. Full data including credits and email.")
     public ApiResponse<UserResponse> getMyInfo() {
         return ApiResponse.<UserResponse>builder().data(userService.getMyInfo()).build();
+    }
+
+    @GetMapping(Endpoint.User.ME + "/moderations")
+    @Operation(
+            summary = "Get my moderation history",
+            description = "Retrieves a paginated list of moderation/disciplinary actions taken against the current user.")
+    public ApiResponse<Page<ModerationActionResponse>> getMyModerationHistory(Pageable pageable) {
+        return ApiResponse.<Page<ModerationActionResponse>>builder()
+                .data(userService.getMyModerationHistory(pageable))
+                .build();
     }
 
     @Operation(

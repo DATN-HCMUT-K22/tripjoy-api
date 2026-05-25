@@ -13,6 +13,7 @@ import com.tripjoy.api.dto.request.UserProfileUpdateRequest;
 import com.tripjoy.api.dto.request.UserRoleUpdateRequest;
 import com.tripjoy.api.dto.response.UserPublicResponse;
 import com.tripjoy.api.dto.response.UserResponse;
+import com.tripjoy.api.dto.response.report.ModerationActionResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 
 public interface IUserService {
@@ -57,4 +58,7 @@ public interface IUserService {
     List<UserSimpleResponse> searchUsers(String keyword);
 
     Page<UserSimpleResponse> searchUsersGlobal(String keyword, Pageable pageable);
+
+    Page<ModerationActionResponse> getMyModerationHistory(Pageable pageable);
 }
+

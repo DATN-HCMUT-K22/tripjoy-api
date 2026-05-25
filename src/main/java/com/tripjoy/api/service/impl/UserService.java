@@ -25,12 +25,15 @@ import com.tripjoy.api.dto.request.UserProfileUpdateRequest;
 import com.tripjoy.api.dto.request.UserRoleUpdateRequest;
 import com.tripjoy.api.dto.response.UserPublicResponse;
 import com.tripjoy.api.dto.response.UserResponse;
+import com.tripjoy.api.dto.response.report.ModerationActionResponse;
 import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
+import com.tripjoy.api.entity.ModerationAction;
 import com.tripjoy.api.entity.Role;
 import com.tripjoy.api.entity.User;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
 import com.tripjoy.api.mapper.UserMapper;
+import com.tripjoy.api.repository.ModerationActionRepository;
 import com.tripjoy.api.repository.RoleRepository;
 import com.tripjoy.api.repository.UserRepository;
 import com.tripjoy.api.service.IUserService;
@@ -81,6 +84,7 @@ public class UserService implements IUserService {
 
     UserRepository userRepository;
     RoleRepository roleRepository;
+    ModerationActionRepository moderationActionRepository;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
 
@@ -267,4 +271,26 @@ public class UserService implements IUserService {
         }
         return userRepository.searchGlobalUsers(keyword.trim(), pageable).map(userMapper::toUserSimpleResponse);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ModerationActionResponse> getMyModerationHistory(Pageable pageable) {
+        String currentUserId =
+                SecurityContextHolder.getContext().getAuthentication().getName();
+        return moderationActionRepository
+                .findByFilters(UUID.fromString(currentUserId), null, null, pageable)
+                .map(this::toModerationActionResponse);
+    }
+
+    private ModerationActionResponse toModerationActionResponse(ModerationAction action) {
+        return ModerationActionResponse.builder()
+                .id(action.getId())
+                .moderatedUser(userMapper.toUserSimpleResponse(action.getUser()))
+                .admin(userMapper.toUserSimpleResponse(action.getBa()))
+                .actionType(action.getActionType())
+                .createdAt(action.getCreatedAt())
+                .note(action.getNote())
+                .build();
+    }
 }
+
