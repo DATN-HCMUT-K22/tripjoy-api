@@ -264,6 +264,21 @@ public class ItineraryService implements IItineraryService {
 
         tripItemMapper.updateTripItem(tripItem, request);
 
+        // Business rule: rating and review can only be set when status is CHECKED_IN
+        if (request.getRating() != null || request.getReview() != null) {
+            if (tripItem.getStatus() != com.tripjoy.api.enums.TripItemStatus.CHECKED_IN) {
+                throw new AppException(
+                        ErrorCode.INVALID_REQUEST,
+                        "Rating and review can only be set when the trip item status is CHECKED_IN");
+            }
+            if (request.getRating() != null) {
+                tripItem.setRating(request.getRating());
+            }
+            if (request.getReview() != null) {
+                tripItem.setReview(request.getReview());
+            }
+        }
+
         if (request.getLocationId() != null
                 && !request.getLocationId().equals(tripItem.getLocation().getId())) {
             Location location = locationRepository
