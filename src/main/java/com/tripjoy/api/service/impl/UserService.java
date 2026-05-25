@@ -282,6 +282,17 @@ public class UserService implements IUserService {
                 .map(this::toModerationActionResponse);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ModerationActionResponse> getUserModerationHistory(UUID userId, Pageable pageable) {
+        if (!userRepository.existsById(userId)) {
+            throw new AppException(ErrorCode.USER_NOT_FOUND);
+        }
+        return moderationActionRepository
+                .findByFilters(userId, null, null, pageable)
+                .map(this::toModerationActionResponse);
+    }
+
     private ModerationActionResponse toModerationActionResponse(ModerationAction action) {
         return ModerationActionResponse.builder()
                 .id(action.getId())

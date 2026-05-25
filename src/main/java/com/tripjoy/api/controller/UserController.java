@@ -6,7 +6,9 @@ import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
 
 import com.tripjoy.api.constant.Endpoint;
 import com.tripjoy.api.dto.request.AdminUserCreationRequest;
@@ -78,6 +80,19 @@ public class UserController {
                 .data(userService.getMyModerationHistory(pageable))
                 .build();
     }
+
+    @GetMapping(Endpoint.User.ID + "/moderations")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','BUSINESS_ADMIN')")
+    @Operation(
+            summary = "Get moderation history of a specific user (Admin only)",
+            description = "Retrieves a paginated list of moderation/disciplinary actions taken against the specified user ID.")
+    public ApiResponse<Page<ModerationActionResponse>> getUserModerationHistory(
+            @PathVariable("userId") UUID userId, Pageable pageable) {
+        return ApiResponse.<Page<ModerationActionResponse>>builder()
+                .data(userService.getUserModerationHistory(userId, pageable))
+                .build();
+    }
+
 
     @Operation(
             summary = "Global User Search",

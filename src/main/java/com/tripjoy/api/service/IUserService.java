@@ -60,5 +60,8 @@ public interface IUserService {
     Page<UserSimpleResponse> searchUsersGlobal(String keyword, Pageable pageable);
 
     Page<ModerationActionResponse> getMyModerationHistory(Pageable pageable);
+
+    Page<ModerationActionResponse> getUserModerationHistory(UUID userId, Pageable pageable);
 }
+
 
