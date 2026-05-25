@@ -318,11 +318,13 @@ public class ItineraryService implements IItineraryService {
             return itineraryMapper.toItineraryResponse(itinerary);
         }
 
-        // Rule: From CONFIRMED, you can only move to COMPLETED
-        if (oldStatus == ItineraryStatus.CONFIRMED && newStatus != ItineraryStatus.COMPLETED) {
+        // Rule: From CONFIRMED, you can only move to IN_PROGRESS or COMPLETED
+        if (oldStatus == ItineraryStatus.CONFIRMED 
+                && newStatus != ItineraryStatus.IN_PROGRESS 
+                && newStatus != ItineraryStatus.COMPLETED) {
             throw new AppException(
                     ErrorCode.INVALID_ITINERARY_STATUS_TRANSITION,
-                    "Itinerary is already CONFIRMED. It can only be moved to COMPLETED.");
+                    "Itinerary is already CONFIRMED. It can only be moved to IN_PROGRESS or COMPLETED.");
         }
 
         // Rule: Only one CONFIRMED/IN_PROGRESS itinerary per group

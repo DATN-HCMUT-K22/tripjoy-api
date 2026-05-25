@@ -179,6 +179,31 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
     }
 
     private AiTravelRequestDto mapToAiRequest(GenerateItineraryRequest req) {
+        List<String> resolvedSuggestLocations = null;
+        if (req.getSuggestLocations() != null) {
+            resolvedSuggestLocations = req.getSuggestLocations().stream()
+                    .map(locId -> {
+                        if (locId == null) return null;
+                        try {
+                            // 1. Thử parse UUID
+                            UUID uuid = UUID.fromString(locId);
+                            Location location = locationRepository.findById(uuid).orElse(null);
+                            if (location != null && location.getProviderId() != null) {
+                                log.info("Resolved database UUID {} to providerId {}", locId, location.getProviderId());
+                                return location.getProviderId();
+                            }
+                        } catch (IllegalArgumentException e) {
+                            // Không phải UUID (có thể là gmap:..., ChIJ... hoặc mock ID)
+                            if (locId.startsWith("gmap:")) {
+                                return locId.substring(5);
+                            }
+                        }
+                        return locId;
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+        }
+
         return AiTravelRequestDto.builder()
                 .destinationName(req.getDestination())
                 .coordinate(AiCoordinateDto.builder()
@@ -193,7 +218,7 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
                 .startDate(req.getStartDate().toLocalDate().toString())
                 .endDate(req.getEndDate().toLocalDate().toString())
                 .peopleQuantity(req.getPeopleQuantity())
-                .suggestLocations(req.getSuggestLocations())
+                .suggestLocations(resolvedSuggestLocations)
                 .build();
     }
 
