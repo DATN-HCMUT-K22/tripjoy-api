@@ -68,11 +68,18 @@ export function setup() {
     // Add at least one trip item so AI has something to work with for Notebook
     let tripItemId = null;
     if (itineraryId) {
-        // Dynamically find a valid location ID from search to avoid 404 in setup
+        // Find a location already seeded in the database to avoid calling the external Google Places API
         const searchRes = get(url('/locations/search?q=cafe&size=1'), headers, 'GET /locations/search (setup)');
         const locations = extractData(searchRes) || [];
-        const locationId = (locations.length > 0) ? locations[0].id : "1509dfcc-aaca-4c4d-8499-6ccd92a2b2de"; // fallback
         
+        let locationId = "1509dfcc-aaca-4c4d-8499-6ccd92a2b2de"; // fallback UUID
+        let placeId = "ChIJ0T2NLikpdTERgJJ6o5gX1Kw"; // fallback Google Place ID
+        
+        if (locations.length > 0) {
+            locationId = locations[0].id;
+            placeId = locations[0].provider_id || placeId;
+        }
+
         const itemPayload = {
             location_id: locationId,
             note: "Visit the city center",
@@ -80,7 +87,9 @@ export function setup() {
             start_time: new Date(new Date(itiPayload.start_date + "Z").getTime() + 18000000).toISOString().split('.')[0]
         };
         const itemRes = post(url(`/itineraries/${itineraryId}/items`), itemPayload, headers, 'POST /itineraries/{id}/items (setup)');
-        tripItemId = extractId(itemRes);
+        
+        // Return the Google Place ID (provider_id) so the AI service receives a valid Place ID to modify
+        tripItemId = placeId;
     }
 
     // Run a single sequential AI itinerary generation request during setup.
