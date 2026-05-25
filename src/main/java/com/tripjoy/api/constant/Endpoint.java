@@ -132,6 +132,7 @@ public class Endpoint {
         // Quản lý các điểm đến (trip item) trong 1 lịch trình
         public static final String ITEMS_BASE = ID + "/items";
         public static final String ITEMS_ID = ITEMS_BASE + "/{tripItemId}";
+        public static final String ITEMS_STATUS = ITEMS_ID + "/status";
 
         // Quản lý chi phí (expense) trong 1 lịch trình
         public static final String EXPENSES_BASE = ID + "/expenses";

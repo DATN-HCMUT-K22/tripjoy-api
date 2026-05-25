@@ -6,7 +6,7 @@ import java.util.UUID;
 import jakarta.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import com.tripjoy.api.enums.TripItemStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -72,4 +72,12 @@ public class TripItemRequest {
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
             example = "ChIJ0T2NLikpdTERgJJ6o5gX1Kw")
     String placeId;
+
+    @Schema(
+            name = "status",
+            description = "Trạng thái của trip item",
+            type = "String",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            example = "PENDING")
+    TripItemStatus status;
 }
