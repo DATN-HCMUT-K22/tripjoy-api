@@ -73,11 +73,9 @@ export function setup() {
         const locations = extractData(searchRes) || [];
         
         let locationId = "1509dfcc-aaca-4c4d-8499-6ccd92a2b2de"; // fallback UUID
-        let placeId = "ChIJ0T2NLikpdTERgJJ6o5gX1Kw"; // fallback Google Place ID
-        
+
         if (locations.length > 0) {
             locationId = locations[0].id;
-            placeId = locations[0].provider_id || placeId;
         }
 
         const itemPayload = {
@@ -88,8 +86,15 @@ export function setup() {
         };
         const itemRes = post(url(`/itineraries/${itineraryId}/items`), itemPayload, headers, 'POST /itineraries/{id}/items (setup)');
         
-        // Return the Google Place ID (provider_id) so the AI service receives a valid Place ID to modify
-        tripItemId = placeId;
+        // Use the TripItem's database UUID (not Google Place ID).
+        // Backend supports lookup by both UUID (item.getId()) and provider_id — UUID is safer
+        // because locations seeded locally may not have a provider_id set.
+        tripItemId = extractId(itemRes);
+        if (!tripItemId) {
+            // Fallback: if item creation failed, use a well-known provider_id from a seeded location
+            console.warn('[ai-test] TripItem creation failed, using fallback place ID for AI tests');
+            tripItemId = "ChIJ0T2NLikpdTERgJJ6o5gX1Kw";
+        }
     }
 
     // Run a single sequential AI itinerary generation request during setup.
@@ -306,11 +311,24 @@ function testGetNotebook(headers, itineraryId) {
 function testAiModifyItinerary(headers, itineraryId, tripItemId) {
     if (!itineraryId) return;
 
-    // Use dynamically created trip item ID or fallback to standard place_id if unavailable
-    const targetPlaceId = tripItemId || "ChIJ0T2NLikpdTERgJJ6o5gX1Kw";
+    // Fetch the current list of trip items to get a valid, existing UUID.
+    // This prevents 400 errors caused by using a stale UUID that was already
+    // removed by a previous ai-modify call.
+    let targetId = tripItemId;
+    try {
+        const itemsRes = http.get(url(`/itineraries/${itineraryId}/items`), { headers });
+        const items = JSON.parse(itemsRes.body)?.data;
+        if (Array.isArray(items) && items.length > 0) {
+            targetId = items[0].id;
+        }
+    } catch (e) {
+        // fall back to the original tripItemId if fetch fails
+    }
+
+    if (!targetId) return;
 
     const payload = {
-        unwantedPlaceIds: [targetPlaceId]
+        unwantedPlaceIds: [targetId]
     };
 
     const res = http.post(
@@ -338,11 +356,23 @@ function testAiModifyItinerary(headers, itineraryId, tripItemId) {
 function testAiSuggestLocation(headers, itineraryId, tripItemId) {
     if (!itineraryId) return;
 
-    // Use dynamically created trip item ID or fallback to standard place_id if unavailable
-    const targetPlaceId = tripItemId || "ChIJ0T2NLikpdTERgJJ6o5gX1Kw";
+    // Fetch the current list of trip items to get a valid, existing UUID.
+    // This handles the case where a previous ai-modify call replaced the original item.
+    let targetId = tripItemId;
+    try {
+        const itemsRes = http.get(url(`/itineraries/${itineraryId}/items`), { headers });
+        const items = JSON.parse(itemsRes.body)?.data;
+        if (Array.isArray(items) && items.length > 0) {
+            targetId = items[0].id;
+        }
+    } catch (e) {
+        // fall back to the original tripItemId if fetch fails
+    }
+
+    if (!targetId) return;
 
     const payload = {
-        unwantedPlaceId: targetPlaceId,
+        unwantedPlaceId: targetId,
         latitude: 10.762622,
         longitude: 106.660172
     };
