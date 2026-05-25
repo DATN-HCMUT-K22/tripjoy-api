@@ -3,6 +3,8 @@ package com.tripjoy.api.dto.request;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -80,4 +82,22 @@ public class TripItemRequest {
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
             example = "PENDING")
     TripItemStatus status;
+
+    @Min(value = 1, message = "Rating must be at least 1")
+    @Max(value = 5, message = "Rating must be at most 5")
+    @Schema(
+            name = "rating",
+            description = "Đánh giá số sao (từ 1 đến 5)",
+            type = "Integer",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            example = "5")
+    Integer rating;
+
+    @Schema(
+            name = "review",
+            description = "Nội dung nhận xét/đánh giá bằng chữ",
+            type = "String",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            example = "Chuyến đi tuyệt vời, đồ ăn ngon và phong cảnh đẹp.")
+    String review;
 }

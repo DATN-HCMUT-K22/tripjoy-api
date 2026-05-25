@@ -34,4 +34,8 @@ public class TripItemResponse extends BaseResponse {
     LocationResponse location;
 
     TripItemStatus status;
+
+    Integer rating;
+
+    String review;
 }

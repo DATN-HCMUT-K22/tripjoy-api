@@ -28,6 +28,11 @@ public class TripItem extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String note;
 
+    private Integer rating;
+
+    @Column(columnDefinition = "TEXT")
+    private String review;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location_id")
     private Location location;
