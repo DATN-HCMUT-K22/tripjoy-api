@@ -139,7 +139,7 @@ public class UserService implements IUserService {
     // ==================== Admin Mutations ====================
 
     @Override
-    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','BUSINESS_ADMIN')")
     public Page<UserResponse> getUsers(Pageable pageable, String q) {
         if (q != null && !q.trim().isBlank()) {
             return userRepository

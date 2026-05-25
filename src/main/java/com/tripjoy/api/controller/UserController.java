@@ -40,7 +40,7 @@ public class UserController {
     IUserService userService;
 
     @Operation(
-            summary = "Get users (System Admin only)",
+            summary = "Get users (Admin/Business Admin)",
             description =
                     """
 						Returns a paginated list of all users. Supports optional keyword filter on
@@ -49,7 +49,7 @@ public class UserController {
 						**No `q` param** → returns all users (paginated).
 						**With `?q=keyword`** → filters by username OR email.
 
-						Requires `SYSTEM_ADMIN` role.
+						Requires `SYSTEM_ADMIN` or `BUSINESS_ADMIN` role.
 						""")
     @GetMapping
     public ApiResponse<Page<UserResponse>> getUsers(
