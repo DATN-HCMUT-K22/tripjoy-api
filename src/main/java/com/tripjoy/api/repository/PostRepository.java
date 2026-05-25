@@ -31,6 +31,20 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
 		LEFT JOIN hashtag h ON phm.hashtag_id = h.id
 		LEFT JOIN itinerary i ON p.itinerary_id = i.id
 		WHERE p.is_deleted = false
+		AND (
+			p.visibility = 'PUBLIC'
+			OR (CAST(:currentUserId AS uuid) IS NOT NULL AND (
+				p.creator_id = CAST(:currentUserId AS uuid)
+				OR (
+					p.visibility = 'PRIVATE'
+					AND EXISTS (
+						SELECT 1 FROM group_member gm
+						JOIN itinerary it ON it.group_id = gm.group_id
+						WHERE it.id = p.itinerary_id AND gm.user_id = CAST(:currentUserId AS uuid) AND gm.is_deleted = false
+					)
+				)
+			))
+		)
 		AND (:keyword IS NULL OR (
 			to_tsvector('simple', f_unaccent(coalesce(p.content, ''))) @@ plainto_tsquery('simple', f_unaccent(CAST(:keyword AS text)))
 			OR f_unaccent(p.content) ILIKE '%' || f_unaccent(CAST(:keyword AS text)) || '%'
@@ -71,6 +85,7 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
             @Param("originId") UUID originId,
             @Param("destinationId") UUID destinationId,
             @Param("sortBy") String sortBy,
+            @Param("currentUserId") UUID currentUserId,
             @Param("limit") int limit,
             @Param("offset") int offset);
 
@@ -85,6 +100,20 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
 		LEFT JOIN hashtag h ON phm.hashtag_id = h.id
 		LEFT JOIN itinerary i ON p.itinerary_id = i.id
 		WHERE p.is_deleted = false
+		AND (
+			p.visibility = 'PUBLIC'
+			OR (CAST(:currentUserId AS uuid) IS NOT NULL AND (
+				p.creator_id = CAST(:currentUserId AS uuid)
+				OR (
+					p.visibility = 'PRIVATE'
+					AND EXISTS (
+						SELECT 1 FROM group_member gm
+						JOIN itinerary it ON it.group_id = gm.group_id
+						WHERE it.id = p.itinerary_id AND gm.user_id = CAST(:currentUserId AS uuid) AND gm.is_deleted = false
+					)
+				)
+			))
+		)
 		AND (:keyword IS NULL OR (
 			to_tsvector('simple', f_unaccent(coalesce(p.content, ''))) @@ plainto_tsquery('simple', f_unaccent(CAST(:keyword AS text)))
 			OR f_unaccent(p.content) ILIKE '%' || f_unaccent(CAST(:keyword AS text)) || '%'
@@ -118,7 +147,34 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
             @Param("minPeople") Integer minPeople,
             @Param("maxPeople") Integer maxPeople,
             @Param("originId") UUID originId,
-            @Param("destinationId") UUID destinationId);
+            @Param("destinationId") UUID destinationId,
+            @Param("currentUserId") UUID currentUserId);
+
+    @Query("""
+        SELECT p FROM Post p
+        WHERE p.softDeleteInfo.isDeleted = false
+        AND (
+            p.visibility = 'PUBLIC'
+            OR (
+                :currentUserId IS NOT NULL
+                AND (
+                    p.creator.id = :currentUserId
+                    OR (
+                        p.visibility = 'PRIVATE'
+                        AND p.itinerary IS NOT NULL
+                        AND p.itinerary.group IS NOT NULL
+                        AND EXISTS (
+                            SELECT 1 FROM GroupMember gm
+                            WHERE gm.group.id = p.itinerary.group.id
+                            AND gm.user.id = :currentUserId
+                            AND gm.softDeleteInfo.isDeleted = false
+                        )
+                    )
+                )
+            )
+        )
+    """)
+    Page<Post> findVisiblePosts(@Param("currentUserId") UUID currentUserId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"creator", "itinerary"})
     Page<Post> findBySoftDeleteInfoIsDeletedFalse(Pageable pageable);

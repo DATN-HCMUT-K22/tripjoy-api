@@ -23,6 +23,8 @@ public enum ErrorCode {
     // 403 Forbidden: Đã đăng nhập nhưng không có quyền
     UNAUTHORIZED(2002, "You do not have permission", HttpStatus.FORBIDDEN),
 
+    LOGIN_FAILED(2012, "Invalid username or password", HttpStatus.UNAUTHORIZED),
+
     USER_EXISTED(2003, "User already exists", HttpStatus.BAD_REQUEST),
     EMAIL_EXISTED(2004, "Email already exists", HttpStatus.BAD_REQUEST),
     USERNAME_EXISTED(2005, "Username already exists", HttpStatus.BAD_REQUEST),

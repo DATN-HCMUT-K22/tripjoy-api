@@ -97,7 +97,7 @@ public class PostService implements IPostService {
 
         // Fast path: no filter criteria — use simple paginated findAll (no FTS overhead)
         if (params == null || params.isEmpty()) {
-            Page<Post> postPage = postRepository.findBySoftDeleteInfoIsDeletedFalse(fastPathPageable);
+            Page<Post> postPage = postRepository.findVisiblePosts(currentUserId, fastPathPageable);
             List<PostResponse> responses = getPostResponsesWithContext(postPage.getContent(), currentUserId);
             return new PageImpl<>(responses, pageable, postPage.getTotalElements());
         }
@@ -127,6 +127,7 @@ public class PostService implements IPostService {
                 params.getOriginId(),
                 params.getDestinationId(),
                 params.getSort(),
+                currentUserId,
                 size,
                 offset);
 
@@ -146,7 +147,8 @@ public class PostService implements IPostService {
                     params.getMinPeople(),
                     params.getMaxPeople(),
                     params.getOriginId(),
-                    params.getDestinationId());
+                    params.getDestinationId(),
+                    currentUserId);
         }
 
         List<PostResponse> responses = getPostResponsesWithContext(posts, currentUserId);
@@ -161,6 +163,22 @@ public class PostService implements IPostService {
 
         if (post.getSoftDeleteInfo() != null && post.getSoftDeleteInfo().isDeleted()) {
             throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
+        }
+
+        if (post.getVisibility() == PostVisibility.PRIVATE) {
+            if (currentUserId == null) {
+                throw new AppException(ErrorCode.UNAUTHORIZED);
+            }
+            if (!post.getCreator().getId().equals(currentUserId)) {
+                boolean isGroupMember = false;
+                if (post.getItinerary() != null && post.getItinerary().getGroup() != null) {
+                    isGroupMember = post.getItinerary().getGroup().getMembers().stream()
+                        .anyMatch(gm -> gm.getUser().getId().equals(currentUserId) && !gm.getSoftDeleteInfo().isDeleted());
+                }
+                if (!isGroupMember) {
+                    throw new AppException(ErrorCode.UNAUTHORIZED);
+                }
+            }
         }
 
         return getPostResponseWithContext(post, currentUserId);
