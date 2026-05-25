@@ -155,7 +155,7 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
                                 .location(location)
                                 .note(aiItem.getNote())
                                 .duration(aiItem.getDuration())
-                                .startTime(LocalDateTime.parse(aiItem.getStartTime(), DateTimeFormatter.ISO_DATE_TIME))
+                                .startTime(parseDateTimeRobustly(aiItem.getStartTime()))
                                 .build();
                     })
                     .collect(Collectors.toList());
@@ -453,11 +453,7 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
                             .location(location)
                             .note(aiItem.getNote())
                             .duration(aiItem.getDuration())
-                            .startTime(
-                                    aiItem.getStartTime() != null
-                                            ? LocalDateTime.parse(
-                                                    aiItem.getStartTime(), DateTimeFormatter.ISO_DATE_TIME)
-                                            : null)
+                            .startTime(parseDateTimeRobustly(aiItem.getStartTime()))
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -624,10 +620,7 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
                 .map(ai -> TripItemResponse.builder()
                         .note(ai.getNote())
                         .duration(ai.getDuration())
-                        .startTime(
-                                ai.getStartTime() != null
-                                        ? LocalDateTime.parse(ai.getStartTime(), DateTimeFormatter.ISO_DATE_TIME)
-                                        : null)
+                        .startTime(parseDateTimeRobustly(ai.getStartTime()))
                         .location(com.tripjoy.api.dto.response.location.LocationResponse.builder()
                                 .name(ai.getLocationName())
                                 .providerId(ai.getPlaceId())
@@ -738,5 +731,37 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
                                 .build())
                         .collect(Collectors.toList()))
                 .build();
+    }
+
+    private LocalDateTime parseDateTimeRobustly(String dateStr) {
+        if (dateStr == null || dateStr.isBlank()) {
+            return null;
+        }
+        dateStr = dateStr.trim();
+        // Replace space with 'T' if present (e.g. "2026-05-01 09:00:00" -> "2026-05-01T09:00:00")
+        if (dateStr.contains(" ") && !dateStr.contains("T")) {
+            dateStr = dateStr.replace(" ", "T");
+        }
+        try {
+            return LocalDateTime.parse(dateStr, DateTimeFormatter.ISO_DATE_TIME);
+        } catch (Exception e) {
+            try {
+                // Try parsing with offset (e.g., "2026-05-01T09:00:00Z" or "+07:00")
+                return java.time.OffsetDateTime.parse(dateStr, DateTimeFormatter.ISO_DATE_TIME).toLocalDateTime();
+            } catch (Exception ex) {
+                try {
+                    // Try parsing with timezone name (e.g., "2026-05-01T09:00:00[Asia/Ho_Chi_Minh]")
+                    return java.time.ZonedDateTime.parse(dateStr, DateTimeFormatter.ISO_DATE_TIME).toLocalDateTime();
+                } catch (Exception ex2) {
+                    try {
+                        // Fallback to local date with start of day
+                        return java.time.LocalDate.parse(dateStr).atStartOfDay();
+                    } catch (Exception ex3) {
+                        log.error("Failed to parse date string robustly: {}", dateStr, ex3);
+                        return null;
+                    }
+                }
+            }
+        }
     }
 }
