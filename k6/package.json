@@ -28,6 +28,9 @@
     "test:soak:report":    "k6 run --out json=reports/soak-results.json scenarios/soak-test.js",
     "test:ai:report":      "k6 run --out json=reports/ai-results.json scenarios/ai-test.js",
 
+    "db:cleanup":          "k6 run scripts/db-cleanup.js",
+    "db:cleanup:staging":  "k6 run -e ENV=staging scripts/db-cleanup.js",
+
     "test:all:report": "npm run test:smoke:report && npm run test:load:report && npm run test:stress:report && npm run test:ai:report"
   },
   "keywords": ["k6", "load-testing", "stress-testing", "performance", "tripjoy"],
