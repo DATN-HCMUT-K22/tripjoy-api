@@ -137,6 +137,7 @@ public class Endpoint {
         // Quản lý chi phí (expense) trong 1 lịch trình
         public static final String EXPENSES_BASE = ID + "/expenses";
         public static final String EXPENSES_ID = EXPENSES_BASE + "/{expenseId}";
+        public static final String EXPENSES_SUMMARY = EXPENSES_BASE + "/summary";
 
         // Thêm/bỏ yêu thích
         public static final String FAVORITES = ID + "/favorites";

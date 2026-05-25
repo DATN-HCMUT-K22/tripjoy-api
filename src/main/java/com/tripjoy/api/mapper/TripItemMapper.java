@@ -20,5 +20,7 @@ public interface TripItemMapper {
 
     @Mapping(target = "location", ignore = true)
     @Mapping(target = "itinerary", ignore = true)
+    @Mapping(target = "rating", ignore = true)
+    @Mapping(target = "review", ignore = true)
     void updateTripItem(@MappingTarget TripItem tripItem, TripItemRequest request);
 }
