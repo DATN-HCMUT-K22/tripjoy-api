@@ -28,6 +28,7 @@ import { generateItineraryPayload, generateGroupPayload } from '../lib/generator
 // Options — small VU count, permissive thresholds for AI
 // ──────────────────────────────────────────────────────────────
 const aiGenE2eTrend = new Trend('ai_generation_e2e_duration', true);
+const aiChatbotTrend = new Trend('ai_chatbot_response_time', true);
 
 export const options = {
     vus: 3,
@@ -40,6 +41,7 @@ export const options = {
         http_req_duration: ['p(95)<150000'],
         checks: ['rate>0.80'],  // 80% success is acceptable for AI tests
         ai_generation_e2e_duration: ['p(95)<120000'], // 95% of generations must complete in under 120 seconds (2 minutes)
+        ai_chatbot_response_time: ['p(95)<30000'],   // 95% of chatbot responses must be under 30 seconds
     },
     tags: { testType: 'ai', project: 'tripjoy' },
 };
@@ -100,8 +102,34 @@ export function setup() {
         console.warn('[ai-test] Theme seeding warm-up warning:', e);
     }
 
-    console.log(`[ai-test] Setup complete. groupId=${groupId}, itineraryId=${itineraryId}`);
-    return { access_token: r.access_token, groupId, itineraryId };
+    // Fetch user conversations list to get a valid conversationId for Chatbot test
+    let conversationId = null;
+    try {
+        const convRes = get(url('/conversations'), headers, 'GET /conversations (setup)');
+        const convs = extractData(convRes) || [];
+        if (convs.length > 0) {
+            conversationId = convs[0].id;
+        } else {
+            // Search for a user dynamically to create a direct conversation
+            const searchRes = get(url('/users/search?q=user&size=5'), headers, 'GET /users/search (setup)');
+            const users = extractData(searchRes) || [];
+            const targetUser = users.find(u => u.username !== env.users.regular.username);
+            if (targetUser) {
+                const createRes = post(
+                    url('/conversations'), 
+                    JSON.stringify({ targetUserId: targetUser.id }), 
+                    headers, 
+                    'POST /conversations (setup)'
+                );
+                conversationId = extractId(createRes);
+            }
+        }
+    } catch (e) {
+        console.warn('[ai-test] Chatbot conversation setup warning:', e);
+    }
+
+    console.log(`[ai-test] Setup complete. groupId=${groupId}, itineraryId=${itineraryId}, conversationId=${conversationId}`);
+    return { access_token: r.access_token, groupId, itineraryId, conversationId };
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -113,15 +141,24 @@ export default function (data) {
     const headers = authHeaders(data.access_token);
     const roll = Math.random();
 
-    if (roll < 0.50) {
+    if (roll < 0.25) {
         // Test AI itinerary generation (async — returns 202)
         testAiGenerateItinerary(headers, data.groupId);
-    } else if (roll < 0.75) {
+    } else if (roll < 0.45) {
         // Test notebook generation on existing itinerary
         testNotebookGeneration(headers, data.itineraryId);
-    } else {
+    } else if (roll < 0.60) {
         // Read notebook to confirm generation worked
         testGetNotebook(headers, data.itineraryId);
+    } else if (roll < 0.70) {
+        // Test AI itinerary modification (synchronous AI call)
+        testAiModifyItinerary(headers, data.itineraryId);
+    } else if (roll < 0.80) {
+        // Test AI suggest location (synchronous AI call)
+        testAiSuggestLocation(headers, data.itineraryId);
+    } else {
+        // Test AI chatbot E2E conversation response
+        testAiChatbot(headers, data.conversationId);
     }
 
     // AI operations need breathing room
@@ -253,6 +290,138 @@ function testGetNotebook(headers, itineraryId) {
     check(res, {
         'notebook-get: 200 or 404': (r) => r.status === 200 || r.status === 404,
     });
+}
+
+function testAiModifyItinerary(headers, itineraryId) {
+    if (!itineraryId) return;
+
+    const payload = {
+        unwantedPlaceIds: ["ChIJ0T2NLikpdTERgJJ6o5gX1Kw"]
+    };
+
+    const res = http.post(
+        url(`/itineraries/${itineraryId}/ai-modify`),
+        JSON.stringify(payload),
+        {
+            headers,
+            tags: { name: 'POST /itineraries/{id}/ai-modify' },
+            timeout: '150s',
+        }
+    );
+
+    check(res, {
+        'ai-modify: status 200': (r) => r.status === 200,
+        'ai-modify: has data': (r) => {
+            try { return !!JSON.parse(r.body).data; } catch { return false; }
+        },
+    });
+
+    if (res.status !== 200) {
+        console.warn(`[ai-test] ai-modify returned ${res.status}: ${res.body?.substring(0, 300)}`);
+    }
+}
+
+function testAiSuggestLocation(headers, itineraryId) {
+    if (!itineraryId) return;
+
+    const payload = {
+        unwantedPlaceId: "ChIJ0T2NLikpdTERgJJ6o5gX1Kw",
+        latitude: 10.762622,
+        longitude: 106.660172
+    };
+
+    const res = http.post(
+        url(`/itineraries/${itineraryId}/ai-suggest-location`),
+        JSON.stringify(payload),
+        {
+            headers,
+            tags: { name: 'POST /itineraries/{id}/ai-suggest-location' },
+            timeout: '150s',
+        }
+    );
+
+    check(res, {
+        'ai-suggest: status 200': (r) => r.status === 200,
+        'ai-suggest: has suggestions': (r) => {
+            try { return Array.isArray(JSON.parse(r.body).data); } catch { return false; }
+        },
+    });
+
+    if (res.status !== 200) {
+        console.warn(`[ai-test] ai-suggest returned ${res.status}: ${res.body?.substring(0, 300)}`);
+    }
+}
+
+function testAiChatbot(headers, conversationId) {
+    if (!conversationId) return;
+
+    const payload = {
+        message_content: '@Tripjoy suggest 3 interesting things to do in Hanoi',
+        message_type: 'TEXT'
+    };
+
+    const start = Date.now();
+    const sendRes = http.post(
+        url(`/conversations/${conversationId}/messages`),
+        JSON.stringify(payload),
+        {
+            headers,
+            tags: { name: 'POST /conversations/{id}/messages (@Tripjoy)' },
+            timeout: '60s',
+        }
+    );
+
+    check(sendRes, {
+        'chatbot-send: status 200': (r) => r.status === 200,
+        'chatbot-send: has message id': (r) => {
+            try { return !!JSON.parse(r.body).data?.id; } catch { return false; }
+        },
+    });
+
+    if (sendRes.status !== 200) {
+        console.warn(`[ai-test] chatbot-send returned ${sendRes.status}: ${sendRes.body?.substring(0, 300)}`);
+        return;
+    }
+
+    // Start polling for chatbot response (looking for is_bot === true)
+    let replyFound = false;
+    let retries = 0;
+    const maxRetries = 15; // 15 * 2s = 30s max polling duration
+    
+    while (!replyFound && retries < maxRetries) {
+        sleep(2); // poll every 2s
+        const historyRes = http.get(
+            url(`/conversations/${conversationId}/messages?limit=10`),
+            {
+                headers,
+                tags: { name: 'GET /conversations/{id}/messages (polling)' }
+            }
+        );
+        
+        try {
+            const body = JSON.parse(historyRes.body);
+            const messages = body.data?.messages || [];
+            const botReply = messages.find(m => m.is_bot === true);
+            
+            if (botReply) {
+                const durationMs = Date.now() - start;
+                aiChatbotTrend.add(durationMs);
+                replyFound = true;
+                break;
+            }
+        } catch (e) {
+            // ignore JSON parse errors
+        }
+        retries++;
+    }
+
+    check(replyFound, {
+        'chatbot-reply: received bot reply (is_bot)': (f) => f === true,
+    });
+
+    if (!replyFound) {
+        console.warn(`[ai-test] Chatbot failed to reply within 30s in conversation: ${conversationId}`);
+    }
 }
 
 // ──────────────────────────────────────────────────────────────
