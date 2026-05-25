@@ -66,6 +66,7 @@ export function setup() {
     const itineraryId = extractId(itiRes);
 
     // Add at least one trip item so AI has something to work with for Notebook
+    let tripItemId = null;
     if (itineraryId) {
         // Dynamically find a valid location ID from search to avoid 404 in setup
         const searchRes = get(url('/locations/search?q=cafe&size=1'), headers, 'GET /locations/search (setup)');
@@ -78,7 +79,8 @@ export function setup() {
             duration: 120,
             start_time: new Date(new Date(itiPayload.start_date + "Z").getTime() + 18000000).toISOString().split('.')[0]
         };
-        post(url(`/itineraries/${itineraryId}/items`), itemPayload, headers, 'POST /itineraries/{id}/items (setup)');
+        const itemRes = post(url(`/itineraries/${itineraryId}/items`), itemPayload, headers, 'POST /itineraries/{id}/items (setup)');
+        tripItemId = extractId(itemRes);
     }
 
     // Run a single sequential AI itinerary generation request during setup.
@@ -128,8 +130,8 @@ export function setup() {
         console.warn('[ai-test] Chatbot conversation setup warning:', e);
     }
 
-    console.log(`[ai-test] Setup complete. groupId=${groupId}, itineraryId=${itineraryId}, conversationId=${conversationId}`);
-    return { access_token: r.access_token, groupId, itineraryId, conversationId };
+    console.log(`[ai-test] Setup complete. groupId=${groupId}, itineraryId=${itineraryId}, conversationId=${conversationId}, tripItemId=${tripItemId}`);
+    return { access_token: r.access_token, groupId, itineraryId, conversationId, tripItemId };
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -152,10 +154,10 @@ export default function (data) {
         testGetNotebook(headers, data.itineraryId);
     } else if (roll < 0.70) {
         // Test AI itinerary modification (synchronous AI call)
-        testAiModifyItinerary(headers, data.itineraryId);
+        testAiModifyItinerary(headers, data.itineraryId, data.tripItemId);
     } else if (roll < 0.80) {
         // Test AI suggest location (synchronous AI call)
-        testAiSuggestLocation(headers, data.itineraryId);
+        testAiSuggestLocation(headers, data.itineraryId, data.tripItemId);
     } else {
         // Test AI chatbot E2E conversation response
         testAiChatbot(headers, data.conversationId);
@@ -292,11 +294,14 @@ function testGetNotebook(headers, itineraryId) {
     });
 }
 
-function testAiModifyItinerary(headers, itineraryId) {
+function testAiModifyItinerary(headers, itineraryId, tripItemId) {
     if (!itineraryId) return;
 
+    // Use dynamically created trip item ID or fallback to standard place_id if unavailable
+    const targetPlaceId = tripItemId || "ChIJ0T2NLikpdTERgJJ6o5gX1Kw";
+
     const payload = {
-        unwantedPlaceIds: ["ChIJ0T2NLikpdTERgJJ6o5gX1Kw"]
+        unwantedPlaceIds: [targetPlaceId]
     };
 
     const res = http.post(
@@ -321,11 +326,14 @@ function testAiModifyItinerary(headers, itineraryId) {
     }
 }
 
-function testAiSuggestLocation(headers, itineraryId) {
+function testAiSuggestLocation(headers, itineraryId, tripItemId) {
     if (!itineraryId) return;
 
+    // Use dynamically created trip item ID or fallback to standard place_id if unavailable
+    const targetPlaceId = tripItemId || "ChIJ0T2NLikpdTERgJJ6o5gX1Kw";
+
     const payload = {
-        unwantedPlaceId: "ChIJ0T2NLikpdTERgJJ6o5gX1Kw",
+        unwantedPlaceId: targetPlaceId,
         latitude: 10.762622,
         longitude: 106.660172
     };
