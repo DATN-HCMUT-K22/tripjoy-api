@@ -2,11 +2,12 @@ package com.tripjoy.api.controller;
 
 import jakarta.validation.Valid;
 
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.tripjoy.api.constant.Endpoint;
 import com.tripjoy.api.dto.request.report.ModerationActionRequest;
@@ -37,4 +38,17 @@ public class AdminController {
                 .data(adminService.moderateUser(request))
                 .build();
     }
+
+    @Operation(summary = "Get a paginated and filterable list of moderation actions")
+    @GetMapping("/moderation-actions")
+    public ApiResponse<Page<ModerationActionResponse>> getModerationActions(
+            @RequestParam(required = false) UUID userId,
+            @RequestParam(required = false) String actionType,
+            @RequestParam(required = false) UUID baId,
+            Pageable pageable) {
+        return ApiResponse.<Page<ModerationActionResponse>>builder()
+                .data(adminService.getModerationActions(userId, actionType, baId, pageable))
+                .build();
+    }
 }
+

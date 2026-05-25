@@ -1,5 +1,9 @@
 package com.tripjoy.api.service.impl;
 
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +50,15 @@ public class AdminService implements IAdminService {
         return toModerationActionResponse(moderationActionRepository.save(action));
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ModerationActionResponse> getModerationActions(
+            UUID userId, String actionType, UUID baId, Pageable pageable) {
+        return moderationActionRepository
+                .findByFilters(userId, actionType != null ? actionType.trim() : null, baId, pageable)
+                .map(this::toModerationActionResponse);
+    }
+
     private User getCurrentUser() {
         return userRepository
                 .findById(SecurityUtils.getCurrentUserId())
@@ -63,3 +76,4 @@ public class AdminService implements IAdminService {
                 .build();
     }
 }
+
