@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tripjoy.api.dto.response.location.LocationResponse;
-
+import com.tripjoy.api.enums.TripItemStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
@@ -32,4 +32,6 @@ public class TripItemResponse extends BaseResponse {
 
     // Lồng thông tin Location, không chỉ trả về ID
     LocationResponse location;
+
+    TripItemStatus status;
 }

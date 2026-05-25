@@ -16,6 +16,7 @@ import com.tripjoy.api.dto.event.ItineraryDeletedEvent;
 import com.tripjoy.api.dto.request.ItineraryRequest;
 import com.tripjoy.api.dto.request.ItineraryStatusRequest;
 import com.tripjoy.api.dto.request.TripItemRequest;
+import com.tripjoy.api.dto.request.TripItemStatusRequest;
 import com.tripjoy.api.dto.response.ItineraryResponse;
 import com.tripjoy.api.dto.response.TripItemResponse;
 import com.tripjoy.api.entity.Group;
@@ -302,6 +303,27 @@ public class ItineraryService implements IItineraryService {
         }
 
         tripItemRepository.delete(tripItem);
+    }
+
+    @Override
+    public TripItemResponse updateTripItemStatus(UUID itineraryId, UUID tripItemId, TripItemStatusRequest request) {
+        Itinerary itinerary = itineraryRepository
+                .findById(itineraryId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        validateOwnership(itinerary);
+
+        TripItem tripItem = tripItemRepository
+                .findById(tripItemId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        if (!tripItem.getItinerary().getId().equals(itineraryId)) {
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
+        }
+
+        tripItem.setStatus(request.getStatus());
+        tripItem = tripItemRepository.save(tripItem);
+        return tripItemMapper.toTripItemResponse(tripItem);
     }
 
     @Override

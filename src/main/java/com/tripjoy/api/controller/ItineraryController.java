@@ -15,6 +15,7 @@ import com.tripjoy.api.dto.request.GenerateItineraryRequest;
 import com.tripjoy.api.dto.request.ItineraryRequest;
 import com.tripjoy.api.dto.request.ItineraryStatusRequest;
 import com.tripjoy.api.dto.request.TripItemRequest;
+import com.tripjoy.api.dto.request.TripItemStatusRequest;
 import com.tripjoy.api.dto.response.ApiResponse;
 import com.tripjoy.api.dto.response.ItineraryResponse;
 import com.tripjoy.api.dto.response.TripItemResponse;
@@ -159,6 +160,17 @@ public class ItineraryController {
             @PathVariable("itineraryId") UUID itineraryId, @PathVariable("tripItemId") UUID tripItemId) {
         itineraryService.removeTripItem(itineraryId, tripItemId);
         return ApiResponse.<Void>builder().message("Trip item removed").build();
+    }
+
+    @Operation(summary = "Update specific trip item status (Check-in, Skip, Pending)")
+    @PatchMapping(Endpoint.Itinerary.ITEMS_STATUS)
+    public ApiResponse<TripItemResponse> updateTripItemStatus(
+            @PathVariable("itineraryId") UUID itineraryId,
+            @PathVariable("tripItemId") UUID tripItemId,
+            @Valid @RequestBody TripItemStatusRequest request) {
+        return ApiResponse.<TripItemResponse>builder()
+                .data(itineraryService.updateTripItemStatus(itineraryId, tripItemId, request))
+                .build();
     }
 
     // --- AI Modification ---
