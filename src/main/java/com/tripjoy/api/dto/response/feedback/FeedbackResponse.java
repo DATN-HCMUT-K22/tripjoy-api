@@ -2,7 +2,10 @@ package com.tripjoy.api.dto.response.feedback;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tripjoy.api.dto.response.BaseResponse;
+import com.tripjoy.api.dto.response.report.ReportContentSimpleResponse;
+import com.tripjoy.api.dto.response.simple.UserSimpleResponse;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -22,10 +25,13 @@ public class FeedbackResponse extends BaseResponse {
     String type;
     String status;
     UUID userId;
+    UserSimpleResponse sender;
 
     UUID receiverId;
+    UserSimpleResponse receiver;
 
-    UUID parentFeedbackId;
+    @JsonProperty("parent_feedback")
+    ParentFeedbackSimpleResponse parentFeedback;
 
-    UUID reportContentId;
+    ReportContentSimpleResponse report;
 }

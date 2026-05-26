@@ -12,7 +12,10 @@ import com.tripjoy.api.dto.request.feedback.FeedbackRequest;
 import com.tripjoy.api.dto.request.feedback.FeedbackResponseRequest;
 import com.tripjoy.api.dto.response.feedback.FeedbackResponse;
 import com.tripjoy.api.dto.response.feedback.FeedbackResponseResponse;
+import com.tripjoy.api.dto.response.feedback.ParentFeedbackSimpleResponse;
+import com.tripjoy.api.dto.response.report.ReportContentSimpleResponse;
 import com.tripjoy.api.entity.Feedback;
+import com.tripjoy.api.entity.ReportContent;
 import com.tripjoy.api.entity.User;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
@@ -105,6 +108,32 @@ public class FeedbackService implements IFeedbackService {
     }
 
     private FeedbackResponse toFeedbackResponse(Feedback feedback) {
+        ReportContent report = feedback.getReportContent();
+
+        ParentFeedbackSimpleResponse parentFbResponse = null;
+        if (feedback.getParentFeedback() != null) {
+            parentFbResponse = ParentFeedbackSimpleResponse.builder()
+                    .id(feedback.getParentFeedback().getId())
+                    .title(feedback.getParentFeedback().getTitle())
+                    .status(feedback.getParentFeedback().getStatus())
+                    .build();
+        }
+
+        ReportContentSimpleResponse reportResponse = null;
+        if (report != null) {
+            reportResponse = ReportContentSimpleResponse.builder()
+                    .id(report.getId())
+                    .contentType(report.getContentType())
+                    .reportedEntityId(report.getTargetId())
+                    .reportType(report.getReportType())
+                    .status(report.getStatus())
+                    .reportedContentText(report.getText())
+                    .reportedMediaUrl(report.getMediaUrl())
+                    .reporter(report.getReporter() != null ? userMapper.toUserSimpleResponse(report.getReporter()) : null)
+                    .reportedUser(report.getReportedUser() != null ? userMapper.toUserSimpleResponse(report.getReportedUser()) : null)
+                    .build();
+        }
+
         return FeedbackResponse.builder()
                 .id(feedback.getId())
                 .title(feedback.getTitle())
@@ -112,9 +141,11 @@ public class FeedbackService implements IFeedbackService {
                 .type(feedback.getType())
                 .status(feedback.getStatus())
                 .userId(feedback.getSender() != null ? feedback.getSender().getId() : null)
+                .sender(feedback.getSender() != null ? userMapper.toUserSimpleResponse(feedback.getSender()) : null)
                 .receiverId(feedback.getReceiver() != null ? feedback.getReceiver().getId() : null)
-                .parentFeedbackId(feedback.getParentFeedback() != null ? feedback.getParentFeedback().getId() : null)
-                .reportContentId(feedback.getReportContent() != null ? feedback.getReportContent().getId() : null)
+                .receiver(feedback.getReceiver() != null ? userMapper.toUserSimpleResponse(feedback.getReceiver()) : null)
+                .parentFeedback(parentFbResponse)
+                .report(reportResponse)
                 .createdAt(feedback.getCreatedAt())
                 .createdBy(feedback.getCreatedBy())
                 .updatedAt(feedback.getUpdatedAt())
