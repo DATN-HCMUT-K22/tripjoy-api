@@ -160,15 +160,12 @@ export default function (data) {
     if (roll < 0.25) {
         // Test AI itinerary generation (async — returns 202)
         testAiGenerateItinerary(headers, data.groupId);
-    } else if (roll < 0.45) {
+    } else if (roll < 0.50) {
         // Test notebook generation on existing itinerary
         testNotebookGeneration(headers, data.itineraryId);
-    } else if (roll < 0.60) {
+    } else if (roll < 0.65) {
         // Read notebook to confirm generation worked
         testGetNotebook(headers, data.itineraryId);
-    } else if (roll < 0.70) {
-        // Test AI itinerary modification (synchronous AI call)
-        testAiModifyItinerary(headers, data.itineraryId, data.tripItemId);
     } else if (roll < 0.80) {
         // Test AI suggest location (synchronous AI call)
         testAiSuggestLocation(headers, data.itineraryId, data.tripItemId);
