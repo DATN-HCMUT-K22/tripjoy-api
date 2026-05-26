@@ -72,18 +72,19 @@ export function setup() {
         const searchRes = get(url('/locations/search?q=cafe&size=1'), headers, 'GET /locations/search (setup)');
         const locations = extractData(searchRes) || [];
         
-        let locationId = "1509dfcc-aaca-4c4d-8499-6ccd92a2b2de"; // fallback UUID
-
-        if (locations.length > 0) {
-            locationId = locations[0].id;
-        }
-
         const itemPayload = {
-            location_id: locationId,
             note: "Visit the city center",
             duration: 120,
             start_time: new Date(new Date(itiPayload.start_date + "Z").getTime() + 18000000).toISOString().split('.')[0]
         };
+
+        if (locations.length > 0) {
+            itemPayload.location_id = locations[0].id;
+        } else {
+            // If database has no locations, use place_id. Backend will auto-resolve and save it safely!
+            itemPayload.place_id = "ChIJ0T2NLikpdTERgJJ6o5gX1Kw"; 
+        }
+
         const itemRes = post(url(`/itineraries/${itineraryId}/items`), itemPayload, headers, 'POST /itineraries/{id}/items (setup)');
         
         // Use the TripItem's database UUID (not Google Place ID).
