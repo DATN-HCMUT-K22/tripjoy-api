@@ -67,4 +67,16 @@ public class PostRequest {
             example = "PUBLIC")
     @Builder.Default
     PostVisibility visibility = PostVisibility.PUBLIC;
+
+    @JsonProperty("hide_expense")
+    @Schema(
+            name = "hide_expense",
+            description =
+                    "When true, expense data of the linked itinerary is hidden from non-members "
+                            + "even if the post itself is PUBLIC. Has no effect when no itinerary is attached.",
+            type = "boolean",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            example = "false")
+    @Builder.Default
+    boolean hideExpense = false;
 }

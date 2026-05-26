@@ -44,6 +44,17 @@ public class Post extends BaseEntity {
     @Builder.Default
     private PostVisibility visibility = PostVisibility.PUBLIC;
 
+    /**
+     * When {@code true}, expense data of the linked itinerary is hidden from
+     * non-members even if the post itself is {@link PostVisibility#PUBLIC}.
+     *
+     * <p>Intentionally kept separate from {@code visibility}: visibility controls
+     * <em>who can see the post</em>; this flag controls <em>which data is exposed</em>.
+     */
+    @Builder.Default
+    @Column(name = "hide_expense", nullable = false)
+    private boolean hideExpense = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "itinerary_id")
     private Itinerary itinerary;

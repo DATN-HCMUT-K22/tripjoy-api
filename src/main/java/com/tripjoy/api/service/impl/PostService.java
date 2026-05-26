@@ -7,7 +7,9 @@ import java.util.stream.Collectors;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,6 +65,7 @@ public class PostService implements IPostService {
                 .creator(user)
                 .shareQuantity(0)
                 .visibility(request.getVisibility() != null ? request.getVisibility() : PostVisibility.PUBLIC)
+                .hideExpense(request.isHideExpense())
                 .softDeleteInfo(new SoftDeleteInfo())
                 .build();
 
@@ -89,11 +92,11 @@ public class PostService implements IPostService {
     public Page<PostResponse> getPosts(PostQueryParams params, Pageable pageable, UUID currentUserId) {
         // Force sort to createdAt DESC for the fast path to prevent missing new posts
         // and ignore incoming Pageable.sort which might contain "newest" (invalid property)
-        Pageable fastPathPageable = org.springframework.data.domain.PageRequest.of(
+        Pageable fastPathPageable = PageRequest.of(
                 pageable.getPageNumber(),
                 pageable.getPageSize(),
-                org.springframework.data.domain.Sort.by(
-                        org.springframework.data.domain.Sort.Direction.DESC, "createdAt"));
+                Sort.by(
+                        Sort.Direction.DESC, "createdAt"));
 
         // Fast path: no filter criteria — use simple paginated findAll (no FTS overhead)
         if (params == null || params.isEmpty()) {
@@ -193,6 +196,7 @@ public class PostService implements IPostService {
 
         post.setContent(request.getContent());
         post.setMediaUrls(request.getMediaUrls());
+        post.setHideExpense(request.isHideExpense());
 
         if (request.getItineraryId() != null) {
             Itinerary itinerary = itineraryRepository

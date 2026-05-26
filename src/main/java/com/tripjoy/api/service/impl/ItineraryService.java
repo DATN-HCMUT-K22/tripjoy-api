@@ -265,7 +265,9 @@ public class ItineraryService implements IItineraryService {
         tripItemMapper.updateTripItem(tripItem, request);
 
         // Business rule: rating and review can only be set when status is CHECKED_IN
+        // and only by group leader or co-leader
         if (request.getRating() != null || request.getReview() != null) {
+            validateLeaderOrCoLeader(itinerary);
             if (tripItem.getStatus() != com.tripjoy.api.enums.TripItemStatus.CHECKED_IN) {
                 throw new AppException(
                         ErrorCode.INVALID_REQUEST,
@@ -420,6 +422,26 @@ public class ItineraryService implements IItineraryService {
         }
 
         throw new AppException(ErrorCode.ONLY_LEADER_ALLOWED);
+    }
+
+    private void validateLeaderOrCoLeader(Itinerary itinerary) {
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+
+        // 1. Personal Itinerary
+        if (itinerary.getUser() != null && itinerary.getUser().getId().equals(currentUserId)) {
+            return;
+        }
+
+        // 2. Group Itinerary
+        if (itinerary.getGroup() != null) {
+            boolean isLeaderOrCoLeader = itinerary.getGroup().getMembers().stream()
+                    .anyMatch(member -> member.getUser().getId().equals(currentUserId)
+                            && (member.getRole() == GroupRole.LEADER || member.getRole() == GroupRole.CO_LEADER)
+                            && !member.getSoftDeleteInfo().isDeleted());
+            if (isLeaderOrCoLeader) return;
+        }
+
+        throw new AppException(ErrorCode.ONLY_LEADER_ALLOWED, "Only group leader or co-leader is allowed to rate or review trip items");
     }
 
     private void validateOwnership(Itinerary itinerary) {

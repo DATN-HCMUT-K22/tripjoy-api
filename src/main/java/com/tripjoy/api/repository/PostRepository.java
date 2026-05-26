@@ -195,4 +195,25 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
 
     @Query("SELECT p.id FROM Post p JOIN p.saveUsers u WHERE p.id IN :postIds AND u.id = :userId")
     List<UUID> findSavedPostIdsByUser(@Param("postIds") List<UUID> postIds, @Param("userId") UUID userId);
+
+    /**
+     * Returns {@code true} if any <em>non-deleted, PUBLIC</em> post linked to the given itinerary
+     * has the {@code hideExpense} flag set to {@code true}.
+     *
+     * <p>Used by {@link com.tripjoy.api.service.impl.ExpenseService} to enforce the expense
+     * visibility policy: when an itinerary is shared publicly via a post that hides expense data,
+     * non-members must not be able to read the expense information through the Expense APIs.
+     *
+     * @param itineraryId the itinerary whose linked posts should be checked
+     * @return {@code true} if expense data should be hidden for non-members
+     */
+    @Query("""
+            SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END
+            FROM Post p
+            WHERE p.itinerary.id = :itineraryId
+              AND p.visibility = com.tripjoy.api.enums.PostVisibility.PUBLIC
+              AND p.hideExpense = true
+              AND p.softDeleteInfo.isDeleted = false
+            """)
+    boolean existsPublicPostWithHiddenExpenseByItinerary(@Param("itineraryId") UUID itineraryId);
 }

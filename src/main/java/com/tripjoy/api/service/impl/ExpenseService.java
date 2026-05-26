@@ -26,6 +26,7 @@ import com.tripjoy.api.mapper.ExpenseMapper;
 import com.tripjoy.api.mapper.UserMapper;
 import com.tripjoy.api.repository.ExpenseRepository;
 import com.tripjoy.api.repository.ItineraryRepository;
+import com.tripjoy.api.repository.PostRepository;
 import com.tripjoy.api.repository.TripItemRepository;
 import com.tripjoy.api.repository.UserRepository;
 import com.tripjoy.api.service.IExpenseService;
@@ -47,6 +48,13 @@ public class ExpenseService implements IExpenseService {
     UserRepository userRepository;
     TripItemRepository tripItemRepository;
     UserMapper userMapper;
+
+    /**
+     * Repository used exclusively for expense-visibility policy checks.
+     * We query it to determine whether any public post linked to the itinerary
+     * has the {@code hideExpense} flag set, without loading full Post aggregates.
+     */
+    PostRepository postRepository;
 
     @Override
     public ExpenseResponse addExpense(UUID itineraryId, ExpenseRequest request) {
@@ -80,9 +88,12 @@ public class ExpenseService implements IExpenseService {
     @Override
     @Transactional(readOnly = true)
     public List<ExpenseResponse> getExpenses(UUID itineraryId, UUID paidById) {
-        itineraryRepository
+
+        Itinerary itinerary = itineraryRepository
                 .findById(itineraryId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        enforceExpenseVisibilityPolicy(itinerary);
 
         List<Expense> expenses = (paidById != null)
                 ? expenseRepository.findByItineraryIdAndPaidById(itineraryId, paidById)
@@ -155,9 +166,12 @@ public class ExpenseService implements IExpenseService {
     @Override
     @Transactional(readOnly = true)
     public ExpenseSummaryResponse getExpenseSummary(UUID itineraryId) {
-        itineraryRepository
+
+        Itinerary itinerary = itineraryRepository
                 .findById(itineraryId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        enforceExpenseVisibilityPolicy(itinerary);
 
         BigDecimal grandTotal = expenseRepository
                 .sumAmountByItineraryId(itineraryId)
@@ -198,6 +212,36 @@ public class ExpenseService implements IExpenseService {
     }
 
     // ─── Private Helpers ─────────────────────────────────────────────────────────
+
+    /**
+     * Enforces the expense visibility policy introduced by the {@code hide_expense} flag.
+     *
+     * <p>If any active PUBLIC post linked to {@code itinerary} has {@code hideExpense = true},
+     * only the itinerary owner / group members are allowed to read expense data.
+     * Everyone else — including authenticated users who are not members — receives a 403.
+     *
+     * <p>The check is intentionally a single, index-backed EXISTS query so it adds minimal
+     * overhead to the happy path (no hidden posts ≈ most itineraries).
+     *
+     * @param itinerary the itinerary being accessed
+     * @throws AppException with {@link ErrorCode#UNAUTHORIZED} when the caller is blocked
+     */
+    private void enforceExpenseVisibilityPolicy(Itinerary itinerary) {
+        // Expense endpoints require authentication (Spring Security blocks unauthenticated
+        // requests before reaching the service layer), so currentUserId is always non-null here.
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+
+        // Fast exit: members always have full access regardless of the hide_expense flag.
+        if (isMemberOf(itinerary, currentUserId)) return;
+
+        // Non-member: block if any public post for this itinerary hides the expense data.
+        boolean expenseHidden = postRepository
+                .existsPublicPostWithHiddenExpenseByItinerary(itinerary.getId());
+
+        if (expenseHidden) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+    }
 
     /**
      * Resolves the actual payer. If {@code paidById} is null, defaults to the creator.
@@ -255,7 +299,8 @@ public class ExpenseService implements IExpenseService {
         // 2. Group itinerary
         if (itinerary.getGroup() != null) {
             return itinerary.getGroup().getMembers().stream()
-                    .anyMatch(member -> member.getUser().getId().equals(userId));
+                    .anyMatch(member -> member.getUser().getId().equals(userId)
+                            && !member.getSoftDeleteInfo().isDeleted());
         }
         return false;
     }

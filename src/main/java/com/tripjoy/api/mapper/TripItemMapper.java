@@ -14,6 +14,8 @@ import com.tripjoy.api.entity.TripItem;
         uses = {LocationMapper.class})
 public interface TripItemMapper {
 
+    @Mapping(target = "rating", ignore = true)
+    @Mapping(target = "review", ignore = true)
     TripItem toTripItem(TripItemRequest request);
 
     TripItemResponse toTripItemResponse(TripItem tripItem);

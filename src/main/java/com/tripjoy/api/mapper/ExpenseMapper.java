@@ -9,7 +9,7 @@ import com.tripjoy.api.dto.request.ExpenseRequest;
 import com.tripjoy.api.dto.response.ExpenseResponse;
 import com.tripjoy.api.entity.Expense;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = {UserMapper.class})
 public interface ExpenseMapper {
 
     /**

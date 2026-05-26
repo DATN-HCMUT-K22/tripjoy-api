@@ -30,6 +30,9 @@ public class PostResponse extends BaseResponse {
 
     PostVisibility visibility;
 
+    @JsonProperty("hide_expense")
+    Boolean hideExpense;
+
     // createdAt, updatedAt đã có từ BaseResponse - REMOVED
 
     @JsonProperty("shared_quantity")

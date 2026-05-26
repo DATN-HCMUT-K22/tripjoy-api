@@ -28,6 +28,7 @@ public interface PostMapper {
     @Mapping(target = "updatedAt", source = "updatedAt")
     @Mapping(target = "itinerary", source = "itinerary")
     @Mapping(target = "createdByUser", source = "creator")
+    @Mapping(target = "hideExpense", source = "hideExpense")
     @Mapping(
             target = "likeCount",
             expression = "java((long) (post.getLikeUsers() != null ? post.getLikeUsers().size() : 0))")
