@@ -60,63 +60,76 @@ export function setup() {
     const groupId = extractId(groupRes);
     if (!groupId) throw new Error('[ai-test] Failed to create group for setup');
 
-    // Create an itinerary manually
-    const itiPayload = generateItineraryPayload(groupId);
-    const itiRes = post(url('/itineraries'), itiPayload, headers, 'POST /itineraries (setup)');
-    const itineraryId = extractId(itiRes);
-
-    // Add at least one trip item so AI has something to work with for Notebook
+    // Create an itinerary using AI generation instead of manual creation
+    // This provides realistic, fully-formed data (including real locations) 
+    // and completely avoids the 409 database constraint violation on manual TripItem creation.
+    console.log('[ai-test] Generating initial itinerary using AI service...');
+    let itineraryId = null;
     let tripItemId = null;
-    if (itineraryId) {
-        // Find a location already seeded in the database to avoid calling the external Google Places API
-        const searchRes = get(url('/locations/search?q=cafe&size=1'), headers, 'GET /locations/search (setup)');
-        const locations = extractData(searchRes) || [];
-        
-        const itemPayload = {
-            note: "Visit the city center",
-            duration: 120,
-            start_time: new Date(new Date(itiPayload.start_date + "Z").getTime() + 18000000).toISOString().split('.')[0]
-        };
 
-        if (locations.length > 0) {
-            itemPayload.location_id = locations[0].id;
-        } else {
-            // If database has no locations, use place_id. Backend will auto-resolve and save it safely!
-            itemPayload.place_id = "ChIJ0T2NLikpdTERgJJ6o5gX1Kw"; 
-        }
-
-        const itemRes = post(url(`/itineraries/${itineraryId}/items`), itemPayload, headers, 'POST /itineraries/{id}/items (setup)');
-        
-        // Use the TripItem's database UUID (not Google Place ID).
-        // Backend supports lookup by both UUID (item.getId()) and provider_id — UUID is safer
-        // because locations seeded locally may not have a provider_id set.
-        tripItemId = extractId(itemRes);
-        if (!tripItemId) {
-            // Fallback: if item creation failed, use a well-known provider_id from a seeded location
-            console.warn('[ai-test] TripItem creation failed, using fallback place ID for AI tests');
-            tripItemId = "ChIJ0T2NLikpdTERgJJ6o5gX1Kw";
-        }
-    }
-
-    // Run a single sequential AI itinerary generation request during setup.
-    // This seeds the themes 'CULTURE' and 'FOOD' on a single thread,
-    // preventing concurrent VUs from hitting a 409 unique constraint violation in ThemeService.
-    console.log('[ai-test] Seeding themes and warming up AI service...');
     try {
-        const warmUpPayload = {
+        const start = new Date();
+        start.setDate(start.getDate() + 7);
+        const end = new Date(start);
+        end.setDate(end.getDate() + 3);
+        const formatDT = (date) => date.toISOString().split('.')[0];
+
+        const aiGeneratePayload = {
             destination: 'Ho Chi Minh City',
             latitude: 10.762622,
             longitude: 106.660172,
-            startDate: itiPayload.start_date,
-            endDate: itiPayload.end_date,
+            startDate: formatDT(start),
+            endDate: formatDT(end),
             peopleQuantity: 2,
-            budgetEstimate: 1000.0,
+            budgetEstimate: 10000000.0,
             themes: ['CULTURE', 'FOOD'],
             suggestLocations: []
         };
-        http.post(url('/itineraries/ai-generate'), JSON.stringify(warmUpPayload), { headers, timeout: '150s' });
+
+        const genRes = http.post(
+            url('/itineraries/ai-generate'),
+            JSON.stringify(aiGeneratePayload),
+            { headers: { ...headers, 'Content-Type': 'application/json' }, timeout: '150s' }
+        );
+        itineraryId = extractId(genRes);
+
+        if (itineraryId) {
+            console.log(`[ai-test] Itinerary initiated: ${itineraryId}. Polling for completion...`);
+            let status = 'GENERATING';
+            let retries = 0;
+            const maxRetries = 60; // 60 * 2s = 120s max polling duration
+            
+            while (status === 'GENERATING' && retries < maxRetries) {
+                sleep(2);
+                const pollRes = http.get(url(`/itineraries/${itineraryId}`), { headers });
+                try {
+                    const pollBody = JSON.parse(pollRes.body);
+                    status = pollBody.data?.status || 'FAILED';
+                } catch (e) {
+                    status = 'FAILED';
+                }
+                retries++;
+            }
+
+            console.log(`[ai-test] Itinerary generation final status: ${status}`);
+
+            if (status === 'DRAFT') {
+                const itemsRes = http.get(url(`/itineraries/${itineraryId}/items`), { headers });
+                const items = JSON.parse(itemsRes.body)?.data || [];
+                if (items.length > 0) {
+                    tripItemId = items[0].id;
+                    console.log(`[ai-test] Successfully extracted real TripItem ID: ${tripItemId}`);
+                }
+            }
+        }
     } catch (e) {
-        console.warn('[ai-test] Theme seeding warm-up warning:', e);
+        console.error('[ai-test] Failed to set up AI itinerary:', e);
+    }
+
+    if (!itineraryId) {
+        console.warn('[ai-test] AI itinerary generation setup failed. Using hardcoded fallback IDs');
+        itineraryId = "abb501cf-fcc9-4cb0-be3c-4dfdd543bf44"; // generic fallback
+        tripItemId = "ChIJ0T2NLikpdTERgJJ6o5gX1Kw";
     }
 
     // Fetch user conversations list to get a valid conversationId for Chatbot test
