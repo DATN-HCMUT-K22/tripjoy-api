@@ -109,6 +109,7 @@ export function setup() {
                     status = 'FAILED';
                 }
                 retries++;
+                console.log(`[ai-test] Polling #${retries}/${maxRetries} — Status: ${status}`);
             }
 
             console.log(`[ai-test] Itinerary generation final status: ${status}`);

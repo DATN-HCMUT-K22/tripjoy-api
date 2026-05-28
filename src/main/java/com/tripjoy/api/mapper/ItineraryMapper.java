@@ -3,12 +3,12 @@ package com.tripjoy.api.mapper;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
-
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
-
+import org.mapstruct.NullValuePropertyMappingStrategy;
 import com.tripjoy.api.configuration.mapper.BaseMapperConfig;
 import com.tripjoy.api.dto.request.ItineraryRequest;
 import com.tripjoy.api.dto.response.ItineraryResponse;
@@ -38,6 +38,7 @@ public interface ItineraryMapper {
     @Mapping(source = "budgetEstimate", target = "budgetEstimate")
     ItineraryResponse toItineraryResponse(Itinerary itinerary);
 
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "group", ignore = true)
     @Mapping(target = "status", ignore = true)

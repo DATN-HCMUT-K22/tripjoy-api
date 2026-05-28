@@ -1,9 +1,10 @@
 package com.tripjoy.api.mapper;
 
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-
+import org.mapstruct.NullValuePropertyMappingStrategy;
 import com.tripjoy.api.configuration.mapper.BaseMapperConfig;
 import com.tripjoy.api.dto.request.TripItemRequest;
 import com.tripjoy.api.dto.response.TripItemResponse;
@@ -20,6 +21,7 @@ public interface TripItemMapper {
 
     TripItemResponse toTripItemResponse(TripItem tripItem);
 
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "location", ignore = true)
     @Mapping(target = "itinerary", ignore = true)
     @Mapping(target = "rating", ignore = true)

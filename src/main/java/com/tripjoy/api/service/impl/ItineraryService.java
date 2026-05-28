@@ -234,6 +234,8 @@ public class ItineraryService implements IItineraryService {
         // Async: increment usage_count — fire-and-forget, does not affect response
         locationService.incrementUsageCount(List.of(location.getId()));
 
+        evictItinerariesAndGroupsCache(itinerary);
+
         return tripItemMapper.toTripItemResponse(tripItem);
     }
 
@@ -300,6 +302,7 @@ public class ItineraryService implements IItineraryService {
         }
 
         tripItem = tripItemRepository.save(tripItem);
+        evictItinerariesAndGroupsCache(itinerary);
         return tripItemMapper.toTripItemResponse(tripItem);
     }
 
@@ -320,6 +323,7 @@ public class ItineraryService implements IItineraryService {
         }
 
         tripItemRepository.delete(tripItem);
+        evictItinerariesAndGroupsCache(itinerary);
     }
 
     @Override
@@ -340,6 +344,7 @@ public class ItineraryService implements IItineraryService {
 
         tripItem.setStatus(request.getStatus());
         tripItem = tripItemRepository.save(tripItem);
+        evictItinerariesAndGroupsCache(itinerary);
         return tripItemMapper.toTripItemResponse(tripItem);
     }
 
