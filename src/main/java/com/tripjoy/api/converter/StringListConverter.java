@@ -1,7 +1,7 @@
 package com.tripjoy.api.converter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import jakarta.persistence.AttributeConverter;
@@ -27,8 +27,8 @@ public class StringListConverter implements AttributeConverter<List<String>, Str
     @Override
     public List<String> convertToEntityAttribute(String joined) {
         if (joined == null || joined.trim().isEmpty()) {
-            return Collections.emptyList();
+            return new ArrayList<>();
         }
-        return Arrays.asList(joined.split(DELIMITER));
+        return new ArrayList<>(Arrays.asList(joined.split(DELIMITER)));
     }
 }
