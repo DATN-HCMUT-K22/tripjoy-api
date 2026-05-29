@@ -362,6 +362,13 @@ public class ItineraryService implements IItineraryService {
             return itineraryMapper.toItineraryResponse(itinerary);
         }
 
+        // Rule: Cannot change status of a COMPLETED itinerary (Không cho hoàn tác)
+        if (oldStatus == ItineraryStatus.COMPLETED) {
+            throw new AppException(
+                    ErrorCode.INVALID_ITINERARY_STATUS_TRANSITION,
+                    "Cannot change status of a COMPLETED itinerary.");
+        }
+
         // Rule: From CONFIRMED, you can only move to IN_PROGRESS or COMPLETED
         if (oldStatus == ItineraryStatus.CONFIRMED 
                 && newStatus != ItineraryStatus.IN_PROGRESS 
@@ -388,6 +395,18 @@ public class ItineraryService implements IItineraryService {
         }
 
         itinerary.setStatus(newStatus);
+
+        // Auto-checkin: when itinerary is completed, mark all remaining PENDING items as CHECKED_IN
+        if (newStatus == ItineraryStatus.COMPLETED) {
+            List<TripItem> pendingItems = tripItemRepository.findByItineraryId(id).stream()
+                    .filter(item -> item.getStatus() == com.tripjoy.api.enums.TripItemStatus.PENDING)
+                    .collect(Collectors.toList());
+            pendingItems.forEach(item -> item.setStatus(com.tripjoy.api.enums.TripItemStatus.CHECKED_IN));
+            if (!pendingItems.isEmpty()) {
+                tripItemRepository.saveAll(pendingItems);
+            }
+        }
+
         itinerary = itineraryRepository.save(itinerary);
         evictItinerariesAndGroupsCache(itinerary);
         return itineraryMapper.toItineraryResponse(itinerary);
