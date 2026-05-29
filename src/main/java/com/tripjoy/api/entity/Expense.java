@@ -2,7 +2,7 @@ package com.tripjoy.api.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.*;
@@ -44,7 +44,7 @@ public class Expense extends BaseEntity {
     @Convert(converter = StringListConverter.class)
     @Column(name = "receipt_image_urls", columnDefinition = "TEXT")
     @Builder.Default
-    private List<String> receiptImageUrls = Collections.emptyList();
+    private List<String> receiptImageUrls = new ArrayList<>();
 
     /**
      * The user who actually paid for this expense.
