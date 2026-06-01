@@ -204,17 +204,17 @@ public class Endpoint {
         public static final String ARCHIVE = ID + "/archive";
     }
 
-    public static final class SystemConfig {
-        public static final String BASE = API_PREFIX + "/admin/configs";
-        public static final String KEY = "/{key}";
-    }
-
     public static final class Admin {
         public static final String BASE = API_PREFIX + "/admin";
     }
 
+    public static final class SystemConfig {
+        public static final String BASE = Admin.BASE + "/configs";
+        public static final String KEY = "/{key}";
+    }
+
     public static final class AdminDashboard {
-        public static final String BASE = API_PREFIX + "/admin/dashboard";
+        public static final String BASE = Admin.BASE + "/dashboard";
         public static final String OVERVIEW = "/overview";
     }
 
