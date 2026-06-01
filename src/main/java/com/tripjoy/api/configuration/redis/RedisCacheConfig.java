@@ -84,6 +84,9 @@ public class RedisCacheConfig {
     // System
     public static final String CACHE_SYSTEM_CONFIG = "system:config";
 
+    // Admin dashboard
+    public static final String CACHE_ADMIN_DASHBOARD_OVERVIEW = "admin-dashboard:overview";
+
     // Group
     public static final String CACHE_GROUPS_BY_USER = "groups:user";
 
@@ -114,6 +117,7 @@ public class RedisCacheConfig {
     private static final Duration TTL_ROLE_ALL = Duration.ofHours(24);
     private static final Duration TTL_CHAT_PINNED = Duration.ofMinutes(5);
     private static final Duration TTL_SYSTEM_CONFIG = Duration.ofHours(24);
+    private static final Duration TTL_ADMIN_DASHBOARD_OVERVIEW = Duration.ofMinutes(1);
     private static final Duration TTL_USER_PUBLIC = Duration.ofHours(12);
     private static final Duration TTL_USER_ADMIN_VIEW = Duration.ofHours(12);
     private static final Duration TTL_GROUP_BY_ID = Duration.ofHours(6);
@@ -179,6 +183,9 @@ public class RedisCacheConfig {
         cacheConfigs.put(CACHE_CHAT_PINNED, defaults.entryTtl(TTL_CHAT_PINNED));
 
         cacheConfigs.put(CACHE_SYSTEM_CONFIG, defaults.entryTtl(TTL_SYSTEM_CONFIG));
+
+        // Dashboard aggregates favor bounded database load over sub-minute freshness.
+        cacheConfigs.put(CACHE_ADMIN_DASHBOARD_OVERVIEW, defaults.entryTtl(TTL_ADMIN_DASHBOARD_OVERVIEW));
 
         // Cache user's group list for 10 minutes to hit < 500ms p95 targets
         cacheConfigs.put(CACHE_GROUPS_BY_USER, defaults.entryTtl(Duration.ofMinutes(10)));

@@ -213,6 +213,11 @@ public class Endpoint {
         public static final String BASE = API_PREFIX + "/admin";
     }
 
+    public static final class AdminDashboard {
+        public static final String BASE = API_PREFIX + "/admin/dashboard";
+        public static final String OVERVIEW = "/overview";
+    }
+
     public static final class Ai {
         public static final String BASE = API_PREFIX + "/ai";
     }
