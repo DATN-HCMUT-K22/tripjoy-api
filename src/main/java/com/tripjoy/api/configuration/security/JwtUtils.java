@@ -23,6 +23,7 @@ import com.tripjoy.api.entity.User;
 import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
 import com.tripjoy.api.repository.InvalidatedTokenRepository;
+import com.tripjoy.api.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.NonFinal;
@@ -63,6 +64,7 @@ import lombok.extern.slf4j.Slf4j;
 public class JwtUtils {
 
     private final InvalidatedTokenRepository invalidatedTokenRepository;
+    private final UserRepository userRepository;
 
     @NonFinal
     @Value("${jwt.signer-key}")
@@ -152,6 +154,10 @@ public class JwtUtils {
         UUID tokenId = UUID.fromString(signedJWT.getJWTClaimsSet().getJWTID());
         if (existsInBlacklist(tokenId.toString())) throw new AppException(ErrorCode.UNAUTHENTICATED);
 
+        // Kiểm tra tài khoản có bị khóa không — có dùng Redis Cache
+        String userId = signedJWT.getJWTClaimsSet().getSubject();
+        if (isUserLocked(userId)) throw new AppException(ErrorCode.USER_LOCKED);
+
         return signedJWT;
     }
 
@@ -199,6 +205,18 @@ public class JwtUtils {
     public boolean addToBlacklist(String jti) {
         log.debug("Marking token as blacklisted in cache: jti={}", jti);
         return true;
+    }
+
+    /**
+     * Check if user is locked.
+     * Backed by Redis cache auth:user-locked
+     */
+    @Cacheable(value = RedisCacheConfig.CACHE_USER_LOCKED, key = "#userId")
+    public boolean isUserLocked(String userId) {
+        log.debug("Cache MISS — checking user locked status in DB: userId={}", userId);
+        return userRepository.findById(UUID.fromString(userId))
+                .map(User::getIsLocked)
+                .orElse(false);
     }
 
     // --- 4. Tiện ích lấy User ID từ Token (Dùng cho Socket) ---

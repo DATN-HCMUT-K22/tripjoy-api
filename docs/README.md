@@ -20,6 +20,11 @@
 - **[Cursor-Based Pagination](./CURSOR_BASED_PAGINATION.md)** - Hướng dẫn phân trang hiệu năng cao
 - **[Database Indexing](./DATABASE_INDEXING.md)** - Tối ưu database performance với indexes
 
+### 🔌 API Integration Guides (for Frontend)
+- **[Feedback Module API Guide](./feedback_api_integration_guide.md)** - Hướng dẫn tích hợp API gửi và quản lý phản hồi/báo lỗi
+- **[Report & Moderation API Guide](./report_api_integration_guide.md)** - Hướng dẫn tích hợp API báo cáo nội dung vi phạm và kiểm duyệt
+
+
 ---
 
 ## 🚀 Quick Start

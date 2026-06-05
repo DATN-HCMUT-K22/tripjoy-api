@@ -15,9 +15,9 @@ import com.tripjoy.api.entity.ModerationAction;
 public interface ModerationActionRepository extends JpaRepository<ModerationAction, UUID> {
 
     @Query("SELECT m FROM ModerationAction m WHERE " +
-           "(:userId IS NULL OR m.user.id = :userId) AND " +
-           "(:actionType IS NULL OR UPPER(m.actionType) = UPPER(:actionType)) AND " +
-           "(:baId IS NULL OR m.ba.id = :baId)")
+           "(cast(:userId as uuid) IS NULL OR m.user.id = :userId) AND " +
+           "(cast(:actionType as text) IS NULL OR UPPER(m.actionType) = UPPER(cast(:actionType as text))) AND " +
+           "(cast(:baId as uuid) IS NULL OR m.ba.id = :baId)")
     Page<ModerationAction> findByFilters(
             @Param("userId") UUID userId,
             @Param("actionType") String actionType,

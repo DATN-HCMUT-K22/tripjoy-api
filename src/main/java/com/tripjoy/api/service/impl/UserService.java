@@ -235,7 +235,8 @@ public class UserService implements IUserService {
     @Caching(
             evict = {
                 @CacheEvict(value = RedisCacheConfig.CACHE_USER_PUBLIC, key = "#userId"),
-                @CacheEvict(value = RedisCacheConfig.CACHE_USER_ADMIN_VIEW, key = "#userId")
+                @CacheEvict(value = RedisCacheConfig.CACHE_USER_ADMIN_VIEW, key = "#userId"),
+                @CacheEvict(value = RedisCacheConfig.CACHE_USER_LOCKED, key = "#userId")
             })
     public UserResponse updateUserStatus(UUID userId, boolean isLocked) {
         User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));

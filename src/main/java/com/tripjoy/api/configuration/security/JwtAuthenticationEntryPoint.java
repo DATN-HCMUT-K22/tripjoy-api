@@ -12,6 +12,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tripjoy.api.dto.response.ApiResponse;
+import com.tripjoy.api.exception.AppException;
 import com.tripjoy.api.exception.ErrorCode;
 
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
@@ -20,6 +21,15 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
             HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException, ServletException {
         ErrorCode errorCode = ErrorCode.UNAUTHENTICATED;
+
+        Throwable cause = authException;
+        while (cause != null) {
+            if (cause instanceof AppException appException) {
+                errorCode = appException.getErrorCode();
+                break;
+            }
+            cause = cause.getCause();
+        }
 
         response.setStatus(errorCode.getStatusCode().value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE); // "application/json"
