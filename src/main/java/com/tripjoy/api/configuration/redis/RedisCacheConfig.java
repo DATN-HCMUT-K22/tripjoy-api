@@ -98,6 +98,8 @@ public class RedisCacheConfig {
     public static final String CACHE_USER_PUBLIC = "user:public";
     /** Admin view: full profile including sensitive data. ADMIN-only. TTL 12h. */
     public static final String CACHE_USER_ADMIN_VIEW = "user:admin";
+    /** User locked status. TTL 1h. */
+    public static final String CACHE_USER_LOCKED = "auth:user-locked";
 
     // Group
     public static final String CACHE_GROUP_BY_ID = "group:id";
@@ -193,6 +195,7 @@ public class RedisCacheConfig {
         // User
         cacheConfigs.put(CACHE_USER_PUBLIC, defaults.entryTtl(TTL_USER_PUBLIC));
         cacheConfigs.put(CACHE_USER_ADMIN_VIEW, defaults.entryTtl(TTL_USER_ADMIN_VIEW));
+        cacheConfigs.put(CACHE_USER_LOCKED, defaults.entryTtl(Duration.ofHours(1)));
 
         // Group
         cacheConfigs.put(CACHE_GROUP_BY_ID, defaults.entryTtl(TTL_GROUP_BY_ID));

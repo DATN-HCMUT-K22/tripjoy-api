@@ -102,6 +102,8 @@ public class AuthenticationService implements IAuthenticationService {
 
         if (!isAuthenticated) throw new AppException(ErrorCode.UNAUTHENTICATED);
 
+        if (Boolean.TRUE.equals(user.getIsLocked())) throw new AppException(ErrorCode.USER_LOCKED);
+
         var accessToken = jwtUtils.generateToken(user);
         var refreshToken = jwtUtils.generateRefreshToken(user);
 
@@ -181,6 +183,8 @@ public class AuthenticationService implements IAuthenticationService {
         var user = userRepository
                 .findById(UUID.fromString(username))
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        if (Boolean.TRUE.equals(user.getIsLocked())) throw new AppException(ErrorCode.USER_LOCKED);
 
         var newAccessToken = jwtUtils.generateToken(user);
         var newRefreshToken = jwtUtils.generateRefreshToken(user);

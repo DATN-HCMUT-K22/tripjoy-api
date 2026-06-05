@@ -10,6 +10,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.BadJwtException;
 import org.springframework.stereotype.Component;
 
 import com.nimbusds.jose.JOSEException;
@@ -31,7 +32,7 @@ public class CustomJwtDecoder implements JwtDecoder {
         try {
             jwtUtils.verifyToken(token, false);
         } catch (JOSEException | ParseException | AppException e) {
-            throw new JwtException(e.getMessage());
+            throw new BadJwtException(e.getMessage(), e);
         }
 
         if (nimbusJwtDecoder == null) {
