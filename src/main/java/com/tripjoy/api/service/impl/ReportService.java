@@ -37,6 +37,7 @@ import com.tripjoy.api.repository.PostRepository;
 import com.tripjoy.api.repository.ReportContentRepository;
 import com.tripjoy.api.repository.UserRepository;
 import com.tripjoy.api.service.IReportService;
+import com.tripjoy.api.service.IUserService;
 import com.tripjoy.api.utils.SecurityUtils;
 
 import lombok.AccessLevel;
@@ -61,6 +62,7 @@ public class ReportService implements IReportService {
     ChatMessageRepository chatMessageRepository;
     ConversationMemberRepository conversationMemberRepository;
     UserMapper userMapper;
+    IUserService userService;
 
     @Override
     @Transactional
@@ -138,13 +140,38 @@ public class ReportService implements IReportService {
                 .findById(request.getUserId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
+        String actionType = normalize(request.getActionType());
+        
         ModerationAction action = ModerationAction.builder()
-                .actionType(normalize(request.getActionType()))
+                .actionType(actionType)
                 .note(request.getNote())
                 .user(target)
                 .ba(admin)
                 .reportContent(report)
                 .build();
+
+        if ("DELETE_CONTENT".equals(actionType) || "DELETE".equals(actionType)) {
+            ReportContentType type = ReportContentType.valueOf(report.getContentType());
+            UUID targetId = report.getTargetId();
+            if (type == ReportContentType.POST) {
+                postRepository.findById(targetId).ifPresent(post -> {
+                    post.getSoftDeleteInfo().markAsDeleted(admin.getId().toString());
+                    postRepository.save(post);
+                });
+            } else if (type == ReportContentType.COMMENT) {
+                commentRepository.findById(targetId).ifPresent(comment -> {
+                    comment.setIsDeleted(true);
+                    commentRepository.save(comment);
+                });
+            } else if (type == ReportContentType.MESSAGE) {
+                chatMessageRepository.findById(targetId).ifPresent(msg -> {
+                    msg.setStatus(com.tripjoy.api.enums.MessageStatus.UNSENT);
+                    chatMessageRepository.save(msg);
+                });
+            }
+        } else if ("TEMPORARY_BAN".equals(actionType) || "BAN_USER".equals(actionType) || "BAN".equals(actionType) || "BAN_USER_TEMPORARY".equals(actionType) || "BAN_USER_PERMANENT".equals(actionType)) {
+            userService.updateUserStatus(target.getId(), true, request.getLockedUntil());
+        }
 
         return moderationActionRepository.save(action);
     }

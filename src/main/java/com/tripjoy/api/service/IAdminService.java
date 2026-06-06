@@ -12,6 +12,6 @@ public interface IAdminService {
     ModerationActionResponse moderateUser(ModerationActionRequest request);
 
     Page<ModerationActionResponse> getModerationActions(
-            UUID userId, String actionType, UUID baId, Pageable pageable);
+            String q, String actionType, UUID baId, Pageable pageable);
 }
 

@@ -42,12 +42,12 @@ public class AdminController {
     @Operation(summary = "Get a paginated and filterable list of moderation actions")
     @GetMapping("/moderation-actions")
     public ApiResponse<Page<ModerationActionResponse>> getModerationActions(
-            @RequestParam(required = false) UUID userId,
+            @RequestParam(required = false) String q,
             @RequestParam(required = false) String actionType,
             @RequestParam(required = false) UUID baId,
-            Pageable pageable) {
+            @org.springframework.data.web.PageableDefault(sort = "createdAt", direction = org.springframework.data.domain.Sort.Direction.DESC) Pageable pageable) {
         return ApiResponse.<Page<ModerationActionResponse>>builder()
-                .data(adminService.getModerationActions(userId, actionType, baId, pageable))
+                .data(adminService.getModerationActions(q, actionType, baId, pageable))
                 .build();
     }
 }

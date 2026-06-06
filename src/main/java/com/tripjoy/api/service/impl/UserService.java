@@ -231,16 +231,21 @@ public class UserService implements IUserService {
     }
 
     @Override
-    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','BUSINESS_ADMIN')")
     @Caching(
             evict = {
                 @CacheEvict(value = RedisCacheConfig.CACHE_USER_PUBLIC, key = "#userId"),
                 @CacheEvict(value = RedisCacheConfig.CACHE_USER_ADMIN_VIEW, key = "#userId"),
                 @CacheEvict(value = RedisCacheConfig.CACHE_USER_LOCKED, key = "#userId")
             })
-    public UserResponse updateUserStatus(UUID userId, boolean isLocked) {
+    public UserResponse updateUserStatus(UUID userId, boolean isLocked, java.time.Instant lockedUntil) {
         User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         user.setIsLocked(isLocked);
+        if (isLocked) {
+            user.setLockedUntil(lockedUntil);
+        } else {
+            user.setLockedUntil(null);
+        }
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
@@ -279,7 +284,7 @@ public class UserService implements IUserService {
         String currentUserId =
                 SecurityContextHolder.getContext().getAuthentication().getName();
         return moderationActionRepository
-                .findByFilters(UUID.fromString(currentUserId), null, null, pageable)
+                .findByFilters(currentUserId, null, null, pageable)
                 .map(this::toModerationActionResponse);
     }
 
@@ -290,7 +295,7 @@ public class UserService implements IUserService {
             throw new AppException(ErrorCode.USER_NOT_FOUND);
         }
         return moderationActionRepository
-                .findByFilters(userId, null, null, pageable)
+                .findByFilters(userId.toString(), null, null, pageable)
                 .map(this::toModerationActionResponse);
     }
 

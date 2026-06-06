@@ -43,7 +43,8 @@ public class ReportController {
     @Operation(summary = "Get all reports (Admin/Business Admin, paginated)")
     @GetMapping
     @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','BUSINESS_ADMIN')")
-    public ApiResponse<Page<ReportResponse>> getAllReports(Pageable pageable) {
+    public ApiResponse<Page<ReportResponse>> getAllReports(
+            @org.springframework.data.web.PageableDefault(sort = "createdAt", direction = org.springframework.data.domain.Sort.Direction.DESC) Pageable pageable) {
         return ApiResponse.<Page<ReportResponse>>builder()
                 .data(reportService.getAllReports(pageable))
                 .build();

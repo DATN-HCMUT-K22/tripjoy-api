@@ -179,7 +179,7 @@ public class UserController {
     ApiResponse<UserResponse> updateUserStatus(
             @PathVariable("userId") UUID userId, @RequestBody @Valid UserStatusUpdateRequest request) {
         return ApiResponse.<UserResponse>builder()
-                .data(userService.updateUserStatus(userId, request.getIsLocked()))
+                .data(userService.updateUserStatus(userId, request.getIsLocked(), null))
                 .build();
     }
 
