@@ -1,5 +1,6 @@
 package com.tripjoy.api.entity;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
@@ -44,6 +45,8 @@ public class User extends BaseEntity {
 
     @Builder.Default
     private Boolean isLocked = false;
+
+    private Instant lockedUntil;
 
     @ManyToMany
     @JoinTable(

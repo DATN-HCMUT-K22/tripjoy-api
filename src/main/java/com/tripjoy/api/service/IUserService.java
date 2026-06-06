@@ -51,7 +51,7 @@ public interface IUserService {
 
     UserResponse assignRoles(UUID userId, UserRoleUpdateRequest request);
 
-    UserResponse updateUserStatus(UUID userId, boolean isLocked);
+    UserResponse updateUserStatus(UUID userId, boolean isLocked, java.time.Instant lockedUntil);
 
     void deleteUser(UUID userId);
 

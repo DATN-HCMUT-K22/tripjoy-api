@@ -1,5 +1,6 @@
 package com.tripjoy.api.dto.request.report;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import jakarta.validation.constraints.NotBlank;
@@ -46,4 +47,12 @@ public class ModerationActionRequest {
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
             example = "Users violated community guidelines multiple times.")
     String note;
+
+    @Schema(
+            name = "lockedUntil",
+            description = "The date and time until which the user is locked (temporary ban)",
+            type = "String",
+            format = "date-time",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    Instant lockedUntil;
 }

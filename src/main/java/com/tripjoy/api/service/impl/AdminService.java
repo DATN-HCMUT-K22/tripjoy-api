@@ -31,6 +31,7 @@ public class AdminService implements IAdminService {
     UserRepository userRepository;
     ModerationActionRepository moderationActionRepository;
     UserMapper userMapper;
+    com.tripjoy.api.service.IUserService userService;
 
     @Override
     @Transactional
@@ -47,15 +48,25 @@ public class AdminService implements IAdminService {
                 .ba(admin)
                 .build();
 
+        String actionType = action.getActionType();
+        if ("DELETE_CONTENT".equals(actionType) || "DELETE".equals(actionType)) {
+            // Note: In a direct moderation action, we don't have the context of the content to delete.
+            // This endpoint is primarily for user-level actions.
+        } else if ("TEMPORARY_BAN".equals(actionType) || "BAN_USER".equals(actionType) || "BAN".equals(actionType) || "BAN_USER_TEMPORARY".equals(actionType) || "BAN_USER_PERMANENT".equals(actionType)) {
+            userService.updateUserStatus(target.getId(), true, request.getLockedUntil());
+        } else if ("UNLOCK_USER".equals(actionType)) {
+            userService.updateUserStatus(target.getId(), false, null);
+        }
+
         return toModerationActionResponse(moderationActionRepository.save(action));
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<ModerationActionResponse> getModerationActions(
-            UUID userId, String actionType, UUID baId, Pageable pageable) {
+            String q, String actionType, UUID baId, Pageable pageable) {
         return moderationActionRepository
-                .findByFilters(userId, actionType != null ? actionType.trim() : null, baId, pageable)
+                .findByFilters(q != null ? q.trim() : null, actionType != null ? actionType.trim() : null, baId, pageable)
                 .map(this::toModerationActionResponse);
     }
 

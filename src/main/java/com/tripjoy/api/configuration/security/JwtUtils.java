@@ -215,7 +215,15 @@ public class JwtUtils {
     public boolean isUserLocked(String userId) {
         log.debug("Cache MISS — checking user locked status in DB: userId={}", userId);
         return userRepository.findById(UUID.fromString(userId))
-                .map(User::getIsLocked)
+                .map(user -> {
+                    if (Boolean.TRUE.equals(user.getIsLocked())) {
+                        if (user.getLockedUntil() != null && user.getLockedUntil().isBefore(java.time.Instant.now())) {
+                            return false;
+                        }
+                        return true;
+                    }
+                    return false;
+                })
                 .orElse(false);
     }
 

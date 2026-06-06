@@ -1,5 +1,6 @@
 package com.tripjoy.api.dto.response;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
@@ -29,6 +30,7 @@ public class UserResponse extends BaseResponse {
 
     boolean isDeleted;
     boolean isLocked;
+    Instant lockedUntil;
 
     Set<RoleResponse> roles;
 }
