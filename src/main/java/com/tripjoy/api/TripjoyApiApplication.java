@@ -4,12 +4,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
 @SpringBootApplication // handle annotation ConfigurationProperties in class OpenApiProperties
 @ConfigurationPropertiesScan
 @EnableAsync
+@EnableScheduling
 public class TripjoyApiApplication {
 
     public static void main(String[] args) {

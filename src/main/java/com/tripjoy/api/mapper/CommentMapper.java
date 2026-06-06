@@ -19,7 +19,9 @@ public interface CommentMapper {
     @Mapping(
             target = "likeCount",
             expression = "java((long) (comment.getLikeUsers() != null ? comment.getLikeUsers().size() : 0))")
-    @Mapping(target = "replyCount", expression = "java(comment.getReplies() != null ? comment.getReplies().size() : 0)")
+    @Mapping(
+            target = "replyCount",
+            expression = "java(comment.getReplies() != null ? (int) comment.getReplies().stream().filter(c -> !Boolean.TRUE.equals(c.getIsDeleted())).count() : 0)")
     @Mapping(target = "isLiked", ignore = true) // Set in service
     @Mapping(target = "latestReplies", ignore = true) // Handled in service if needed
     CommentResponse toCommentResponse(Comment comment);

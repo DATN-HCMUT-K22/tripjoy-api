@@ -40,4 +40,17 @@ public interface IGooglePlacesService {
      * @return Mono wrapping full place details
      */
     Mono<GooglePlaceDetailsDto> getPlaceDetails(String placeId);
+
+    /**
+     * Refreshes a Google Place ID by requesting only the `id` field.
+     * Used for auto-healing obsolete Place IDs.
+     * Returns the new ID if successful, or throws an error (e.g., 404 NOT_FOUND).
+     */
+    Mono<String> refreshPlaceId(String placeId);
+
+    /**
+     * Performs a Text Search to find the Place ID using name and coordinates.
+     * Used as a fallback to auto-heal when a Place ID becomes 404 NOT_FOUND.
+     */
+    Mono<String> findPlaceIdByText(String name, Double lat, Double lng);
 }
