@@ -147,6 +147,66 @@ public class GooglePlacesService implements IGooglePlacesService {
                 });
     }
 
+    @Override
+    public Mono<String> refreshPlaceId(String placeId) {
+        if (placeId == null || placeId.isBlank()) return Mono.empty();
+        
+        return webClient
+                .get()
+                .uri("/places/{placeId}", placeId)
+                .header("X-Goog-FieldMask", "id")
+                .retrieve()
+                .bodyToMono(Map.class)
+                .timeout(TIMEOUT)
+                .map(res -> (String) res.get("id"))
+                .onErrorResume(WebClientResponseException.NotFound.class, e -> {
+                    log.warn("Google Places Refresh API returned 404 NOT_FOUND for placeId={}", placeId);
+                    return Mono.error(e); // Propagate 404 to trigger auto-healing
+                })
+                .onErrorResume(Exception.class, e -> {
+                    log.warn("Google Places Refresh failed for placeId={}: {}", placeId, e.getMessage());
+                    return Mono.empty();
+                });
+    }
+
+    @Override
+    public Mono<String> findPlaceIdByText(String name, Double lat, Double lng) {
+        if (name == null || name.isBlank()) return Mono.empty();
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("textQuery", name + ", Vietnam"); // Bias to Vietnam
+
+        if (lat != null && lng != null) {
+            body.put("locationBias", Map.of(
+                    "circle", Map.of(
+                            "center", Map.of("latitude", lat, "longitude", lng),
+                            "radius", 50000.0 // 50km radius
+                    )
+            ));
+        }
+
+        return webClient
+                .post()
+                .uri("/places:searchText")
+                .header("X-Goog-FieldMask", "places.id")
+                .bodyValue(body)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .timeout(TIMEOUT)
+                .map(res -> {
+                    var places = (java.util.List<Map<String, Object>>) res.get("places");
+                    if (places != null && !places.isEmpty()) {
+                        return (String) places.get(0).get("id");
+                    }
+                    return "";
+                })
+                .filter(id -> !id.isEmpty())
+                .onErrorResume(Exception.class, e -> {
+                    log.warn("Google Places TextSearch failed for name={}: {}", name, e.getMessage());
+                    return Mono.empty();
+                });
+    }
+
     // ==================== Private helpers ====================
 
     /**

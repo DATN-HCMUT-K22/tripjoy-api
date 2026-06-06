@@ -34,7 +34,7 @@ public interface PostMapper {
             expression = "java((long) (post.getLikeUsers() != null ? post.getLikeUsers().size() : 0))")
     @Mapping(
             target = "commentCount",
-            expression = "java((long) (post.getComments() != null ? post.getComments().size() : 0))")
+            expression = "java((long) (post.getComments() != null ? post.getComments().stream().filter(c -> !Boolean.TRUE.equals(c.getIsDeleted())).count() : 0))")
     @Mapping(target = "hashtags", source = "hashtags", qualifiedByName = "mapHashtagsToStrings")
     @Mapping(target = "isLiked", ignore = true) // Set manually in service
     @Mapping(target = "isSaved", ignore = true) // Set manually in service

@@ -5,8 +5,8 @@
     "name_en": "Hanoi",
     "country_name": "Vietnam",
     "latitude": 21.027763,
-    "longitude": 105.834160,
-    "provider_id": "ChIJoRLQlvmwNTERpEdwEkw-o7c",
+    "longitude": 105.83416,
+    "provider_id": "ChIJoRyG2ZurNTERqRfKcnt_iOc",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":21.385897,\"lng\":106.022041},\"southwest\":{\"lat\":20.557984,\"lng\":104.869667}}"
@@ -18,7 +18,7 @@
     "country_name": "Vietnam",
     "latitude": 22.823401,
     "longitude": 104.983741,
-    "provider_id": "ChIJp0BEoWfMPTERxNifhqJjKCQ",
+    "provider_id": "ChIJpeuiRjV4zDYR1niISWKhiC4",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":23.392068,\"lng\":105.554085},\"southwest\":{\"lat\":22.213649,\"lng\":104.433312}}"
@@ -30,7 +30,7 @@
     "country_name": "Vietnam",
     "latitude": 22.666281,
     "longitude": 106.264796,
-    "provider_id": "ChIJhbX_5YzpPTERp9rPIMQF3yM",
+    "provider_id": "ChIJ52dYYbZcyjYRWFR2N_RyN2U",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":23.194748,\"lng\":106.855797},\"southwest\":{\"lat\":22.182124,\"lng\":105.674048}}"
@@ -42,7 +42,7 @@
     "country_name": "Vietnam",
     "latitude": 22.147399,
     "longitude": 105.834882,
-    "provider_id": "ChIJOzV-jd-bPTERYFaFJQSTMts",
+    "provider_id": "ChIJB99ZXU_ZyjYRXFax6ZI4QSM",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":22.762977,\"lng\":106.228736},\"southwest\":{\"lat\":21.750416,\"lng\":105.413026}}"
@@ -54,7 +54,7 @@
     "country_name": "Vietnam",
     "latitude": 21.823834,
     "longitude": 105.234975,
-    "provider_id": "ChIJ3-hVSanIJjERjxZABGH-vME",
+    "provider_id": "ChIJ4R5JpfutNDERf3iEknEBVH8",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":22.668432,\"lng\":105.656948},\"southwest\":{\"lat\":21.476067,\"lng\":104.699379}}"
@@ -66,7 +66,7 @@
     "country_name": "Vietnam",
     "latitude": 22.480637,
     "longitude": 103.975008,
-    "provider_id": "ChIJATLYQ9DINTERI2R69L2j5Jk",
+    "provider_id": "ChIJZSeu-V4RzTYRj9DmK8V0cbw",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":22.898027,\"lng\":104.386879},\"southwest\":{\"lat\":22.033578,\"lng\":103.404953}}"
@@ -78,7 +78,7 @@
     "country_name": "Vietnam",
     "latitude": 21.386849,
     "longitude": 103.016699,
-    "provider_id": "ChIJzXZG5CfAMTERR3U_6jXDzZs",
+    "provider_id": "ChIJ8_vR4A4fLTER9A7fYoWMcUg",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":22.0,\"lng\":103.5},\"southwest\":{\"lat\":21.066,\"lng\":102.5}}"
@@ -90,7 +90,7 @@
     "country_name": "Vietnam",
     "latitude": 22.385778,
     "longitude": 103.470569,
-    "provider_id": "ChIJscD2S3vMMTERtpf0LDlK2uE",
+    "provider_id": "ChIJUbTROSwyLTERLjxIkWCRKeI",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":22.888,\"lng\":104.0},\"southwest\":{\"lat\":21.7,\"lng\":102.8}}"
@@ -102,7 +102,7 @@
     "country_name": "Vietnam",
     "latitude": 21.327876,
     "longitude": 103.914193,
-    "provider_id": "ChIJSxKsocDEMTERF_p_7bKEIzM",
+    "provider_id": "ChIJ1R093JBZMjERezgPalpkLVg",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":21.7,\"lng\":104.5},\"southwest\":{\"lat\":20.4,\"lng\":103.0}}"
@@ -114,7 +114,7 @@
     "country_name": "Vietnam",
     "latitude": 21.722586,
     "longitude": 104.911322,
-    "provider_id": "ChIJnfYDq6TuNjERMEVFKJGlLuo",
+    "provider_id": "ChIJ_w0Uo1laMzERSU_cUMqBUFo",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":22.3,\"lng\":105.5},\"southwest\":{\"lat\":21.1,\"lng\":104.2}}"
@@ -126,7 +126,7 @@
     "country_name": "Vietnam",
     "latitude": 20.817378,
     "longitude": 105.337891,
-    "provider_id": "ChIJmfBMCNaRNjERRBHTcN7BYgM",
+    "provider_id": "ChIJ9eqUDbFrNDERA45r0RVhTWo",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":21.4,\"lng\":106.0},\"southwest\":{\"lat\":20.0,\"lng\":104.6}}"
@@ -138,7 +138,7 @@
     "country_name": "Vietnam",
     "latitude": 21.594664,
     "longitude": 105.848169,
-    "provider_id": "ChIJcWRviqiiNjERqvr6lhBjxb4",
+    "provider_id": "ChIJd3qgchjENDERW0_vaRA3qVc",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":22.0,\"lng\":106.3},\"southwest\":{\"lat\":21.2,\"lng\":105.3}}"
@@ -150,7 +150,7 @@
     "country_name": "Vietnam",
     "latitude": 21.852743,
     "longitude": 106.761519,
-    "provider_id": "ChIJywKGhDm1OTERC4ND1KAvgms",
+    "provider_id": "ChIJbyVFtz5UtTYRWm6Chdo0Pfo",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":22.5,\"lng\":107.4},\"southwest\":{\"lat\":21.4,\"lng\":106.1}}"
@@ -162,7 +162,7 @@
     "country_name": "Vietnam",
     "latitude": 21.006382,
     "longitude": 107.292702,
-    "provider_id": "ChIJkefA5_hYNDER2p0mWBLGEDQ",
+    "provider_id": "ChIJL4V4mtcBSzERaoal8PR5B-0",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":21.7,\"lng\":108.3},\"southwest\":{\"lat\":20.5,\"lng\":106.4}}"
@@ -174,7 +174,7 @@
     "country_name": "Vietnam",
     "latitude": 21.291746,
     "longitude": 106.194481,
-    "provider_id": "ChIJXZbJG5ClNTER7MDc0LgHpb4",
+    "provider_id": "ChIJDWEBYKVtNTER-_VddC9fgSA",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":21.8,\"lng\":106.8},\"southwest\":{\"lat\":21.0,\"lng\":105.9}}"
@@ -186,7 +186,7 @@
     "country_name": "Vietnam",
     "latitude": 21.345523,
     "longitude": 105.202277,
-    "provider_id": "ChIJnVYvtmYYNjERBpKz6DxSxI4",
+    "provider_id": "ChIJM_u_rqiQNDERJQ7PrRaH9lA",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":21.9,\"lng\":105.7},\"southwest\":{\"lat\":20.9,\"lng\":104.5}}"
@@ -197,8 +197,8 @@
     "name_en": "Vinh Phuc",
     "country_name": "Vietnam",
     "latitude": 21.360801,
-    "longitude": 105.597540,
-    "provider_id": "ChIJkQHkpBmvNTER37_yiTXkmDY",
+    "longitude": 105.59754,
+    "provider_id": "ChIJ88Bvrk_lNDERAxLxT-DmLcg",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":21.7,\"lng\":105.9},\"southwest\":{\"lat\":21.0,\"lng\":105.3}}"
@@ -210,7 +210,7 @@
     "country_name": "Vietnam",
     "latitude": 21.186483,
     "longitude": 106.076252,
-    "provider_id": "ChIJC1cXxjiqNTERRnlrBVgHn4g",
+    "provider_id": "ChIJUXqvJl0KNTERcI9VxsAgWeU",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":21.4,\"lng\":106.4},\"southwest\":{\"lat\":21.0,\"lng\":105.8}}"
@@ -221,8 +221,8 @@
     "name_en": "Hai Duong",
     "country_name": "Vietnam",
     "latitude": 20.940788,
-    "longitude": 106.331380,
-    "provider_id": "ChIJpVcmnoWsNTERrNh6E7T7hzg",
+    "longitude": 106.33138,
+    "provider_id": "ChIJt7Hg6EybNTERC4DM3RmFYdQ",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":21.3,\"lng\":107.0},\"southwest\":{\"lat\":20.4,\"lng\":106.0}}"
@@ -234,7 +234,7 @@
     "country_name": "Vietnam",
     "latitude": 20.844912,
     "longitude": 106.688087,
-    "provider_id": "ChIJzz7CPlJWNTERH1r_qkUfU2Q",
+    "provider_id": "ChIJ0xo_nvN6SjER6Ad6-F_I_6U",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":21.1,\"lng\":107.1},\"southwest\":{\"lat\":20.4,\"lng\":106.3}}"
@@ -246,7 +246,7 @@
     "country_name": "Vietnam",
     "latitude": 20.646547,
     "longitude": 106.051247,
-    "provider_id": "ChIJ3wbRqSarNTERVW2FHIlfmOM",
+    "provider_id": "ChIJXSYdMDWvNTERgtTWzxbqqac",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":21.0,\"lng\":106.5},\"southwest\":{\"lat\":20.3,\"lng\":105.7}}"
@@ -258,7 +258,7 @@
     "country_name": "Vietnam",
     "latitude": 20.446473,
     "longitude": 106.341854,
-    "provider_id": "ChIJBSTm-BXWNTEREIP3uSd8Rak",
+    "provider_id": "ChIJ8w0nngzlNTER8U-3l-L9TZk",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":20.7,\"lng\":106.8},\"southwest\":{\"lat\":20.2,\"lng\":106.0}}"
@@ -270,7 +270,7 @@
     "country_name": "Vietnam",
     "latitude": 20.541679,
     "longitude": 105.921869,
-    "provider_id": "ChIJWRJy8nJZNjERxDIrEIL6_V8",
+    "provider_id": "ChIJ4Tr-4afPNTER1Nr_iwdwV5M",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":20.8,\"lng\":106.3},\"southwest\":{\"lat\":20.3,\"lng\":105.6}}"
@@ -282,7 +282,7 @@
     "country_name": "Vietnam",
     "latitude": 20.420574,
     "longitude": 106.168488,
-    "provider_id": "ChIJpanEp-mANjER8C4wFnscAkM",
+    "provider_id": "ChIJUfNjKUPnNTERnDR59ps6l2g",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":20.7,\"lng\":106.7},\"southwest\":{\"lat\":20.0,\"lng\":105.9}}"
@@ -294,7 +294,7 @@
     "country_name": "Vietnam",
     "latitude": 20.250406,
     "longitude": 105.974454,
-    "provider_id": "ChIJh1Qzaj97NjERq4rfNLMoqks",
+    "provider_id": "ChIJ01_y2fB5NjERKQmgpS1E9S0",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":20.7,\"lng\":106.5},\"southwest\":{\"lat\":19.8,\"lng\":105.5}}"
@@ -304,9 +304,9 @@
     "name": "Thanh Hoá",
     "name_en": "Thanh Hoa",
     "country_name": "Vietnam",
-    "latitude": 19.806750,
+    "latitude": 19.80675,
     "longitude": 105.784738,
-    "provider_id": "ChIJwUxRyJFnNzER4P2S7s8Z_OA",
+    "provider_id": "ChIJmZJ2447GNjERT_urFvXeeAE",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":20.6,\"lng\":106.6},\"southwest\":{\"lat\":19.0,\"lng\":104.9}}"
@@ -318,7 +318,7 @@
     "country_name": "Vietnam",
     "latitude": 19.233823,
     "longitude": 104.921395,
-    "provider_id": "ChIJScxFlJi7OzERvuCnM0YD-8w",
+    "provider_id": "ChIJrR1aC2TOOTERGaUZ13y_YVw",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":19.9,\"lng\":105.8},\"southwest\":{\"lat\":18.5,\"lng\":103.8}}"
@@ -330,7 +330,7 @@
     "country_name": "Vietnam",
     "latitude": 18.342651,
     "longitude": 105.905578,
-    "provider_id": "ChIJSfqovFakOzERFjgBrCF-9i8",
+    "provider_id": "ChIJx8Pp7qEoODERaxB9uCZ7xxo",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":18.9,\"lng\":106.5},\"southwest\":{\"lat\":17.8,\"lng\":105.2}}"
@@ -342,7 +342,7 @@
     "country_name": "Vietnam",
     "latitude": 17.469608,
     "longitude": 106.622463,
-    "provider_id": "ChIJnRRJd5SxOzERh8eNjkj5C38",
+    "provider_id": "ChIJD2C3AjpXRzERh3kXjT_YDoA",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":18.1,\"lng\":107.4},\"southwest\":{\"lat\":16.9,\"lng\":105.6}}"
@@ -354,7 +354,7 @@
     "country_name": "Vietnam",
     "latitude": 16.754985,
     "longitude": 107.185626,
-    "provider_id": "ChIJGWIW0i0yRzERvj-F_wGvB3s",
+    "provider_id": "ChIJR11PmzX6QDER9fCb3j9N5jc",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":17.2,\"lng\":107.7},\"southwest\":{\"lat\":16.4,\"lng\":106.3}}"
@@ -366,7 +366,7 @@
     "country_name": "Vietnam",
     "latitude": 16.467397,
     "longitude": 107.590866,
-    "provider_id": "ChIJJ_rJsKyISDERSwKN4M1f_ow",
+    "provider_id": "ChIJ95BkcoecQTERtYTL98oPHKs",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":16.8,\"lng\":108.2},\"southwest\":{\"lat\":15.8,\"lng\":107.0}}"
@@ -378,7 +378,7 @@
     "country_name": "Vietnam",
     "latitude": 16.054407,
     "longitude": 108.202167,
-    "provider_id": "ChIJi3lwCZgqRjERwJj7R0iU3F4",
+    "provider_id": "ChIJEyolkscZQjERh2RDRKDjFPw",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":16.2,\"lng\":108.3},\"southwest\":{\"lat\":15.8,\"lng\":107.9}}"
@@ -390,7 +390,7 @@
     "country_name": "Vietnam",
     "latitude": 15.539737,
     "longitude": 108.019106,
-    "provider_id": "ChIJP3aDuGHCRjERiPLTT1SZFG4",
+    "provider_id": "ChIJx8Oz3n4OQjERed3DNDsBIUs",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":16.2,\"lng\":108.6},\"southwest\":{\"lat\":15.0,\"lng\":107.0}}"
@@ -402,7 +402,7 @@
     "country_name": "Vietnam",
     "latitude": 15.120481,
     "longitude": 108.804416,
-    "provider_id": "ChIJoTBl1-_ARjER7nLjFJXy7DI",
+    "provider_id": "ChIJcwkWqew-aDERse05Mm6NoU0",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":15.5,\"lng\":109.3},\"southwest\":{\"lat\":14.6,\"lng\":108.3}}"
@@ -414,7 +414,7 @@
     "country_name": "Vietnam",
     "latitude": 14.166432,
     "longitude": 108.902618,
-    "provider_id": "ChIJzYJz9WRaRjERKx2DK1VgCjk",
+    "provider_id": "ChIJ1yneuB0-bzERr8CJUMqNRzY",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":14.7,\"lng\":109.5},\"southwest\":{\"lat\":13.5,\"lng\":108.4}}"
@@ -424,9 +424,9 @@
     "name": "Phú Yên",
     "name_en": "Phu Yen",
     "country_name": "Vietnam",
-    "latitude": 13.088170,
+    "latitude": 13.08817,
     "longitude": 109.092803,
-    "provider_id": "ChIJdwpkFUbqRTERjLEkOfNe7LQ",
+    "provider_id": "ChIJHWtubw3sbzERn5Zcnztz_yo",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":13.6,\"lng\":109.5},\"southwest\":{\"lat\":12.6,\"lng\":108.6}}"
@@ -438,7 +438,7 @@
     "country_name": "Vietnam",
     "latitude": 12.243791,
     "longitude": 109.196749,
-    "provider_id": "ChIJZe64kpUbRTERhOb9rUiJ5Hs",
+    "provider_id": "ChIJldPcqIwbcDERzggjMicIwmk",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":12.8,\"lng\":109.7},\"southwest\":{\"lat\":11.7,\"lng\":108.7}}"
@@ -450,7 +450,7 @@
     "country_name": "Vietnam",
     "latitude": 11.567419,
     "longitude": 108.988384,
-    "provider_id": "ChIJ3-Qxm0cBRTERXXH4qJAEVhk",
+    "provider_id": "ChIJrd6ETqTHcDERhDwhe3hvnIQ",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":12.3,\"lng\":109.4},\"southwest\":{\"lat\":11.2,\"lng\":108.5}}"
@@ -462,7 +462,7 @@
     "country_name": "Vietnam",
     "latitude": 11.090193,
     "longitude": 108.072462,
-    "provider_id": "ChIJxfE7bvsTRTERNFJJPQ2E-xM",
+    "provider_id": "ChIJdbhMEjQrdDERoLOaz4uYsFQ",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":11.7,\"lng\":108.5},\"southwest\":{\"lat\":10.5,\"lng\":107.4}}"
@@ -474,7 +474,7 @@
     "country_name": "Vietnam",
     "latitude": 14.349247,
     "longitude": 108.000484,
-    "provider_id": "ChIJl3vLi7NBRTERWYL16iCR-RU",
+    "provider_id": "ChIJ746_qbz_azERhTrkp6EJbyk",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":15.2,\"lng\":108.4},\"southwest\":{\"lat\":13.6,\"lng\":107.2}}"
@@ -486,7 +486,7 @@
     "country_name": "Vietnam",
     "latitude": 13.808047,
     "longitude": 108.109464,
-    "provider_id": "ChIJo3N8r4NARTERJMH6YLkbJd8",
+    "provider_id": "ChIJo4EvAoIfbDERDbVDgfa1Uow",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":14.7,\"lng\":108.9},\"southwest\":{\"lat\":12.8,\"lng\":107.4}}"
@@ -498,7 +498,7 @@
     "country_name": "Vietnam",
     "latitude": 12.710022,
     "longitude": 108.237758,
-    "provider_id": "ChIJR4f0y_piRTER7KNUxqQ4k04",
+    "provider_id": "ChIJV3Ew99r3cTERFTOI2ZR2-Y4",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":13.5,\"lng\":108.9},\"southwest\":{\"lat\":11.9,\"lng\":107.6}}"
@@ -510,7 +510,7 @@
     "country_name": "Vietnam",
     "latitude": 12.264615,
     "longitude": 107.609766,
-    "provider_id": "ChIJFzLrjsphRTERSMJp6bKkpzM",
+    "provider_id": "ChIJx3sa9UEVcjERjnSLd6s5mbA",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":12.9,\"lng\":108.1},\"southwest\":{\"lat\":11.5,\"lng\":107.1}}"
@@ -522,7 +522,7 @@
     "country_name": "Vietnam",
     "latitude": 11.940419,
     "longitude": 108.458313,
-    "provider_id": "ChIJe1FNn-mSRTERuXkS4xyq6IA",
+    "provider_id": "ChIJfdvzWSYTcTERbPVUX9_SWrs",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":12.9,\"lng\":108.9},\"southwest\":{\"lat\":10.8,\"lng\":107.5}}"
@@ -533,8 +533,8 @@
     "name_en": "Binh Phuoc",
     "country_name": "Vietnam",
     "latitude": 11.751512,
-    "longitude": 106.723380,
-    "provider_id": "ChIJj7jFvDHxRTERs04S2pZ8qsc",
+    "longitude": 106.72338,
+    "provider_id": "ChIJTydOrfKhdDERd864twP8qzU",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":12.4,\"lng\":107.5},\"southwest\":{\"lat\":11.3,\"lng\":106.3}}"
@@ -545,8 +545,8 @@
     "name_en": "Tay Ninh",
     "country_name": "Vietnam",
     "latitude": 11.310361,
-    "longitude": 106.098410,
-    "provider_id": "ChIJRx22Gm3xRTER5oXHiZVoRz8",
+    "longitude": 106.09841,
+    "provider_id": "ChIJMXJO1JFCCzERzWzchde8giQ",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":11.8,\"lng\":106.5},\"southwest\":{\"lat\":10.9,\"lng\":105.7}}"
@@ -558,7 +558,7 @@
     "country_name": "Vietnam",
     "latitude": 11.325474,
     "longitude": 106.477028,
-    "provider_id": "ChIJe1CUxCfvRTERPTX0ziBuGCM",
+    "provider_id": "ChIJ_wNAW2TLaDER8QpDbDucRVs",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":11.8,\"lng\":107.0},\"southwest\":{\"lat\":10.8,\"lng\":106.3}}"
@@ -568,9 +568,9 @@
     "name": "Đồng Nai",
     "name_en": "Dong Nai",
     "country_name": "Vietnam",
-    "latitude": 11.067650,
+    "latitude": 11.06765,
     "longitude": 107.168534,
-    "provider_id": "ChIJIWRRgkbxRTERr_8gG6NTmVs",
+    "provider_id": "ChIJJepKuFLZdDERVRZuS_HmSuA",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":11.6,\"lng\":107.7},\"southwest\":{\"lat\":10.5,\"lng\":106.7}}"
@@ -582,7 +582,7 @@
     "country_name": "Vietnam",
     "latitude": 10.541334,
     "longitude": 107.242546,
-    "provider_id": "ChIJpWzVSSzsRTERVAiP1VWiW1w",
+    "provider_id": "ChIJVeJ8iTdzdTERgK4o7GZbTt0",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":10.9,\"lng\":107.6},\"southwest\":{\"lat\":10.3,\"lng\":106.9}}"
@@ -594,7 +594,7 @@
     "country_name": "Vietnam",
     "latitude": 10.762622,
     "longitude": 106.660172,
-    "provider_id": "ChIJo4EX8ympMTERBrgMc-blO0A",
+    "provider_id": "ChIJ0T2NLikpdTERKxE8d61aX_E",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":11.1602,\"lng\":107.0344},\"southwest\":{\"lat\":10.3514,\"lng\":106.3620}}"
@@ -606,7 +606,7 @@
     "country_name": "Vietnam",
     "latitude": 10.695551,
     "longitude": 106.243827,
-    "provider_id": "ChIJO5wWqdtAMzERFHcB_HYCOtI",
+    "provider_id": "ChIJ6x6rVN_JCjERwn3jG6IvWCg",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":11.1,\"lng\":106.9},\"southwest\":{\"lat\":10.3,\"lng\":105.7}}"
@@ -618,7 +618,7 @@
     "country_name": "Vietnam",
     "latitude": 10.449501,
     "longitude": 106.342484,
-    "provider_id": "ChIJhbRhBb25MzERr1IpDiAkJKI",
+    "provider_id": "ChIJLxDMCUK3CjERdle_b61_ivE",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":10.8,\"lng\":106.8},\"southwest\":{\"lat\":10.1,\"lng\":105.9}}"
@@ -630,7 +630,7 @@
     "country_name": "Vietnam",
     "latitude": 10.243553,
     "longitude": 106.375553,
-    "provider_id": "ChIJrZvAuGa3MzERRwb6vVXNWBU",
+    "provider_id": "ChIJOfSC7MmnCjERHLNAD4rImdA",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":10.5,\"lng\":106.8},\"southwest\":{\"lat\":9.8,\"lng\":106.1}}"
@@ -642,7 +642,7 @@
     "country_name": "Vietnam",
     "latitude": 9.934496,
     "longitude": 106.345494,
-    "provider_id": "ChIJbRMTFPLFMzER9P9J7XL7HBI",
+    "provider_id": "ChIJ4dMq2mMXoDERqh3P7rsH04E",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":10.2,\"lng\":106.8},\"southwest\":{\"lat\":9.5,\"lng\":106.0}}"
@@ -654,7 +654,7 @@
     "country_name": "Vietnam",
     "latitude": 10.253758,
     "longitude": 105.972762,
-    "provider_id": "ChIJacf0SPLRMzERe8IG_V8smvk",
+    "provider_id": "ChIJE45EIbybCjERpXVcaT5qxlI",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":10.5,\"lng\":106.4},\"southwest\":{\"lat\":9.9,\"lng\":105.6}}"
@@ -665,8 +665,8 @@
     "name_en": "Dong Thap",
     "country_name": "Vietnam",
     "latitude": 10.493497,
-    "longitude": 105.688100,
-    "provider_id": "ChIJydabMU3pMzERVXEUMueMWfQ",
+    "longitude": 105.6881,
+    "provider_id": "ChIJHxIM1bNlCjERQG40rV7JoNw",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":11.0,\"lng\":106.2},\"southwest\":{\"lat\":10.0,\"lng\":105.2}}"
@@ -678,7 +678,7 @@
     "country_name": "Vietnam",
     "latitude": 10.520616,
     "longitude": 105.125496,
-    "provider_id": "ChIJ_7VATenxMzERlrAEBTrAV9I",
+    "provider_id": "ChIJjSriTooZCjERuojAUiywHNw",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":11.0,\"lng\":105.6},\"southwest\":{\"lat\":10.2,\"lng\":104.7}}"
@@ -690,7 +690,7 @@
     "country_name": "Vietnam",
     "latitude": 9.824894,
     "longitude": 105.125496,
-    "provider_id": "ChIJmQM7-VVmMzERV1ZNpygTmiA",
+    "provider_id": "ChIJVQDepIOzoDERWKrSUox72A0",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":10.6,\"lng\":105.6},\"southwest\":{\"lat\":9.2,\"lng\":103.7}}"
@@ -702,7 +702,7 @@
     "country_name": "Vietnam",
     "latitude": 10.045162,
     "longitude": 105.746857,
-    "provider_id": "ChIJO5wWqdtAMzER9gbdBg2ywBA",
+    "provider_id": "ChIJt-3jbZ9ioDERWbYg-9sJf1I",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":10.3,\"lng\":106.0},\"southwest\":{\"lat\":9.8,\"lng\":105.5}}"
@@ -712,9 +712,9 @@
     "name": "Hậu Giang",
     "name_en": "Hau Giang",
     "country_name": "Vietnam",
-    "latitude": 9.757920,
-    "longitude": 105.641070,
-    "provider_id": "ChIJI38B3fj-MzERi3B9yVBJbxw",
+    "latitude": 9.75792,
+    "longitude": 105.64107,
+    "provider_id": "ChIJH3-8DEjpoDERtdyck9aJbog",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":10.1,\"lng\":106.1},\"southwest\":{\"lat\":9.4,\"lng\":105.3}}"
@@ -726,7 +726,7 @@
     "country_name": "Vietnam",
     "latitude": 9.602521,
     "longitude": 105.980101,
-    "provider_id": "ChIJQ_9OGqz8MzERv1nUZfabPPY",
+    "provider_id": "ChIJcU2mbzZNoDERnE8ZKr_xr2g",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":9.9,\"lng\":106.5},\"southwest\":{\"lat\":9.2,\"lng\":105.5}}"
@@ -736,9 +736,9 @@
     "name": "Bạc Liêu",
     "name_en": "Bac Lieu",
     "country_name": "Vietnam",
-    "latitude": 9.285000,
-    "longitude": 105.724500,
-    "provider_id": "ChIJNy_cZRD8MzERNp4c_PiqK7k",
+    "latitude": 9.285,
+    "longitude": 105.7245,
+    "provider_id": "ChIJnZUo9WcJoTERV7-dY09BiJ0",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":9.7,\"lng\":106.3},\"southwest\":{\"lat\":8.8,\"lng\":105.2}}"
@@ -750,7 +750,7 @@
     "country_name": "Vietnam",
     "latitude": 9.177069,
     "longitude": 105.150275,
-    "provider_id": "ChIJpfmYjHr9MzERGRwUqbmUvuM",
+    "provider_id": "ChIJez-heqBJoTERs-aysVPn-a8",
     "timezone": "Asia/Ho_Chi_Minh",
     "maki": "city",
     "viewport": "{\"northeast\":{\"lat\":9.6,\"lng\":105.5},\"southwest\":{\"lat\":8.5,\"lng\":104.7}}"

@@ -32,6 +32,8 @@ public interface LocationRepository extends JpaRepository<Location, UUID> {
 
     long countByLocationType(LocationType locationType);
 
+    List<Location> findByUpdatedAtBefore(java.time.LocalDateTime thresholdDate);
+
     // ==================== Tier 1: Admin Locations (Province / Country / etc.)
     // ====================
 
