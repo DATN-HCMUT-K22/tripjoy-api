@@ -69,11 +69,9 @@ public class LocationCreateRequest {
     @JsonProperty("name_en")
     String nameEn;
 
-    @NotNull(message = "INVALID_REQUEST")
     @Schema(description = "Latitude (WGS84)", example = "10.77324709")
     Double latitude;
 
-    @NotNull(message = "INVALID_REQUEST")
     @Schema(description = "Longitude (WGS84)", example = "106.65976722")
     Double longitude;
 

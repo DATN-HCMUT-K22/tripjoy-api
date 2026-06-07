@@ -105,7 +105,39 @@ public class LocationService implements ILocationService {
             }
         }
 
-        // 3. Dedup by coordinates (within 50m) — prevents near-duplicate POIs
+        // 3. Resolve missing coordinates for Google Maps (Frontend might only send place_id from Autocomplete)
+        if (request.getLatitude() == null || request.getLongitude() == null) {
+            if ("GOOGLE_MAPS".equals(request.getProvider()) && isNotBlank(request.getProviderId())) {
+                log.info("Missing coordinates, resolving from Google Places API for place_id: {}", request.getProviderId());
+                try {
+                    var googleDetails = googlePlacesService.getPlaceDetails(request.getProviderId()).block();
+                    if (googleDetails != null && googleDetails.getLocation() != null) {
+                        request.setLatitude(googleDetails.getLocation().getLatitude());
+                        request.setLongitude(googleDetails.getLocation().getLongitude());
+                        
+                        // Opportunistically fill other fields if missing
+                        if (request.getFullAddress() == null) {
+                            request.setFullAddress(googleDetails.getFormattedAddress());
+                        }
+                        if (request.getPoiCategories() == null) {
+                            request.setPoiCategories(googleDetails.getTypes());
+                        }
+                        if (request.getPrimaryType() == null) {
+                            request.setPrimaryType(googleDetails.getPrimaryType());
+                        }
+                    } else {
+                        throw new AppException(ErrorCode.INVALID_REQUEST, "Could not resolve coordinates from Google Places API");
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to resolve place details from Google: {}", e.getMessage());
+                    throw new AppException(ErrorCode.INVALID_REQUEST, "Could not resolve coordinates from Google Places API");
+                }
+            } else {
+                throw new AppException(ErrorCode.INVALID_REQUEST, "latitude and longitude are required");
+            }
+        }
+
+        // 4. Dedup by coordinates (within 50m) — prevents near-duplicate POIs
         if (request.getLatitude() != null && request.getLongitude() != null) {
             Point searchPoint = locationMapper.createPoint(request.getLongitude(), request.getLatitude());
             List<Location> nearby = locationRepository.findWithin50Meters(searchPoint);
@@ -198,6 +230,9 @@ public class LocationService implements ILocationService {
             })
     public LocationResponse updateLocation(UUID locationId, LocationCreateRequest request) {
         log.info("Updating location: {}", locationId);
+        if (request.getLatitude() == null || request.getLongitude() == null) {
+            throw new AppException(ErrorCode.INVALID_REQUEST, "latitude and longitude are required for update");
+        }
         Location location = findOrThrow(locationId);
         locationMapper.updateEntityFromRequest(request, location);
         Location updated = locationRepository.save(location);
