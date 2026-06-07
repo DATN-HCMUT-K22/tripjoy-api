@@ -515,10 +515,11 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
                         unwantedItem.getStartTime() != null
                                 ? unwantedItem.getStartTime().toString()
                                 : null)
-                .duration(unwantedItem.getDuration())
-                .note(unwantedItem.getNote())
-                .locationName(unwantedItem.getLocation().getName())
-                .placeId(unwantedItem.getLocation().getProviderId())
+                .duration(unwantedItem.getDuration() != null ? unwantedItem.getDuration() : 60)
+                .note(unwantedItem.getNote() != null ? unwantedItem.getNote() : "")
+                .locationName(unwantedItem.getLocation() != null && unwantedItem.getLocation().getName() != null 
+                        ? unwantedItem.getLocation().getName() : "Unknown Location")
+                .placeId(unwantedItem.getLocation() != null ? unwantedItem.getLocation().getProviderId() : null)
                 .build();
 
         // 3. Build full itinerary DTO
@@ -687,6 +688,13 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
 
         List<TripItem> items = tripItemRepository.findByItineraryId(latest.getId());
 
+        String destinationName = "Unknown";
+        if (latest.getDestination() != null) {
+            destinationName = latest.getDestination().getName();
+        } else if (latest.getName() != null) {
+            destinationName = latest.getName().replaceFirst("(?i)^trip to ", "").trim();
+        }
+
         return AiFinalItineraryDto.builder()
                 .name(latest.getName())
                 .startDate(
@@ -708,22 +716,19 @@ public class ItineraryGenerationService implements IItineraryGenerationService {
                                         .map(Theme::getName)
                                         .collect(Collectors.toList())
                                 : null)
-                .destination(
-                        latest.getDestination() != null
-                                ? latest.getDestination().getName()
-                                : null)
+                .destination(destinationName)
                 .tripItems(items.stream()
                         .map(item -> AiTripItemDto.builder()
                                 .startTime(
                                         item.getStartTime() != null
                                                 ? item.getStartTime().toString()
                                                 : null)
-                                .duration(item.getDuration())
-                                .note(item.getNote())
+                                .duration(item.getDuration() != null ? item.getDuration() : 60)
+                                .note(item.getNote() != null ? item.getNote() : "")
                                 .locationName(
-                                        item.getLocation() != null
+                                        item.getLocation() != null && item.getLocation().getName() != null
                                                 ? item.getLocation().getName()
-                                                : null)
+                                                : "Unknown Location")
                                 .placeId(
                                         item.getLocation() != null
                                                 ? item.getLocation().getProviderId()
